@@ -2424,29 +2424,31 @@
                 });
             }
 
-            sendFrequencyImmediate() {
-                if (this.connected && this.port && this.writer) {
-                    const freqStr = this.frequency.toString().padStart(11, '0');
-                    this.sendCommand(`FA${freqStr}`).catch(e => {
-                        console.error("Frequency update error:", e);
-                    });
-                }
-            }
+           sendFrequencyImmediate() {
+    if (this.connected && this.port && this.writer) {
+        const freqStr = this.frequency.toString().padStart(11, '0');
+        const vfoCommand = this.getVFOCommand();
+        this.sendCommand(`${vfoCommand}${freqStr}`).catch(e => {
+            console.error("Frequency update error:", e);
+        });
+    }
+}
 
-            sendFrequencyDynamically() {
-                if (this.catTimeout) {
-                    clearTimeout(this.catTimeout);
-                }
-                this.catTimeout = setTimeout(() => {
-                    if (this.connected && this.port && this.writer) {
-                        const freqStr = this.frequency.toString().padStart(11, '0');
-                        this.sendCommand(`FA${freqStr}`).catch(e => {
-                            console.error("Frequency update error:", e);
-                        });
-                    }
-                    this.catTimeout = null;
-                }, 5);
-            }
+           sendFrequencyDynamically() {
+    if (this.catTimeout) {
+        clearTimeout(this.catTimeout);
+    }
+    this.catTimeout = setTimeout(() => {
+        if (this.connected && this.port && this.writer) {
+            const freqStr = this.frequency.toString().padStart(11, '0');
+            const vfoCommand = this.getVFOCommand();
+            this.sendCommand(`${vfoCommand}${freqStr}`).catch(e => {
+                console.error("Frequency update error:", e);
+            });
+        }
+        this.catTimeout = null;
+    }, 5);
+}
 			
             startPolling() {
                 if (this.pollingInterval) {
@@ -2492,21 +2494,22 @@
                 }
             }
 
-            async sendFrequencyCommand() {
-                if (!this.connected || !this.port || !this.writer) return;
-                try {
-                    const freqStr = this.frequency.toString().padStart(11, '0');
-                    await this.sendCommand(`FA${freqStr}`);
-                    document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
-                    const displayStr = this.frequency.toString().padStart(9, '0');
-                    const mhz = displayStr.substring(0, 3);
-                    const khz = displayStr.substring(3, 6); 
-                    const hz = displayStr.substring(6, 9);
-                    this.logCAT(`Frequency set to ${mhz}.${khz}.${hz} Hz`, 'info');
-                } catch (e) {
-                    this.logCAT(`Frequency command error: ${e.message}`, 'error');
-                }
-            }
+          async sendFrequencyCommand() {
+    if (!this.connected || !this.port || !this.writer) return;
+    try {
+        const freqStr = this.frequency.toString().padStart(11, '0');
+        const vfoCommand = this.getVFOCommand();
+        await this.sendCommand(`${vfoCommand}${freqStr}`);
+        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
+        const displayStr = this.frequency.toString().padStart(9, '0');
+        const mhz = displayStr.substring(0, 3);
+        const khz = displayStr.substring(3, 6); 
+        const hz = displayStr.substring(6, 9);
+        this.logCAT(`VFO ${this.currentVFO} frequency set to ${mhz}.${khz}.${hz} Hz`, 'info');
+    } catch (e) {
+        this.logCAT(`Frequency command error: ${e.message}`, 'error');
+    }
+}
 
             async updateFrequency(delta) {
                 this.frequency += delta;
@@ -2728,13 +2731,25 @@
                         this.volumeLevel = this.catToVolume(gain);
                         this.updateVolumeUI();
                     }
-                } else if (response.startsWith('FA')) {
-                    const freq = parseInt(response.substring(2));
-                    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting) {
-                        this.frequency = freq;
-                        this.updateDisplay();
-                        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
-                    }
+                else if (response.startsWith('FB')) {
+    const freq = parseInt(response.substring(2));
+    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'B') {
+        this.frequency = freq;
+        this.updateDisplay();
+        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
+    }
+}
+
+// And modify the existing FA response handler:
+else if (response.startsWith('FA')) {
+    const freq = parseInt(response.substring(2));
+    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'A') {
+        this.frequency = freq;
+        this.updateDisplay();
+        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
+    }
+}
+
                 } else if (response.startsWith('SM')) {
                     const sMeter = parseInt(response.substring(2));
                     if (!isNaN(sMeter)) {
@@ -2930,23 +2945,26 @@
                         btn.classList.add('active');
                     }
                 });
-                if (this.connected) {
-                    const freqStr = this.frequency.toString().padStart(11, '0');
-                    this.sendCommand(`FA${freqStr}`).then(() => {
-                        setTimeout(() => {
-                            this.sendCommand('FA');
-                        }, 100);
-                    }).catch(e => {
-                        this.logCAT(`Failed to set frequency: ${e.message}`, 'error');
-                    });
-                    const modeBtn = document.querySelector(`[data-mode="${this.mode}"]`);
-                    if (modeBtn) {
-                        const catMode = modeBtn.dataset.catmode;
-                        this.sendCommand(`MD${catMode}`).catch(e => {
-                            console.error("Mode command error:", e);
-                        });
-                    }
-                }
+              if (this.connected) {
+    const freqStr = this.frequency.toString().padStart(11, '0');
+    const vfoCommand = this.getVFOCommand();
+    this.sendCommand(`${vfoCommand}${freqStr}`).then(() => {
+        setTimeout(() => {
+            this.sendCommand(this.getVFOCommand());
+        }, 100);
+    }).catch(e => {
+        this.logCAT(`Failed to set frequency: ${e.message}`, 'error');
+    });
+    
+    const modeBtn = document.querySelector(`[data-mode="${this.mode}"]`);
+    if (modeBtn) {
+        const catMode = modeBtn.dataset.catmode;
+        this.sendCommand(`MD${catMode}`).catch(e => {
+            console.error("Mode command error:", e);
+        });
+    }
+	
+	}
                 const freqStr = this.frequency.toString().padStart(9, '0');
                 const mhz = freqStr.substring(0, 3);
                 const khz = freqStr.substring(3, 6);
@@ -3220,18 +3238,35 @@
                     this.stepSize = parseInt(e.target.value);
                 });
                 document.getElementById('vfoA').addEventListener('click', async () => {
-                    this.selectVFO('A');
-                    if (this.connected) {
-                        await this.sendCommand('FR0');
-                        await this.sendCommand('FT0');
-                    }
-                });
-                document.getElementById('vfoB').addEventListener('click', async () => {
-                    this.selectVFO('B');
-                    if (this.connected) {
-                        await this.sendCommand('FR1');
-                        await this.sendCommand('FT1');
-                    }
+    this.selectVFO('A');
+    if (this.connected) {
+        await this.sendCommand('FR0');  // Select VFO A for RX
+        await this.sendCommand('FT0');  // Select VFO A for TX
+        // Request frequency update for VFO A
+        await this.sendCommand('FA');
+    }
+});
+
+document.getElementById('vfoB').addEventListener('click', async () => {
+    this.selectVFO('B');
+    if (this.connected) {
+        await this.sendCommand('FR1');  // Select VFO B for RX
+        await this.sendCommand('FT1');  // Select VFO B for TX
+        // Request frequency update for VFO B
+        await this.sendCommand('FB');
+    }
+});
+              // This is inside the initEventListeners function
+
+document.getElementById('vfoB').addEventListener('click', async () => {
+    this.selectVFO('B');
+    if (this.connected) {
+        await this.sendCommand('FR1');
+        await this.sendCommand('FT1');
+        // Add this line to ask for the new VFO's frequency
+        await this.sendCommand('FB'); 
+    }
+
                 });
                 document.getElementById('vfoSwap').addEventListener('click', async () => {
                     if (this.connected) {
@@ -3267,15 +3302,15 @@
                 });
 		  }
 
-            setBandFrequency(band) {
-                if (this.lastFrequencies[band]) {
-                    this.frequency = this.lastFrequencies[band];
-                    this.updateDisplay();
-                    if (this.connected) {
-                        this.sendFrequencyImmediate();
-                    }
-                }
-            }
+           setBandFrequency(band) {
+    if (this.lastFrequencies[band]) {
+        this.frequency = this.lastFrequencies[band];
+        this.updateDisplay();
+        if (this.connected) {
+            this.sendFrequencyImmediate();
+        }
+    }
+}
 
             getBandFromFrequency(freqMHz) {
                 if (freqMHz >= 1.8 && freqMHz <= 2.0) return '160';
@@ -3291,7 +3326,7 @@
                 return null; // MODIFIED: Return null if frequency is out of all defined bands.
             }
 
-            selectVFO(vfo) {
+         /*   selectVFO(vfo) {
                 this.currentVFO = vfo;
                 document.querySelectorAll('#vfoA, #vfoB').forEach(btn => {
                     btn.classList.remove('btn-primary');
@@ -3299,7 +3334,13 @@
                 });
                 document.getElementById(`vfo${vfo}`).classList.remove('btn-secondary');
                 document.getElementById(`vfo${vfo}`).classList.add('btn-primary');
-            }
+            } */
+			
+			selectVFO(vfo) {
+    this.currentVFO = vfo;
+    this.updateVFOButtons();
+    this.logCAT(`VFO ${vfo} selected`, 'info');
+}
 
             updateConnectionStatus() {
                 const btn = document.getElementById('connectBtn');
@@ -3373,16 +3414,27 @@
                 meter.style.width = percentage + '%';
             }
 
-            updateLcdDisplay(row1, row2) {
-                const lcdRow1El = document.getElementById('lcdRow1');
-                const lcdRow2El = document.getElementById('lcdRow2');
-                if (lcdRow1El) {
-                    lcdRow1El.textContent = row1;
-                }
-                if (lcdRow2El) {
-                    lcdRow2El.textContent = row2;
-                }
-            }
+          updateLcdDisplay(row1, row2) {
+    const lcdRow1El = document.getElementById('lcdRow1');
+    const lcdRow2El = document.getElementById('lcdRow2');
+    
+    if (lcdRow1El) {
+        lcdRow1El.textContent = row1;
+    }
+    if (lcdRow2El) {
+        lcdRow2El.textContent = row2;
+    }
+    
+    // Auto-detect VFO from LCD display
+    // If the first character is 'B', we're on VFO B, otherwise VFO A
+    const detectedVFO = (row1 && row1.charAt(0) === 'B') ? 'B' : 'A';
+    
+    if (detectedVFO !== this.currentVFO) {
+        this.currentVFO = detectedVFO;
+        this.updateVFOButtons();
+        this.logCAT(`VFO switched to ${this.currentVFO} (auto-detected)`, 'info');
+    }
+}
 
             updateDisplay() {}
 
@@ -3490,7 +3542,45 @@
                 }
             }
 
-            updateLocalClock() {
+           
+
+
+
+updateVFOButtons() {
+    document.querySelectorAll('#vfoA, #vfoB').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+    });
+    
+    const activeButton = document.getElementById(`vfo${this.currentVFO}`);
+    if (activeButton) {
+        activeButton.classList.remove('btn-secondary');
+        activeButton.classList.add('btn-primary');
+    }
+}
+
+// 3. Helper function to get the correct VFO command
+getVFOCommand() {
+    return this.currentVFO === 'B' ? 'FB' : 'FA';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		   updateLocalClock() {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('en-US', {
                     hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
