@@ -1,6 +1,24 @@
 # QRP-Labs QMX+ Professional Communications Interface
 USB Interface for the QMX+
 
+## Screenshots
+
+![Main Interface](screenshot1.png)
+![Settings Panel](screenshot2.png)
+
+---
+
+## Live Demo
+
+Coming soon via GitHub Pages!
+
+---
+
+## Local Installation
+
+1. Clone or download this repository.
+2. Open `index.html` in your browser.
+
 
 A modern, web-based control interface for the QRP-Labs QMX+ transceiver, providing comprehensive radio control, logging, and monitoring capabilities through your browser.
 
