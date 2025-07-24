@@ -37,7 +37,6 @@ A modern, web-based control interface for the QRP-Labs QMX+ transceiver, providi
 ### 🎛️ Advanced Controls
 - **Volume Control**: Real-time AF gain adjustment with visual feedback
 - **Keyer Speed**: CW speed control (5-50 WPM)
-- **Power Control**: Adjustable output power (0-5W)
 - **Memory Channels**: 10 programmable memory locations with custom labels
 
 ### 📊 Monitoring & Meters
