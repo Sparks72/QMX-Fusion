@@ -1143,7 +1143,7 @@
                             <div class="knob-level" id="rfGainLevel">100%</div>
                         </div>
                         <div class="knob-group">
-                            <label>Dummy</label>
+                            <label>Placeholder</label>
                             <div class="volume-knob-container">
                                 <div class="volume-knob" id="powerKnob" tabindex="0" role="slider" aria-label="Power Control" aria-valuemin="0" aria-valuemax="50" aria-valuenow="50">
                                     <div class="volume-knob-center"></div>
@@ -1329,7 +1329,9 @@
                 this.powerAnimationFrame = null;
                 this.powerTimeout = null;
                 this.powerLevelBeforeAdjust = 50;
-
+  // NEW: Add these for hover keyboard control
+    this.isHoveringTuningKnob = false;
+    this.boundHandleTuningHoverKeys = null;
                 this.qsoLog = [];
                 this.qsoLogFilter = '';
                 
@@ -1868,7 +1870,7 @@
                 this.volumeLevel = Math.max(0, Math.min(100, this.volumeLevel));
                 this.volumeKnobRotation = this.minRotation + (this.volumeLevel / 100) * this.totalRotationRange;
                 document.getElementById('volumeKnob').style.transform = `rotate(${this.volumeKnobRotation}deg)`;
-                document.getElementById('volumeLevel').textContent = `${this.volumeLevel}%`;
+                document.getElementById('volumeLevel').textContent = `${this.volumeLevel}db`;
                 document.getElementById('volumeKnob').setAttribute('aria-valuenow', this.volumeLevel);
             }
 
@@ -1918,23 +1920,26 @@
                 return Math.round(Math.max(0, Math.min(100, volumePercent)));
             }
 
-            initRFGainControl() {
-                try {
-                    const rfGainKnob = document.getElementById('rfGainKnob');
-                    const rfGainLevel = document.getElementById('rfGainLevel');
-                    this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-                    rfGainKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-                    rfGainLevel.textContent = `${this.rfGainLevel} wpm`;
-                    rfGainKnob.addEventListener('mousedown', this.startRFGainAdjust.bind(this));
-                    rfGainKnob.addEventListener('touchstart', this.startRFGainAdjust.bind(this), { passive: false });
-                    rfGainKnob.addEventListener('wheel', this.handleRFGainWheel.bind(this));
-                    rfGainKnob.addEventListener('keydown', this.handleRFGainKeyboard.bind(this));
-                    rfGainKnob.setAttribute('aria-valuenow', this.rfGainLevel);
-                    console.log('Keyer initialized');
-                } catch (error) {
-                    console.error('Error initializing Keyer:', error);
-                }
-            }
+         initRFGainControl() {
+    try {
+        const rfGainKnob = document.getElementById('rfGainKnob');
+        const rfGainLevel = document.getElementById('rfGainLevel');
+        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
+        rfGainKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+        
+        // Update this part to use the new display logic:
+        this.updateRFGainLevel(); // This will now handle the STRAIGHT vs WPM display
+        
+        rfGainKnob.addEventListener('mousedown', this.startRFGainAdjust.bind(this));
+        rfGainKnob.addEventListener('touchstart', this.startRFGainAdjust.bind(this), { passive: false });
+        rfGainKnob.addEventListener('wheel', this.handleRFGainWheel.bind(this));
+        rfGainKnob.addEventListener('keydown', this.handleRFGainKeyboard.bind(this));
+        rfGainKnob.setAttribute('aria-valuenow', this.rfGainLevel);
+        console.log('Keyer initialized (0=STRAIGHT, 1-50 WPM)');
+    } catch (error) {
+        console.error('Error initializing Keyer:', error);
+    }
+}
 
             startRFGainAdjust(e) {
                 e.preventDefault();
@@ -2026,24 +2031,24 @@
                 }
             }
 
-            handleRFGainWheel(e) {
-                e.preventDefault();
-                let steps = e.deltaY > 0 ? -1 : 1;
-                const cwSpeedDelta = steps * 1;
-                const currentCWSpeed = Math.round(5 + (this.rfGainLevel / 100) * 45);
-                const newCWSpeed = Math.max(5, Math.min(50, currentCWSpeed + cwSpeedDelta));
-                this.rfGainLevel = ((newCWSpeed - 5) / 45) * 100;
-                this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-                if (this.rfGainAnimationFrame) {
-                    cancelAnimationFrame(this.rfGainAnimationFrame);
-                }
-                this.rfGainAnimationFrame = requestAnimationFrame(() => {
-                    document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-                    this.updateRFGainLevel();
-                    this.sendRFGainCommand();
-                    this.rfGainAnimationFrame = null;
-                });
-            }
+          handleRFGainWheel(e) {
+    e.preventDefault();
+    let steps = e.deltaY > 0 ? -1 : 1;
+    const cwSpeedDelta = steps * 1;
+    const currentCWSpeed = Math.round((this.rfGainLevel / 100) * 50);
+    const newCWSpeed = Math.max(0, Math.min(50, currentCWSpeed + cwSpeedDelta));
+    this.rfGainLevel = (newCWSpeed / 50) * 100;
+    this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
+    if (this.rfGainAnimationFrame) {
+        cancelAnimationFrame(this.rfGainAnimationFrame);
+    }
+    this.rfGainAnimationFrame = requestAnimationFrame(() => {
+        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+        this.updateRFGainLevel();
+        this.sendRFGainCommand();
+        this.rfGainAnimationFrame = null;
+    });
+}
 
             adjustRFGain(delta) {
                 this.rfGainLevel = Math.max(0, Math.min(100, this.rfGainLevel + delta));
@@ -2059,37 +2064,45 @@
                 });
             }
 
-            updateRFGainLevel() {
-                const cwSpeed = Math.round(5 + (this.rfGainLevel / 100) * 45);
-                document.getElementById('rfGainLevel').textContent = `${cwSpeed} WPM`;
-                document.getElementById('rfGainKnob').setAttribute('aria-valuenow', cwSpeed);
-            }
+          updateRFGainLevel() {
+    const cwSpeed = Math.round((this.rfGainLevel / 100) * 50);
+    if (cwSpeed === 0) {
+        document.getElementById('rfGainLevel').textContent = 'STRAIGHT';
+    } else {
+        document.getElementById('rfGainLevel').textContent = `${cwSpeed} WPM`;
+    }
+    document.getElementById('rfGainKnob').setAttribute('aria-valuenow', cwSpeed);
+}
 
-            sendRFGainDynamically() {
-                if (this.rfGainTimeout) {
-                    clearTimeout(this.rfGainTimeout);
-                }
-                this.rfGainTimeout = setTimeout(() => {
-                    if (this.connected && this.port && this.writer) {
-                        const cwSpeed = Math.round(5 + (this.rfGainLevel / 100) * 45);
-                        this.sendCommand(`KS${cwSpeed.toString().padStart(3, '0')}`).catch(e => {
-                            console.error("CW Speed update error:", e);
-                        });
-                    }
-                    this.rfGainTimeout = null;
-                }, 50);
-            }
+           sendRFGainDynamically() {
+    if (this.rfGainTimeout) {
+        clearTimeout(this.rfGainTimeout);
+    }
+    this.rfGainTimeout = setTimeout(() => {
+        if (this.connected && this.port && this.writer) {
+            const cwSpeed = Math.round((this.rfGainLevel / 100) * 50);
+            this.sendCommand(`KS${cwSpeed.toString().padStart(3, '0')}`).catch(e => {
+                console.error("CW Speed update error:", e);
+            });
+        }
+        this.rfGainTimeout = null;
+    }, 50);
+}
 
-            async sendRFGainCommand() {
-                if (!this.connected || !this.port || !this.writer) return;
-                try {
-                    const cwSpeed = Math.round(5 + (this.rfGainLevel / 100) * 45);
-                    await this.sendCommand(`KS${cwSpeed.toString().padStart(3, '0')}`);
-                    this.logCAT(`CW Speed set to ${cwSpeed} WPM`, 'info');
-                } catch (e) {
-                    this.logCAT(`CW Speed command error: ${e.message}`, 'error');
-                }
-            }
+           async sendRFGainCommand() {
+    if (!this.connected || !this.port || !this.writer) return;
+    try {
+        const cwSpeed = Math.round((this.rfGainLevel / 100) * 50);
+        await this.sendCommand(`KS${cwSpeed.toString().padStart(3, '0')}`);
+        if (cwSpeed === 0) {
+            this.logCAT(`Keyer set to STRAIGHT KEY mode`, 'info');
+        } else {
+            this.logCAT(`CW Speed set to ${cwSpeed} WPM`, 'info');
+        }
+    } catch (e) {
+        this.logCAT(`CW Speed command error: ${e.message}`, 'error');
+    }
+}
 
             initPowerControl() {
                 try {
@@ -2272,22 +2285,29 @@
                 }
             }
 
-            initTuningKnob() {
-                try {
-                    const tuningKnob = document.getElementById('tuningKnob');
-                    this.createFrequencyMarkings();
-                    this.tuningKnobRotation = 0;
-                    tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
-                    tuningKnob.addEventListener('mousedown', this.startTuningAdjust.bind(this));
-                    tuningKnob.addEventListener('touchstart', this.startTuningAdjust.bind(this), { passive: false });
-                    tuningKnob.addEventListener('wheel', this.handleTuningWheel.bind(this));
-                    tuningKnob.addEventListener('keydown', this.handleTuningKeyboard.bind(this));
-                    tuningKnob.setAttribute('aria-valuenow', this.frequency);
-                    console.log('CSS tuning knob initialized');
-                } catch (error) {
-                    console.error('Error initializing tuning knob:', error);
-                }
-            }
+           initTuningKnob() {
+    try {
+        const tuningKnob = document.getElementById('tuningKnob');
+        this.createFrequencyMarkings();
+        this.tuningKnobRotation = 0;
+        tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+        
+        // Existing event listeners
+        tuningKnob.addEventListener('mousedown', this.startTuningAdjust.bind(this));
+        tuningKnob.addEventListener('touchstart', this.startTuningAdjust.bind(this), { passive: false });
+        tuningKnob.addEventListener('wheel', this.handleTuningWheel.bind(this));
+        tuningKnob.addEventListener('keydown', this.handleTuningKeyboard.bind(this));
+        
+        // NEW: Add hover keyboard control
+        tuningKnob.addEventListener('mouseenter', this.enableTuningHoverKeys.bind(this));
+        tuningKnob.addEventListener('mouseleave', this.disableTuningHoverKeys.bind(this));
+        
+        tuningKnob.setAttribute('aria-valuenow', this.frequency);
+        console.log('CSS tuning knob initialized with hover keyboard control');
+    } catch (error) {
+        console.error('Error initializing tuning knob:', error);
+    }
+}
 
             createFrequencyMarkings() {
                 const markingsContainer = document.getElementById('frequencyMarkings');
@@ -2473,26 +2493,26 @@
                 }
             }
 
-            parseIfResponse(data) {
-                try {
-                    const freq = parseInt(data.substring(0, 11));
-                    if (!isNaN(freq) && freq > 0 && freq !== this.frequency && !this.isTuningAdjusting) {
-                        this.frequency = freq;
-                        this.updateDisplay();
-                        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
-                    }
-                    const txStatus = data.substring(26, 27);
-                    const isTransmitting = (txStatus === '1');
-                    if (isTransmitting !== this.transmitting) {
-                        this.transmitting = isTransmitting;
-                        this.updateTXStatus();
-                    }
-                    const catMode = data.substring(27, 28);
-                    this.updateModeFromCAT(catMode);
-                } catch (error) {
-                    this.logCAT(`Error parsing IF response: ${error.message}`, 'error');
-                }
-            }
+          parseIfResponse(data) {
+    try {
+        const freq = parseInt(data.substring(0, 11));
+        if (!isNaN(freq) && freq > 0 && freq !== this.frequency && !this.isTuningAdjusting) {
+            this.frequency = freq;
+            this.updateDisplay(); // This will now trigger band auto-selection
+            document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
+        }
+        const txStatus = data.substring(26, 27);
+        const isTransmitting = (txStatus === '1');
+        if (isTransmitting !== this.transmitting) {
+            this.transmitting = isTransmitting;
+            this.updateTXStatus();
+        }
+        const catMode = data.substring(27, 28);
+        this.updateModeFromCAT(catMode);
+    } catch (error) {
+        this.logCAT(`Error parsing IF response: ${error.message}`, 'error');
+    }
+	 }
 
           async sendFrequencyCommand() {
     if (!this.connected || !this.port || !this.writer) return;
@@ -2731,21 +2751,21 @@
                         this.volumeLevel = this.catToVolume(gain);
                         this.updateVolumeUI();
                     }
-                else if (response.startsWith('FB')) {
+             else if (response.startsWith('FA')) {
     const freq = parseInt(response.substring(2));
-    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'B') {
+    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'A') {
         this.frequency = freq;
-        this.updateDisplay();
+        this.updateDisplay(); // This will trigger band auto-selection
         document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
     }
 }
 
-// And modify the existing FA response handler:
-else if (response.startsWith('FA')) {
+// And replace the FB handler:
+else if (response.startsWith('FB')) {
     const freq = parseInt(response.substring(2));
-    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'A') {
+    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'B') {
         this.frequency = freq;
-        this.updateDisplay();
+        this.updateDisplay(); // This will trigger band auto-selection
         document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
     }
 }
@@ -2771,14 +2791,15 @@ else if (response.startsWith('FA')) {
                 } else if (response.startsWith('MD')) {
                     const mode = response.substring(2);
                     this.updateModeFromCAT(mode);
-                } else if (response.startsWith('KS')) {
-                    const wpm = parseInt(response.substring(2));
-                    if (!isNaN(wpm) && !this.isRFGainAdjusting && wpm >= 5 && wpm <= 50) {
-                        this.rfGainLevel = ((wpm - 5) / 45) * 100;
-                        this.updateRFGainLevel();
-                        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-                        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-                    }
+              } else if (response.startsWith('KS')) {
+    const wpm = parseInt(response.substring(2));
+    if (!isNaN(wpm) && !this.isRFGainAdjusting && wpm >= 0 && wpm <= 50) {
+        this.rfGainLevel = (wpm / 50) * 100;
+        this.updateRFGainLevel();
+        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
+        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+    }
+
                 } else if (response.startsWith('TX')) {
                     this.transmitting = true;
                     this.updateTXStatus();
@@ -2939,12 +2960,18 @@ else if (response.startsWith('FA')) {
                         btn.classList.add('active');
                     }
                 });
-                document.querySelectorAll('.band-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.dataset.band === this.band) {
-                        btn.classList.add('active');
-                    }
-                });
+               document.querySelectorAll('.band-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Only change band if user manually clicks (not auto-selection)
+        if (btn.dataset.band !== this.band) {
+            document.querySelectorAll('.band-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.band = btn.dataset.band;
+            this.setBandFrequency(btn.dataset.band);
+            this.logCAT(`Manually selected ${this.band}m band`, 'info');
+        }
+    });
+});
               if (this.connected) {
     const freqStr = this.frequency.toString().padStart(11, '0');
     const vfoCommand = this.getVFOCommand();
@@ -3312,29 +3339,24 @@ document.getElementById('vfoB').addEventListener('click', async () => {
     }
 }
 
-            getBandFromFrequency(freqMHz) {
-                if (freqMHz >= 1.8 && freqMHz <= 2.0) return '160';
-                if (freqMHz >= 3.5 && freqMHz <= 4.0) return '80';
-                if (freqMHz >= 7.0 && freqMHz <= 7.3) return '40';
-                if (freqMHz >= 10.1 && freqMHz <= 10.15) return '30';
-                if (freqMHz >= 14.0 && freqMHz <= 14.35) return '20';
-                if (freqMHz >= 18.068 && freqMHz <= 18.168) return '17';
-                if (freqMHz >= 21.0 && freqMHz <= 21.45) return '15';
-                if (freqMHz >= 24.89 && freqMHz <= 24.99) return '12';
-                if (freqMHz >= 28.0 && freqMHz <= 29.7) return '10';
-                if (freqMHz >= 50.0 && freqMHz <= 54.0) return '6';
-                return null; // MODIFIED: Return null if frequency is out of all defined bands.
-            }
+         getBandFromFrequency(freqMHz) {
+    // More precise band edge definitions
+    if (freqMHz >= 1.800 && freqMHz <= 2.000) return '160';
+    if (freqMHz >= 3.500 && freqMHz <= 4.000) return '80';
+    if (freqMHz >= 7.000 && freqMHz <= 7.300) return '40';
+    if (freqMHz >= 10.100 && freqMHz <= 10.150) return '30';
+    if (freqMHz >= 14.000 && freqMHz <= 14.350) return '20';
+    if (freqMHz >= 18.068 && freqMHz <= 18.168) return '17';
+    if (freqMHz >= 21.000 && freqMHz <= 21.450) return '15';
+    if (freqMHz >= 24.890 && freqMHz <= 24.990) return '12';
+    if (freqMHz >= 28.000 && freqMHz <= 29.700) return '10';
+    if (freqMHz >= 50.000 && freqMHz <= 54.000) return '6';
+    return null; 
+	// Out of amateur bands
+}
 
-         /*   selectVFO(vfo) {
-                this.currentVFO = vfo;
-                document.querySelectorAll('#vfoA, #vfoB').forEach(btn => {
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-secondary');
-                });
-                document.getElementById(`vfo${vfo}`).classList.remove('btn-secondary');
-                document.getElementById(`vfo${vfo}`).classList.add('btn-primary');
-            } */
+
+       
 			
 			selectVFO(vfo) {
     this.currentVFO = vfo;
@@ -3436,7 +3458,10 @@ document.getElementById('vfoB').addEventListener('click', async () => {
     }
 }
 
-            updateDisplay() {}
+         updateDisplay() {
+    this.updateBandFromFrequency();
+    this.updateLoggerInfoBar();
+}
 
             updateClock() {
                 const now = new Date();
@@ -3542,7 +3567,27 @@ document.getElementById('vfoB').addEventListener('click', async () => {
                 }
             }
 
-           
+          // 1. Function to update band selection based on frequency
+updateBandFromFrequency() {
+    const freqMHz = this.frequency / 1000000;
+    const detectedBand = this.getBandFromFrequency(freqMHz);
+    
+    if (detectedBand && detectedBand !== this.band) {
+        this.band = detectedBand;
+        this.updateBandButtons();
+        this.logCAT(`Auto-selected ${this.band}m band for ${freqMHz.toFixed(3)} MHz`, 'info');
+    }
+}
+
+// 2. Function to update band button highlighting
+updateBandButtons() {
+    document.querySelectorAll('.band-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.band === this.band) {
+            btn.classList.add('active');
+        }
+    });
+} 
 
 
 
@@ -3617,14 +3662,126 @@ getVFOCommand() {
                 }, 100);
             }
 
-            cleanup() {
-                if (this.timeSyncInterval) clearInterval(this.timeSyncInterval);
-                if (this.clockUpdateInterval) clearInterval(this.clockUpdateInterval);
-                if (this.timeCommandTimeout) clearTimeout(this.timeCommandTimeout);
-            }
-        }
 
-        document.addEventListener('DOMContentLoaded', () => {
+
+updateBandForOutOfBand() {
+    const freqMHz = this.frequency / 1000000;
+    const detectedBand = this.getBandFromFrequency(freqMHz);
+    
+    if (!detectedBand) {
+        // Clear all band selections for out-of-band frequencies
+        document.querySelectorAll('.band-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        this.band = null; // or keep the last valid band
+        this.logCAT(`Frequency ${freqMHz.toFixed(3)} MHz is outside amateur bands`, 'info');
+    }
+}
+
+
+// NEW: Enable keyboard control when hovering over tuning knob
+enableTuningHoverKeys() {
+    this.isHoveringTuningKnob = true;
+    
+    if (!this.boundHandleTuningHoverKeys) {
+        this.boundHandleTuningHoverKeys = this.handleTuningHoverKeys.bind(this);
+    }
+    
+    document.addEventListener('keydown', this.boundHandleTuningHoverKeys);
+    
+    // Visual feedback - make the knob glow when hover-keyboard-active
+    const tuningKnob = document.getElementById('tuningKnob');
+    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.6)';
+}
+
+// NEW: Disable keyboard control when not hovering over tuning knob
+disableTuningHoverKeys() {
+    this.isHoveringTuningKnob = false;
+    
+    if (this.boundHandleTuningHoverKeys) {
+        document.removeEventListener('keydown', this.boundHandleTuningHoverKeys);
+    }
+    
+    // Remove visual feedback
+    const tuningKnob = document.getElementById('tuningKnob');
+    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
+}
+
+// NEW: Handle keyboard input when hovering over tuning knob
+handleTuningHoverKeys(e) {
+    if (!this.isHoveringTuningKnob) return;
+    
+    // Only handle arrow keys
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    
+    e.preventDefault();
+    
+    let direction = 0;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        direction = -1;
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        direction = 1;
+    }
+    
+    if (direction !== 0) {
+        // Use the selected step size
+        const freqDelta = direction * this.stepSize;
+        this.updateFrequency(freqDelta);
+        
+        // Update knob rotation for visual feedback
+        const rotationDelta = direction * 2;
+        this.tuningKnobRotation += rotationDelta;
+        document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+        
+        // Send frequency update
+        this.sendFrequencyDynamically();
+        
+        // Brief visual feedback
+        this.provideTuningKeyFeedback();
+    }
+}
+
+// NEW: Provide brief visual feedback for keyboard tuning
+provideTuningKeyFeedback() {
+    const tuningKnob = document.getElementById('tuningKnob');
+    const originalBoxShadow = tuningKnob.style.boxShadow;
+    
+    // Brief bright glow
+    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 255, 136, 1)';
+    
+    setTimeout(() => {
+        if (this.isHoveringTuningKnob) {
+            // Return to hover glow
+            tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.6)';
+        } else {
+            // Return to normal
+            tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
+        }
+    }, 150);
+}
+
+
+
+
+
+
+
+
+ 
+
+cleanup() {
+    if (this.timeSyncInterval) clearInterval(this.timeSyncInterval);
+    if (this.clockUpdateInterval) clearInterval(this.clockUpdateInterval);
+    if (this.timeCommandTimeout) clearTimeout(this.timeCommandTimeout);
+    
+
+    if (this.boundHandleTuningHoverKeys) {
+        document.removeEventListener('keydown', this.boundHandleTuningHoverKeys);
+    }
+}
+
+}
+   document.addEventListener('DOMContentLoaded', () => {
             try {
                 new QMXInterface();
             } catch (error) {
