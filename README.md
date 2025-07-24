@@ -8,10 +8,26 @@ USB Interface for the QMX+
 
 ---
 
-## Live Demo
 
-Coming soon via GitHub Pages!
 
+## 🌐 Live Demo
+
+**[► Launch Live Demo](https://sparks72.github.io/QMX-Interface/)**
+
+*Try the interface directly in your browser - no installation required!*
+
+## Features
+- Real-time frequency control
+- VFO A/B switching with auto-detection  
+- Memory channel management
+- QSO logging with ADIF export
+- Serial CAT control interface
+
+## Usage
+1. Visit the [live demo](https://sparks72.github.io/QMX-Interface/)
+2. Connect your QMX+ via USB serial
+3. Click "Connect Serial" and select your device
+4. Start operating!
 ---
 
 ## Local Installation
