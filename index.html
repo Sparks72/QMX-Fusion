@@ -944,6 +944,101 @@
             justify-content: center;
         }
 
+/* Add this CSS to hide the VFO swap and copy buttons */
+#vfoSwap,
+#vfoCopy {
+    display: none !important;
+}
+
+/* Optional: Adjust the VFO panel grid to only show 2 columns instead of 4 */
+#vfoPanel .controls-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+}
+
+
+/* Keyer Mode Toggle Styles */
+.keyer-mode-toggle {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: center;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 80px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.toggle-switch:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 36px;
+    height: 18px;
+    background: linear-gradient(45deg, #ff4757, #ff6b7a);
+    border-radius: 9px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+.toggle-switch.bug .toggle-slider {
+    left: 40px;
+    background: linear-gradient(45deg, #00ff88, #00ccff);
+}
+
+.toggle-label {
+    position: absolute;
+    font-size: 0.7em;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.toggle-label.left {
+    left: 8px;
+}
+
+.toggle-label.right {
+    right: 8px;
+}
+
+.toggle-switch:not(.bug) .toggle-label.left {
+    color: #fff;
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.toggle-switch.bug .toggle-label.right {
+    color: #fff;
+    text-shadow: 0 0 3px rgba(0, 255, 136, 0.8);
+}
+
+/* Make the keyer knob less prominent when in STRAIGHT mode */
+.keyer-straight .volume-knob {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.keyer-straight .knob-level {
+    opacity: 0.6;
+}
+
         @media (max-width: 768px) {
             .volume-knob-container {
                 width: 60px;
@@ -980,6 +1075,16 @@
                         <button id="connectBtn" class="btn btn-primary">Connect Serial</button>
                     </div>
                 </div>
+<!--<div class="panel" id="audioStreamPanel">
+    <h3>Audio Streaming</h3>
+    <div class="control-group">
+        <label>Status: <span id="streamStatus" style="color: #ff4757;">INACTIVE</span></label>
+        <button id="toggleStreamBtn" class="btn btn-secondary">Start Streaming</button>
+    </div>
+</div>-->
+
+
+
 
                <div class="panel" id="modePanel">
                 <h3>Operating Mode</h3>
@@ -1134,14 +1239,23 @@
                             <div class="knob-level" id="volumeLevel">75%</div>
                         </div>
                         <div class="knob-group">
-                            <label>Keyer </label>
-                            <div class="volume-knob-container">
-                                <div class="volume-knob" id="rfGainKnob" tabindex="0" role="slider" aria-label="Keyer" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
-                                    <div class="volume-knob-center"></div>
-                                </div>
-                            </div>
-                            <div class="knob-level" id="rfGainLevel">100%</div>
-                        </div>
+    <!-- NEW: Toggle switch above the keyer knob -->
+    <div class="keyer-mode-toggle">
+        <div class="toggle-switch" id="keyerModeToggle">
+            <div class="toggle-slider"></div>
+            <span class="toggle-label left">STRAIGHT</span>
+            <span class="toggle-label right">BUG</span>
+        </div>
+    </div>
+    
+    <label>Keyer</label>
+    <div class="volume-knob-container">
+        <div class="volume-knob" id="rfGainKnob" tabindex="0" role="slider" aria-label="Keyer" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+            <div class="volume-knob-center"></div>
+        </div>
+    </div>
+    <div class="knob-level" id="rfGainLevel">100%</div>
+</div>
                         <div class="knob-group">
                             <label>Placeholder</label>
                             <div class="volume-knob-container">
@@ -1334,7 +1448,16 @@
     this.boundHandleTuningHoverKeys = null;
                 this.qsoLog = [];
                 this.qsoLogFilter = '';
-                
+                 // NEW: Variable speed tuning properties
+    this.originalStepSize = 100;  // Store the user-selected step
+    this.isVariableStepActive = false;  // Track if we're in fast mode
+    this.lastTuningTime = 0;  // Track timing for speed detection
+    this.tuningSpeedSamples = [];  // Store recent speed samples
+    this.variableStepTimeout = null;  // Timeout to revert step size
+    this.fastStepMultiplier = 10;
+	
+	 this.keyerMode = 'straight';  // 'straight' or 'bug'
+    this.bugWpmSetting = 22; 
                 // NEW: Property to hold last-tuned frequencies per band
                 this.lastFrequencies = {
                     '160': 1900000, '80': 3500000, '40': 7000000, '30': 10140000, '20': 14205000,
@@ -1920,29 +2043,39 @@
                 return Math.round(Math.max(0, Math.min(100, volumePercent)));
             }
 
-         initRFGainControl() {
+    // Add this line at the end of initRFGainControl():
+initRFGainControl() {
     try {
         const rfGainKnob = document.getElementById('rfGainKnob');
         const rfGainLevel = document.getElementById('rfGainLevel');
         this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
         rfGainKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
         
-        // Update this part to use the new display logic:
-        this.updateRFGainLevel(); // This will now handle the STRAIGHT vs WPM display
+        this.updateRFGainLevel();
         
         rfGainKnob.addEventListener('mousedown', this.startRFGainAdjust.bind(this));
         rfGainKnob.addEventListener('touchstart', this.startRFGainAdjust.bind(this), { passive: false });
         rfGainKnob.addEventListener('wheel', this.handleRFGainWheel.bind(this));
         rfGainKnob.addEventListener('keydown', this.handleRFGainKeyboard.bind(this));
         rfGainKnob.setAttribute('aria-valuenow', this.rfGainLevel);
-        console.log('Keyer initialized (0=STRAIGHT, 1-50 WPM)');
+        
+        // NEW: Initialize the keyer toggle
+        this.setKeyerMode('');      
+	   this.initKeyerToggle();
+        
+        console.log('Keyer initialized with toggle (0=STRAIGHT, 1-50 WPM)');
     } catch (error) {
         console.error('Error initializing Keyer:', error);
     }
 }
 
             startRFGainAdjust(e) {
-                e.preventDefault();
+               
+// Don't allow manual adjustment in STRAIGHT mode
+    if (this.keyerMode === 'straight') {
+        return;
+    }
+			   e.preventDefault();
                 this.isRFGainAdjusting = true;
                 const rect = e.target.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
@@ -2022,7 +2155,11 @@
             }
 
             handleRFGainKeyboard(e) {
-                if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+// Don't allow manual adjustment in STRAIGHT mode
+    if (this.keyerMode === 'straight') {
+        return;
+    }               
+			   if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
                     e.preventDefault();
                     this.adjustRFGain(-5);
                 } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
@@ -2032,7 +2169,11 @@
             }
 
           handleRFGainWheel(e) {
-    e.preventDefault();
+ // Don't allow manual adjustment in STRAIGHT mode
+    if (this.keyerMode === 'straight') {
+        return;
+    }   
+   e.preventDefault();
     let steps = e.deltaY > 0 ? -1 : 1;
     const cwSpeedDelta = steps * 1;
     const currentCWSpeed = Math.round((this.rfGainLevel / 100) * 50);
@@ -2064,12 +2205,18 @@
                 });
             }
 
-          updateRFGainLevel() {
+ 
+// MODIFY your existing updateRFGainLevel method to show mode info:
+updateRFGainLevel() {
     const cwSpeed = Math.round((this.rfGainLevel / 100) * 50);
+    const rfGainLevelEl = document.getElementById('rfGainLevel');
+    
     if (cwSpeed === 0) {
-        document.getElementById('rfGainLevel').textContent = 'STRAIGHT';
+        rfGainLevelEl.textContent = 'STRAIGHT';
+        rfGainLevelEl.style.color = '#ff4757';
     } else {
-        document.getElementById('rfGainLevel').textContent = `${cwSpeed} WPM`;
+        rfGainLevelEl.textContent = `${cwSpeed} WPM`;
+        rfGainLevelEl.style.color = '#00ff88';
     }
     document.getElementById('rfGainKnob').setAttribute('aria-valuenow', cwSpeed);
 }
@@ -2346,46 +2493,65 @@
                 }
             }
 
-            continueTuningAdjust(e) {
-                if (!this.isTuningAdjusting) return;
-                if (this.tuningAnimationFrame) {
-                    cancelAnimationFrame(this.tuningAnimationFrame);
-                }
-                this.tuningAnimationFrame = requestAnimationFrame(() => {
-                    const tuningKnob = document.getElementById('tuningKnob');
-                    const rect = tuningKnob.getBoundingClientRect();
-                    const centerX = rect.left + rect.width / 2;
-                    const centerY = rect.top + rect.height / 2;
-                    let currentX, currentY;
-                    if (e.type === 'mousemove') {
-                        currentX = e.clientX;
-                        currentY = e.clientY;
-                    } else if (e.type === 'touchmove') {
-                        e.preventDefault();
-                        const t = e.touches[0];
-                        currentX = t.clientX;
-                        currentY = t.clientY;
-                    }
-                    const distance = Math.sqrt(Math.pow(currentX - centerX, 2) + Math.pow(currentY - centerY, 2));
-                    if (distance < rect.width * 2) {
-                        const currentAngle = Math.atan2(currentY - centerY, currentX - centerX);
-                        let deltaAngle = currentAngle - this.tuningLastAngle;
-                        if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
-                        if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
-                        const sensitivity = 1.5;
-                        deltaAngle *= sensitivity;
-                        this.tuningKnobRotation += (deltaAngle * 180 / Math.PI);
-                        tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
-                        const freqDelta = (deltaAngle * 180 / Math.PI) * this.stepSize * 0.3;
-                        if (Math.abs(freqDelta) > 0.1) {
-                            this.updateFrequency(freqDelta);
-                            this.sendFrequencyImmediate();
-                        }
-                        this.tuningLastAngle = currentAngle;
-                    }
-                    this.tuningAnimationFrame = null;
-                });
+// REPLACE your existing continueTuningAdjust method with this enhanced version:
+continueTuningAdjust(e) {
+    if (!this.isTuningAdjusting) return;
+    if (this.tuningAnimationFrame) {
+        cancelAnimationFrame(this.tuningAnimationFrame);
+    }
+    this.tuningAnimationFrame = requestAnimationFrame(() => {
+        const tuningKnob = document.getElementById('tuningKnob');
+        const rect = tuningKnob.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        let currentX, currentY;
+        
+        if (e.type === 'mousemove') {
+            currentX = e.clientX;
+            currentY = e.clientY;
+        } else if (e.type === 'touchmove') {
+            e.preventDefault();
+            const t = e.touches[0];
+            currentX = t.clientX;
+            currentY = t.clientY;
+        }
+        
+        const distance = Math.sqrt(Math.pow(currentX - centerX, 2) + Math.pow(currentY - centerY, 2));
+        if (distance < rect.width * 2) {
+            const currentAngle = Math.atan2(currentY - centerY, currentX - centerX);
+            let deltaAngle = currentAngle - this.tuningLastAngle;
+            if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
+            if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
+            
+            // NEW: Calculate tuning speed
+            const now = performance.now();
+            const timeDelta = now - this.lastTuningTime;
+            const angleDelta = Math.abs(deltaAngle);
+            
+            if (timeDelta > 0) {
+                const speed = angleDelta / (timeDelta / 1000); // radians per second
+                this.updateTuningSpeed(speed);
             }
+            this.lastTuningTime = now;
+            
+            const sensitivity = 1.5;
+            deltaAngle *= sensitivity;
+            this.tuningKnobRotation += (deltaAngle * 180 / Math.PI);
+            tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+            
+            // NEW: Use variable step size
+            const currentStepSize = this.getCurrentStepSize();
+            const freqDelta = (deltaAngle * 180 / Math.PI) * currentStepSize * 0.3;
+            
+            if (Math.abs(freqDelta) > 0.1) {
+                this.updateFrequency(freqDelta);
+                this.sendFrequencyImmediate();
+            }
+            this.tuningLastAngle = currentAngle;
+        }
+        this.tuningAnimationFrame = null;
+    });
+}
 
             stopTuningAdjust() {
                 this.isTuningAdjusting = false;
@@ -2404,21 +2570,33 @@
                 this.sendFrequencyImmediate();
             }
 
-            handleTuningWheel(e) {
-                e.preventDefault();
-                let steps;
-                if (Math.abs(e.deltaY) < 50) {
-                    steps = e.deltaY > 0 ? -1 : 1;
-                } else {
-                    steps = e.deltaY > 0 ? -1 : 1;
-                }
-                const freqDelta = steps * this.stepSize;
-                this.updateFrequency(freqDelta);
-                const rotationDelta = steps * 2;
-                this.tuningKnobRotation += rotationDelta;
-                document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
-                this.sendFrequencyDynamically();
-            }
+           handleTuningWheel(e) {
+    e.preventDefault();
+    
+    // NEW: Track wheel speed
+    const now = performance.now();
+    const timeDelta = now - this.lastTuningTime;
+    const wheelSpeed = Math.abs(e.deltaY) / Math.max(timeDelta, 16); // Normalize speed
+    this.updateTuningSpeed(wheelSpeed * 0.1); // Scale wheel speed
+    this.lastTuningTime = now;
+    
+    let steps;
+    if (Math.abs(e.deltaY) < 50) {
+        steps = e.deltaY > 0 ? -1 : 1;
+    } else {
+        steps = e.deltaY > 0 ? -1 : 1;
+    }
+    
+    // NEW: Use variable step size
+    const currentStepSize = this.getCurrentStepSize();
+    const freqDelta = steps * currentStepSize;
+    
+    this.updateFrequency(freqDelta);
+    const rotationDelta = steps * 2;
+    this.tuningKnobRotation += rotationDelta;
+    document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+    this.sendFrequencyDynamically();
+}
 
             handleTuningKeyboard(e) {
                 if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
@@ -3261,9 +3439,15 @@ else if (response.startsWith('FB')) {
                         this.setBandFrequency(btn.dataset.band);
                     });
                 });
-                document.getElementById('stepSize').addEventListener('change', (e) => {
-                    this.stepSize = parseInt(e.target.value);
-                });
+               // MODIFY your existing stepSize change handler in initEventListeners:
+// Replace the existing stepSize event listener with this:
+document.getElementById('stepSize').addEventListener('change', (e) => {
+    this.originalStepSize = parseInt(e.target.value);
+    if (!this.isVariableStepActive) {
+        this.stepSize = this.originalStepSize;
+    }
+    this.logCAT(`Tuning step set to ${this.originalStepSize} Hz`, 'info');
+});
                 document.getElementById('vfoA').addEventListener('click', async () => {
     this.selectVFO('A');
     if (this.connected) {
@@ -3284,6 +3468,14 @@ document.getElementById('vfoB').addEventListener('click', async () => {
     }
 });
               // This is inside the initEventListeners function
+			  
+			  
+			  
+			  
+			  
+			  
+			  
+			  
 
 document.getElementById('vfoB').addEventListener('click', async () => {
     this.selectVFO('B');
@@ -3295,19 +3487,130 @@ document.getElementById('vfoB').addEventListener('click', async () => {
     }
 
                 });
-                document.getElementById('vfoSwap').addEventListener('click', async () => {
-                    if (this.connected) {
-                        await this.sendCommand('AB');
-                        this.logCAT('VFO A and B swapped', 'info');
-                    }
-                });
-                document.getElementById('vfoCopy').addEventListener('click', async () => {
-                    if (this.connected) {
-                        await this.sendCommand('A=B');
-                        this.logCAT('VFO A copied to VFO B', 'info');
-                    }
-                });
-                document.getElementById('txBtn').addEventListener('click', async () => {
+               
+
+
+
+
+
+
+
+			document.getElementById('vfoSwap').addEventListener('click', async () => {
+    if (this.connected) {
+        try {
+            this.logCAT('Swapping VFO A ↔ VFO B...', 'info');
+            
+            // Get current frequencies from both VFOs
+            await this.sendCommand('FA');  // Request VFO A frequency
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await this.sendCommand('FB');  // Request VFO B frequency
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Store current frequencies (they should be updated from the responses)
+            let vfoAFreq = null;
+            let vfoBFreq = null;
+            
+            // Create a temporary response handler to capture VFO frequencies
+            const originalProcessResponse = this.processResponse.bind(this);
+            let responsesReceived = 0;
+            
+            this.processResponse = (response) => {
+                if (response.startsWith('FA')) {
+                    vfoAFreq = parseInt(response.substring(2));
+                    responsesReceived++;
+                } else if (response.startsWith('FB')) {
+                    vfoBFreq = parseInt(response.substring(2));
+                    responsesReceived++;
+                } else {
+                    originalProcessResponse(response);
+                }
+            };
+            
+            // Wait for responses or timeout
+            let attempts = 0;
+            while (responsesReceived < 2 && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                attempts++;
+            }
+            
+            // Restore original response handler
+            this.processResponse = originalProcessResponse;
+            
+            if (vfoAFreq && vfoBFreq && vfoAFreq !== vfoBFreq) {
+                // Perform the swap
+                await this.sendCommand(`FA${vfoBFreq.toString().padStart(11, '0')}`);
+                await new Promise(resolve => setTimeout(resolve, 50));
+                await this.sendCommand(`FB${vfoAFreq.toString().padStart(11, '0')}`);
+                
+                this.logCAT(`VFO swap completed: A=${(vfoBFreq/1000000).toFixed(3)} MHz, B=${(vfoAFreq/1000000).toFixed(3)} MHz`, 'info');
+                
+                // Update display
+                setTimeout(async () => {
+                    await this.sendCommand('IF');
+                    await this.sendCommand('LC');
+                }, 200);
+            } else {
+                this.logCAT('VFO swap failed: Could not read frequencies', 'error');
+            }
+            
+        } catch (e) {
+            this.logCAT(`VFO swap error: ${e.message}`, 'error');
+        }
+    } else {
+        this.logCAT('Cannot swap - radio not connected', 'error');
+    }
+});		   
+						   
+						   
+						   
+						   
+						   
+						   
+						   
+						   
+document.getElementById('vfoCopy').addEventListener('click', async () => {
+    if (this.connected) {
+        try {
+            // Get the current VFO's frequency first
+            const currentVFOCommand = this.currentVFO === 'A' ? 'FA' : 'FB';
+            await this.sendCommand(currentVFOCommand);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Use the frequency from the interface (should be current)
+            const currentFreq = this.frequency.toString().padStart(11, '0');
+            
+            if (this.currentVFO === 'A') {
+                // Copy A to B
+                await this.sendCommand(`FB${currentFreq}`);
+                this.logCAT(`A→B: ${(this.frequency/1000000).toFixed(3)} MHz copied`, 'info');
+            } else {
+                // Copy B to A  
+                await this.sendCommand(`FA${currentFreq}`);
+                this.logCAT(`B→A: ${(this.frequency/1000000).toFixed(3)} MHz copied`, 'info');
+            }
+            
+            // Update display
+            setTimeout(async () => {
+                await this.sendCommand('IF');
+                await this.sendCommand('LC');
+            }, 200);
+            
+        } catch (e) {
+            this.logCAT(`VFO copy error: ${e.message}`, 'error');
+        }
+    } else {
+        this.logCAT('Cannot copy - radio not connected', 'error');
+    }
+});
+               
+
+
+
+
+
+
+
+			   document.getElementById('txBtn').addEventListener('click', async () => {
                     if (this.connected) {
                         await this.sendCommand('TX');
                         this.transmitting = true;
@@ -3763,8 +4066,158 @@ provideTuningKeyFeedback() {
 
 
 
+// ADD these new methods to your QMXInterface class:
+
+updateTuningSpeed(speed) {
+    // Keep track of recent speed samples (last 500ms worth)
+    const now = performance.now();
+    this.tuningSpeedSamples.push({ speed: speed, time: now });
+    
+    // Remove old samples (older than 500ms)
+    this.tuningSpeedSamples = this.tuningSpeedSamples.filter(sample => 
+        now - sample.time < 500
+    );
+    
+    // Calculate average speed
+    if (this.tuningSpeedSamples.length > 0) {
+        const avgSpeed = this.tuningSpeedSamples.reduce((sum, sample) => 
+            sum + sample.speed, 0) / this.tuningSpeedSamples.length;
+        
+        // Threshold for "fast" tuning (adjust these values as needed)
+        const fastThreshold = 2.0;  // radians/second for rotary, or scaled for wheel
+        
+        if (avgSpeed > fastThreshold && !this.isVariableStepActive) {
+            this.activateVariableStep();
+        }
+    }
+    
+    // Reset the timeout to revert to normal speed
+    this.resetVariableStepTimeout();
+}
+
+activateVariableStep() {
+    if (!this.isVariableStepActive) {
+        this.originalStepSize = this.stepSize;
+        this.stepSize = this.originalStepSize * this.fastStepMultiplier;
+        this.isVariableStepActive = true;
+        
+        // Visual feedback
+        const stepDisplay = document.getElementById('stepSize');
+        if (stepDisplay) {
+            stepDisplay.style.background = 'rgba(255, 149, 0, 0.3)';
+            stepDisplay.style.borderColor = '#ff9500';
+        }
+        
+        this.logCAT(`Fast tuning activated: ${this.stepSize} Hz step`, 'info');
+    }
+}
+
+deactivateVariableStep() {
+    if (this.isVariableStepActive) {
+        this.stepSize = this.originalStepSize;
+        this.isVariableStepActive = false;
+        
+        // Remove visual feedback
+        const stepDisplay = document.getElementById('stepSize');
+        if (stepDisplay) {
+            stepDisplay.style.background = '';
+            stepDisplay.style.borderColor = '';
+        }
+        
+        this.logCAT(`Normal tuning restored: ${this.stepSize} Hz step`, 'info');
+    }
+}
+
+getCurrentStepSize() {
+    return this.isVariableStepActive ? this.stepSize : this.originalStepSize;
+}
+
+resetVariableStepTimeout() {
+    if (this.variableStepTimeout) {
+        clearTimeout(this.variableStepTimeout);
+    }
+    
+    // Revert to normal step after 1 second of slow/no tuning
+    this.variableStepTimeout = setTimeout(() => {
+        this.deactivateVariableStep();
+        this.tuningSpeedSamples = []; // Clear speed history
+    }, 1000);
+}
+
+// This is the updated code
+initKeyerToggle() {
+    try {
+        const keyerToggle = document.getElementById('keyerModeToggle');
+        const keyerKnobContainer = document.querySelector('.knob-group:has(#rfGainKnob)');
+        
+        // Set initial state to BUG mode
+        this.setKeyerMode('bug'); // ✅ Changed from 'straight' to 'bug'
+        
+        // Add click event listener
+        keyerToggle.addEventListener('click', () => {
+            this.toggleKeyerMode();
+        });
+        
+        console.log('Keyer mode toggle initialized');
+    } catch (error) {
+        console.error('Error initializing keyer toggle:', error);
+    }
+}
 
 
+// ADD this method to toggle between modes:
+toggleKeyerMode() {
+    if (this.keyerMode === 'straight') {
+        this.setKeyerMode('bug');
+    } else {
+        this.setKeyerMode('straight');
+    }
+}
+
+
+// ADD this method to set the keyer mode:
+setKeyerMode(mode) {
+    const keyerToggle = document.getElementById('keyerModeToggle');
+    const keyerKnobContainer = document.querySelector('.knob-group:has(#rfGainKnob)');
+    
+    this.keyerMode = mode;
+    
+    if (mode === 'straight') {
+        // Set to STRAIGHT mode (0 WPM)
+        keyerToggle.classList.remove('bug');
+        if (keyerKnobContainer) {
+            keyerKnobContainer.classList.add('keyer-straight');
+        }
+        
+        // Set keyer speed to 0 (STRAIGHT)
+        this.rfGainLevel = 0;
+        this.rfGainKnobRotation = this.minRotation;
+        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+        this.updateRFGainLevel();
+        
+        this.logCAT('Keyer mode: STRAIGHT KEY', 'info');
+        
+    } else if (mode === 'bug') {
+        // Set to BUG mode (22 WPM)
+        keyerToggle.classList.add('bug');
+        if (keyerKnobContainer) {
+            keyerKnobContainer.classList.remove('keyer-straight');
+        }
+        
+        // Set keyer speed to 22 WPM
+        this.rfGainLevel = (this.bugWpmSetting / 50) * 100;  // Convert 22 WPM to percentage
+        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
+        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+        this.updateRFGainLevel();
+        
+        this.logCAT(`Keyer mode: BUG (${this.bugWpmSetting} WPM)`, 'info');
+    }
+    
+    // Send the command to the radio
+    this.sendRFGainCommand();
+ }
+ 
+ 
 
 
  
@@ -3781,7 +4234,7 @@ cleanup() {
 }
 
 }
-   document.addEventListener('DOMContentLoaded', () => {
+     document.addEventListener('DOMContentLoaded', () => {
             try {
                 new QMXInterface();
             } catch (error) {
