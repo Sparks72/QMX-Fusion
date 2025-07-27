@@ -657,7 +657,7 @@
 
         .band-buttons {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 8px;
         }
 
@@ -1075,16 +1075,6 @@
                         <button id="connectBtn" class="btn btn-primary">Connect Serial</button>
                     </div>
                 </div>
-<!--<div class="panel" id="audioStreamPanel">
-    <h3>Audio Streaming</h3>
-    <div class="control-group">
-        <label>Status: <span id="streamStatus" style="color: #ff4757;">INACTIVE</span></label>
-        <button id="toggleStreamBtn" class="btn btn-secondary">Start Streaming</button>
-    </div>
-</div>-->
-
-
-
 
                <div class="panel" id="modePanel">
                 <h3>Operating Mode</h3>
@@ -1114,6 +1104,7 @@
                     <div class="band-buttons">
                         <div class="band-btn" data-band="160">160m</div>
                         <div class="band-btn" data-band="80">80m</div>
+                        <div class="band-btn" data-band="60">60m</div>
                         <div class="band-btn" data-band="40">40m</div>
                         <div class="band-btn" data-band="30">30m</div>
                         <div class="band-btn active" data-band="20">20m</div>
@@ -1365,6 +1356,7 @@
             <select id="memoryBandSelect" style="width: 100%; padding: 10px; margin-bottom: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px;">
                 <option value="160">160m</option>
                 <option value="80">80m</option>
+                <option value="60">60m</option>
                 <option value="40">40m</option>
                 <option value="30">30m</option>
                 <option value="20">20m</option>
@@ -1458,9 +1450,9 @@
 	
 	 this.keyerMode = 'straight';  // 'straight' or 'bug'
     this.bugWpmSetting = 22; 
-                // NEW: Property to hold last-tuned frequencies per band
+                // NEW: Property to hold last-tuned frequencies per band - UPDATED with 60m
                 this.lastFrequencies = {
-                    '160': 1900000, '80': 3500000, '40': 7000000, '30': 10140000, '20': 14205000,
+                    '160': 1900000, '80': 3500000, '60': 5351500, '40': 7000000, '30': 10100000, '20': 14000000,
                     '17': 18068000, '15': 21000000, '12': 24890000, '10': 28000000, '6': 50000000
                 };
                 // NEW: Property for debouncing frequency saves
@@ -1496,6 +1488,1244 @@
                     console.error('Failed to initialize QMX Interface:', error);
                 }
             }
+
+            initMemorySystem() {
+                try {
+                    const savedMemories = localStorage.getItem('qmxMemoryChannels');
+                    if (savedMemories) {
+                        this.memoryChannels = JSON.parse(savedMemories);
+                    }
+                    document.getElementById('storeBtn').addEventListener('click', () => this.setMemoryMode('store'));
+                    document.getElementById('recallBtn').addEventListener('click', () => this.setMemoryMode('recall'));
+                    document.getElementById('editBtn').addEventListener('click', () => this.setMemoryMode('edit'));
+                    document.getElementById('clearBtn').addEventListener('click', () => this.setMemoryMode('clear'));
+                    document.getElementById('exportBtn').addEventListener('click', () => this.exportMemories());
+                    document.getElementById('importBtn').addEventListener('click', () => {
+                        document.getElementById('importFile').click();
+                    });
+                    document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAllMemories());
+                    document.getElementById('importFile').addEventListener('change', (e) => this.importMemories(e));
+                    document.querySelectorAll('.memory-btn').forEach((btn) => {
+                        const channel = parseInt(btn.dataset.channel);
+                        let clickTimer = null;
+                        btn.addEventListener('click', (e) => {
+                            if (clickTimer) {
+                                clearTimeout(clickTimer);
+                                clickTimer = null;
+                                if (this.memoryMode === 'recall') {
+                                    this.storeMemoryChannel(channel);
+                                    this.logCAT(`Quick-stored to M${channel}`, 'info');
+                                }
+                            } else {
+                                clickTimer = setTimeout(() => {
+                                    clickTimer = null;
+                                    this.handleMemoryChannel(channel);
+                                }, 250);
+                            }
+                        });
+                        btn.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            this.editMemoryChannel(channel);
+                        });
+                    });
+                    document.getElementById('saveMemoryEdit').addEventListener('click', () => this.saveMemoryEdit());
+                    document.getElementById('cancelMemoryEdit').addEventListener('click', () => this.closeEditModal());
+                    document.getElementById('modalOverlay').addEventListener('click', () => this.closeEditModal());
+                    this.updateMemoryDisplay();
+                    this.setMemoryMode('recall');
+                    console.log('Memory system initialized');
+                } catch (error) {
+                    console.error('Error initializing memory system:', error);
+                }
+            }
+
+            setMemoryMode(mode) {
+                this.memoryMode = mode;
+                const buttons = {
+                    'store': document.getElementById('storeBtn'),
+                    'recall': document.getElementById('recallBtn'),
+                    'edit': document.getElementById('editBtn'),
+                    'clear': document.getElementById('clearBtn')
+                };
+                Object.values(buttons).forEach(btn => {
+                    btn.classList.remove('btn-primary', 'btn-danger');
+                    btn.classList.add('btn-secondary');
+                });
+                if (buttons[mode]) {
+                    buttons[mode].classList.remove('btn-secondary');
+                    if (mode === 'clear') {
+                        buttons[mode].classList.add('btn-danger');
+                    } else {
+                        buttons[mode].classList.add('btn-primary');
+                    }
+                }
+                document.querySelectorAll('.memory-btn').forEach((btn, index) => {
+                    btn.classList.remove('memory-store-warning');
+                    btn.style.cursor = mode === 'recall' ? 'pointer' : 
+                                      mode === 'store' ? 'copy' :
+                                      mode === 'edit' ? 'text' :
+                                      mode === 'clear' ? 'not-allowed' : 'pointer';
+                    if (mode === 'store' && this.memoryChannels[index]) {
+                        btn.classList.add('memory-store-warning');
+                    }
+                });
+                this.logCAT(`Memory mode: ${mode.toUpperCase()} (${this.getMemoryModeHint(mode)})`, 'info');
+            }
+
+            getMemoryModeHint(mode) {
+                switch(mode) {
+                    case 'recall': return 'Click to recall, double-click to quick-store, right-click to edit';
+                    case 'store': return 'Click any memory to store current settings';
+                    case 'edit': return 'Click any memory to edit its settings';
+                    case 'clear': return 'Click any memory to clear it';
+                    default: return '';
+                }
+            }
+
+            handleMemoryChannel(channel) {
+                switch(this.memoryMode) {
+                    case 'store': this.storeMemoryChannel(channel); break;
+                    case 'recall': this.recallMemoryChannel(channel); break;
+                    case 'edit': this.editMemoryChannel(channel); break;
+                    case 'clear': this.clearMemoryChannel(channel); break;
+                }
+            }
+
+            storeMemoryChannel(channel) {
+                const channelIndex = channel - 1;
+                const existingLabel = this.memoryChannels[channelIndex]?.label || '';
+                if (this.memoryChannels[channelIndex]) {
+                    const existingMem = this.memoryChannels[channelIndex];
+                    const freqMHz = (existingMem.frequency / 1000000).toFixed(3);
+                    const label = existingMem.label ? `"${existingMem.label}"` : '';
+                    if (!confirm(`Overwrite M${channel}?\n\nCurrent: ${freqMHz} MHz, ${existingMem.mode}${label}\n\nReplace with: ${(this.frequency / 1000000).toFixed(3)} MHz, ${this.mode}?`)) {
+                        return;
+                    }
+                }
+                const memoryData = {
+                    frequency: this.frequency,
+                    mode: this.mode,
+                    band: this.band,
+                    label: existingLabel,
+                    timestamp: new Date().toISOString()
+                };
+                this.memoryChannels[channelIndex] = memoryData;
+                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                this.updateMemoryDisplay();
+                this.selectedMemoryChannel = channel;
+                const freqStr = this.frequency.toString().padStart(9, '0');
+                const mhz = freqStr.substring(0, 3);
+                const khz = freqStr.substring(3, 6);
+                const hz = freqStr.substring(6, 9);
+                this.logCAT(`Stored M${channel}: ${mhz}.${khz}.${hz} Hz, ${this.mode}${existingLabel ? ', "' + existingLabel + '"' : ''}`, 'info');
+                setTimeout(() => {
+                    this.setMemoryMode('recall');
+                }, 1000);
+            }
+
+            recallMemoryChannel(channel) {
+                const channelIndex = channel - 1;
+                const memoryData = this.memoryChannels[channelIndex];
+                if (!memoryData) {
+                    this.logCAT(`Memory M${channel} is empty`, 'error');
+                    return;
+                }
+                this.frequency = memoryData.frequency;
+                this.mode = memoryData.mode;
+                this.band = memoryData.band;
+                this.updateDisplay();
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.mode === this.mode) {
+                        btn.classList.add('active');
+                    }
+                });
+               document.querySelectorAll('.band-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Only change band if user manually clicks (not auto-selection)
+        if (btn.dataset.band !== this.band) {
+            document.querySelectorAll('.band-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.band = btn.dataset.band;
+            this.setBandFrequency(btn.dataset.band);
+            this.logCAT(`Manually selected ${this.band}m band`, 'info');
+        }
+    });
+});
+              if (this.connected) {
+    const freqStr = this.frequency.toString().padStart(11, '0');
+    const vfoCommand = this.getVFOCommand();
+    this.sendCommand(`${vfoCommand}${freqStr}`).then(() => {
+        setTimeout(() => {
+            this.sendCommand(this.getVFOCommand());
+        }, 100);
+    }).catch(e => {
+        this.logCAT(`Failed to set frequency: ${e.message}`, 'error');
+    });
+    
+    const modeBtn = document.querySelector(`[data-mode="${this.mode}"]`);
+    if (modeBtn) {
+        const catMode = modeBtn.dataset.catmode;
+        this.sendCommand(`MD${catMode}`).catch(e => {
+            console.error("Mode command error:", e);
+        });
+    }
+	
+	}
+                const freqStr = this.frequency.toString().padStart(9, '0');
+                const mhz = freqStr.substring(0, 3);
+                const khz = freqStr.substring(3, 6);
+                const hz = freqStr.substring(6, 9);
+                const label = memoryData.label ? ` "${memoryData.label}"` : '';
+                this.logCAT(`Recalled M${channel}${label}: ${mhz}.${khz}.${hz} Hz, ${this.mode}`, 'info');
+                this.selectedMemoryChannel = channel;
+                this.updateMemoryDisplay();
+            }
+
+            editMemoryChannel(channel) {
+                const channelIndex = channel - 1;
+                const memoryData = this.memoryChannels[channelIndex];
+                this.editingChannel = channel;
+                document.getElementById('modalOverlay').classList.add('active');
+                document.getElementById('memoryEditModal').classList.add('active');
+                document.getElementById('editChannelNumber').textContent = channel;
+                const freqInput = document.getElementById('memoryFreqInput');
+                const modeSelect = document.getElementById('memoryModeSelect');
+                const bandSelect = document.getElementById('memoryBandSelect');
+                const labelInput = document.getElementById('memoryLabelInput');
+                if (memoryData) {
+                    freqInput.value = (memoryData.frequency / 1000000).toFixed(6);
+                    modeSelect.value = memoryData.mode;
+                    bandSelect.value = memoryData.band;
+                    labelInput.value = memoryData.label || '';
+                } else {
+                    freqInput.value = (this.frequency / 1000000).toFixed(6);
+                    modeSelect.value = this.mode;
+                    bandSelect.value = this.band;
+                    labelInput.value = '';
+                }
+                freqInput.addEventListener('input', () => {
+                    const freqMHz = parseFloat(freqInput.value);
+                    if (!isNaN(freqMHz)) {
+                        const suggestedBand = this.getBandFromFrequency(freqMHz);
+                        if (suggestedBand) {
+                            bandSelect.value = suggestedBand;
+                        }
+                    }
+                });
+                freqInput.focus();
+                freqInput.select();
+                const handleEnter = (e) => {
+                    if (e.key === 'Enter') {
+                        this.saveMemoryEdit();
+                    } else if (e.key === 'Escape') {
+                        this.closeEditModal();
+                    }
+                };
+                freqInput.onkeydown = handleEnter;
+                labelInput.onkeydown = handleEnter;
+            }
+
+            saveMemoryEdit() {
+                if (this.editingChannel === null) return;
+                const channelIndex = this.editingChannel - 1;
+                const freqInput = document.getElementById('memoryFreqInput').value.trim();
+                const mode = document.getElementById('memoryModeSelect').value;
+                const band = document.getElementById('memoryBandSelect').value;
+                const label = document.getElementById('memoryLabelInput').value.trim();
+                let frequency;
+                if (freqInput) {
+                    const cleanFreq = freqInput.replace(/[^0-9.]/g, '');
+                    const freqMHz = parseFloat(cleanFreq);
+                    if (isNaN(freqMHz) || freqMHz < 0.1 || freqMHz > 999.999999) {
+                        alert('Please enter a valid frequency');
+                        document.getElementById('memoryFreqInput').focus();
+                        return;
+                    }
+                    frequency = Math.round(freqMHz * 1000000);
+                } else {
+                    alert('Please enter a frequency');
+                    document.getElementById('memoryFreqInput').focus();
+                    return;
+                }
+                const memoryData = {
+                    frequency: frequency,
+                    mode: mode,
+                    band: band,
+                    label: label,
+                    timestamp: new Date().toISOString()
+                };
+                this.memoryChannels[channelIndex] = memoryData;
+                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                this.updateMemoryDisplay();
+                this.selectedMemoryChannel = this.editingChannel;
+                const freqStr = frequency.toString().padStart(9, '0');
+                const mhz = freqStr.substring(0, 3);
+                const khz = freqStr.substring(3, 6);
+                const hz = freqStr.substring(6, 9);
+                this.logCAT(`Updated M${this.editingChannel}: ${mhz}.${khz}.${hz} Hz, ${mode}, ${band}m${label ? ', "' + label + '"' : ''}`, 'info');
+                this.closeEditModal();
+            }
+
+            closeEditModal() {
+                document.getElementById('modalOverlay').classList.remove('active');
+                document.getElementById('memoryEditModal').classList.remove('active');
+                this.editingChannel = null;
+            }
+
+            clearMemoryChannel(channel) {
+                const channelIndex = channel - 1;
+                if (this.memoryChannels[channelIndex]) {
+                    const memData = this.memoryChannels[channelIndex];
+                    const freqMHz = (memData.frequency / 1000000).toFixed(3);
+                    const label = memData.label || `M${channel}`;
+                    if (confirm(`Clear memory channel M${channel}?\n\nFrequency: ${freqMHz} MHz\nMode: ${memData.mode}\nLabel: ${label}`)) {
+                        this.memoryChannels[channelIndex] = null;
+                        localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                        this.updateMemoryDisplay();
+                        this.logCAT(`Cleared memory channel M${channel}`, 'info');
+                        if (this.selectedMemoryChannel === channel) {
+                            this.selectedMemoryChannel = null;
+                        }
+                    }
+                } else {
+                    this.logCAT(`Memory M${channel} is already empty`, 'error');
+                }
+            }
+
+            clearAllMemories() {
+                const usedMemories = this.memoryChannels.filter(m => m !== null).length;
+                if (usedMemories === 0) {
+                    this.logCAT('No memory channels to clear', 'info');
+                    return;
+                }
+                if (confirm(`Clear ALL memory channels?\n\nThis will delete ${usedMemories} stored memories.\nThis action cannot be undone!`)) {
+                    this.memoryChannels = new Array(10).fill(null);
+                    localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                    this.selectedMemoryChannel = null;
+                    this.updateMemoryDisplay();
+                    this.logCAT(`Cleared all ${usedMemories} memory channels`, 'info');
+                }
+            }
+
+            updateMemoryDisplay() {
+                document.querySelectorAll('.memory-btn').forEach((btn, index) => {
+                    const channel = index + 1;
+                    const memoryData = this.memoryChannels[index];
+                    btn.innerHTML = '';
+                    btn.classList.remove('memory-occupied', 'memory-selected', 'memory-store-warning');
+                    if (memoryData) {
+                        btn.classList.add('memory-occupied');
+                        if (this.memoryMode === 'store') {
+                            btn.classList.add('memory-store-warning');
+                        }
+                        const channelSpan = document.createElement('span');
+                        channelSpan.textContent = `M${channel}`;
+                        btn.appendChild(channelSpan);
+                        if (memoryData.label) {
+                            const labelSpan = document.createElement('span');
+                            labelSpan.className = 'memory-label';
+                            labelSpan.textContent = memoryData.label;
+                            btn.appendChild(labelSpan);
+                        }
+                        btn.title = `M${channel}: ${(memoryData.frequency / 1000000).toFixed(3)} MHz, ${memoryData.mode}${memoryData.label ? ' - ' + memoryData.label : ''}`;
+                    } else {
+                        btn.textContent = `M${channel}`;
+                        btn.title = `M${channel}: Empty`;
+                    }
+                    if (this.selectedMemoryChannel === channel) {
+                        btn.classList.add('memory-selected');
+                    }
+                });
+            }
+
+            exportMemories() {
+                const exportData = {
+                    version: '1.0',
+                    exportDate: new Date().toISOString(),
+                    memories: this.memoryChannels
+                };
+                const jsonStr = JSON.stringify(exportData, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `qmx_memories_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                this.logCAT('Memory channels exported successfully', 'info');
+            }
+
+            importMemories(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importData = JSON.parse(e.target.result);
+                        if (importData.memories && Array.isArray(importData.memories)) {
+                            if (confirm('This will replace all current memory channels. Continue?')) {
+                                this.memoryChannels = importData.memories;
+                                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                                this.updateMemoryDisplay();
+                                this.logCAT('Memory channels imported successfully', 'info');
+                            }
+                        } else {
+                            throw new Error('Invalid file format');
+                        }
+                    } catch (error) {
+                        this.logCAT(`Import failed: ${error.message}`, 'error');
+                        alert('Failed to import memory file.');
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            }
+
+            logCAT(message, type = 'info') {
+                if (!this.catLogElement) {
+                    this.catLogElement = document.getElementById('catLog');
+                }
+                if (!this.catLogElement) return;
+                const entry = document.createElement('div');
+                entry.className = `cat-log-entry ${type}`;
+                const timestamp = new Date().toLocaleTimeString();
+                entry.textContent = `${timestamp} ${type.toUpperCase()}: ${message}`;
+                this.catLogElement.appendChild(entry);
+                this.catLogElement.scrollTop = this.catLogElement.scrollHeight;
+                while (this.catLogElement.children.length > 200) {
+                    this.catLogElement.removeChild(this.catLogElement.firstChild);
+                }
+            }
+
+            async initializeRadio() {
+                await this.sendCommand('IF');
+                await this.sendCommand('LC');
+                await this.sendCommand('FA');
+                await this.sendCommand('MD');
+                await this.sendCommand('AG0');
+                await this.sendCommand('KS');
+                await this.sendCommand('SM');
+                await this.sendCommand('SW');
+                await this.sendCommand('PC');
+				this.sendTimeToQMX();
+            }
+
+            initEventListeners() {
+                document.getElementById('connectBtn').addEventListener('click', async () => {
+                    if (this.connected) {
+                        await this.disconnectSerial();
+                    } else {
+                        await this.connectSerial();
+                    }
+                });
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.mode = btn.dataset.mode;
+                        if (this.connected) {
+                            const catMode = btn.dataset.catmode;
+                            await this.sendCommand(`MD${catMode}`);
+                            this.logCAT(`Mode changed to ${this.mode}`, 'info');
+                        }
+                    });
+                });
+                document.querySelectorAll('.band-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.band-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.band = btn.dataset.band;
+                        this.setBandFrequency(btn.dataset.band);
+                    });
+                });
+               // MODIFY your existing stepSize change handler in initEventListeners:
+// Replace the existing stepSize event listener with this:
+document.getElementById('stepSize').addEventListener('change', (e) => {
+    this.originalStepSize = parseInt(e.target.value);
+    if (!this.isVariableStepActive) {
+        this.stepSize = this.originalStepSize;
+    }
+    this.logCAT(`Tuning step set to ${this.originalStepSize} Hz`, 'info');
+});
+                document.getElementById('vfoA').addEventListener('click', async () => {
+    this.selectVFO('A');
+    if (this.connected) {
+        await this.sendCommand('FR0');  // Select VFO A for RX
+        await this.sendCommand('FT0');  // Select VFO A for TX
+        // Request frequency update for VFO A
+        await this.sendCommand('FA');
+    }
+});
+
+document.getElementById('vfoB').addEventListener('click', async () => {
+    this.selectVFO('B');
+    if (this.connected) {
+        await this.sendCommand('FR1');  // Select VFO B for RX
+        await this.sendCommand('FT1');  // Select VFO B for TX
+        // Request frequency update for VFO B
+        await this.sendCommand('FB');
+    }
+});
+              // This is inside the initEventListeners function
+			  
+			  
+			  
+			  
+			  
+			  
+			  
+			  
+
+document.getElementById('vfoB').addEventListener('click', async () => {
+    this.selectVFO('B');
+    if (this.connected) {
+        await this.sendCommand('FR1');
+        await this.sendCommand('FT1');
+        // Add this line to ask for the new VFO's frequency
+        await this.sendCommand('FB'); 
+    }
+
+                });
+               
+
+
+
+
+
+
+
+			document.getElementById('vfoSwap').addEventListener('click', async () => {
+    if (this.connected) {
+        try {
+            this.logCAT('Swapping VFO A ↔ VFO B...', 'info');
+            
+            // Get current frequencies from both VFOs
+            await this.sendCommand('FA');  // Request VFO A frequency
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await this.sendCommand('FB');  // Request VFO B frequency
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Store current frequencies (they should be updated from the responses)
+            let vfoAFreq = null;
+            let vfoBFreq = null;
+            
+            // Create a temporary response handler to capture VFO frequencies
+            const originalProcessResponse = this.processResponse.bind(this);
+            let responsesReceived = 0;
+            
+            this.processResponse = (response) => {
+                if (response.startsWith('FA')) {
+                    vfoAFreq = parseInt(response.substring(2));
+                    responsesReceived++;
+                } else if (response.startsWith('FB')) {
+                    vfoBFreq = parseInt(response.substring(2));
+                    responsesReceived++;
+                } else {
+                    originalProcessResponse(response);
+                }
+            };
+            
+            // Wait for responses or timeout
+            let attempts = 0;
+            while (responsesReceived < 2 && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                attempts++;
+            }
+            
+            // Restore original response handler
+            this.processResponse = originalProcessResponse;
+            
+            if (vfoAFreq && vfoBFreq && vfoAFreq !== vfoBFreq) {
+                // Perform the swap
+                await this.sendCommand(`FA${vfoBFreq.toString().padStart(11, '0')}`);
+                await new Promise(resolve => setTimeout(resolve, 50));
+                await this.sendCommand(`FB${vfoAFreq.toString().padStart(11, '0')}`);
+                
+                this.logCAT(`VFO swap completed: A=${(vfoBFreq/1000000).toFixed(3)} MHz, B=${(vfoAFreq/1000000).toFixed(3)} MHz`, 'info');
+                
+                // Update display
+                setTimeout(async () => {
+                    await this.sendCommand('IF');
+                    await this.sendCommand('LC');
+                }, 200);
+            } else {
+                this.logCAT('VFO swap failed: Could not read frequencies', 'error');
+            }
+            
+        } catch (e) {
+            this.logCAT(`VFO swap error: ${e.message}`, 'error');
+        }
+    } else {
+        this.logCAT('Cannot swap - radio not connected', 'error');
+    }
+});		   
+						   
+						   
+						   
+						   
+						   
+						   
+						   
+						   
+document.getElementById('vfoCopy').addEventListener('click', async () => {
+    if (this.connected) {
+        try {
+            // Get the current VFO's frequency first
+            const currentVFOCommand = this.currentVFO === 'A' ? 'FA' : 'FB';
+            await this.sendCommand(currentVFOCommand);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Use the frequency from the interface (should be current)
+            const currentFreq = this.frequency.toString().padStart(11, '0');
+            
+            if (this.currentVFO === 'A') {
+                // Copy A to B
+                await this.sendCommand(`FB${currentFreq}`);
+                this.logCAT(`A→B: ${(this.frequency/1000000).toFixed(3)} MHz copied`, 'info');
+            } else {
+                // Copy B to A  
+                await this.sendCommand(`FA${currentFreq}`);
+                this.logCAT(`B→A: ${(this.frequency/1000000).toFixed(3)} MHz copied`, 'info');
+            }
+            
+            // Update display
+            setTimeout(async () => {
+                await this.sendCommand('IF');
+                await this.sendCommand('LC');
+            }, 200);
+            
+        } catch (e) {
+            this.logCAT(`VFO copy error: ${e.message}`, 'error');
+        }
+    } else {
+        this.logCAT('Cannot copy - radio not connected', 'error');
+    }
+});
+               
+
+
+
+
+
+
+
+			   document.getElementById('txBtn').addEventListener('click', async () => {
+                    if (this.connected) {
+                        await this.sendCommand('TX');
+                        this.transmitting = true;
+                        this.updateTXStatus();
+                        this.logCAT('Switched to TRANSMIT mode', 'info');
+                    } else {
+                        this.logCAT('Cannot transmit - radio not connected', 'error');
+                    }
+                });
+                document.getElementById('rxBtn').addEventListener('click', async () => {
+                    if (this.connected) {
+                        await this.sendCommand('RX');
+                        this.transmitting = false;
+                        this.updateTXStatus();
+                        this.logCAT('Switched to RECEIVE mode', 'info');
+                    } else {
+                        this.logCAT('Cannot switch to RX - radio not connected', 'error');
+                    }
+                });
+		  }
+
+           setBandFrequency(band) {
+    if (this.lastFrequencies[band]) {
+        this.frequency = this.lastFrequencies[band];
+        this.updateDisplay();
+        if (this.connected) {
+            this.sendFrequencyImmediate();
+        }
+    }
+}
+
+         getBandFromFrequency(freqMHz) {
+    // More precise band edge definitions with 60m added
+    if (freqMHz >= 1.800 && freqMHz <= 2.000) return '160';
+    if (freqMHz >= 3.500 && freqMHz <= 4.000) return '80';
+    if (freqMHz >= 5.330 && freqMHz <= 5.405) return '60'; // NEW: 60m band
+    if (freqMHz >= 7.000 && freqMHz <= 7.300) return '40';
+    if (freqMHz >= 10.100 && freqMHz <= 10.150) return '30';
+    if (freqMHz >= 14.000 && freqMHz <= 14.350) return '20';
+    if (freqMHz >= 18.068 && freqMHz <= 18.168) return '17';
+    if (freqMHz >= 21.000 && freqMHz <= 21.450) return '15';
+    if (freqMHz >= 24.890 && freqMHz <= 24.990) return '12';
+    if (freqMHz >= 28.000 && freqMHz <= 29.700) return '10';
+    if (freqMHz >= 50.000 && freqMHz <= 54.000) return '6';
+    return null; 
+	// Out of amateur bands
+}
+
+
+       
+			
+			selectVFO(vfo) {
+    this.currentVFO = vfo;
+    this.updateVFOButtons();
+    this.logCAT(`VFO ${vfo} selected`, 'info');
+}
+
+            updateConnectionStatus() {
+                const btn = document.getElementById('connectBtn');
+                const statusDot = document.getElementById('statusDot');
+                const statusText = document.getElementById('statusText');
+                const baudDropdown = document.getElementById('baudRate');
+                if (this.connected) {
+                    btn.textContent = 'Disconnect';
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-danger');
+                    statusDot.classList.add('connected');
+                    statusText.textContent = 'CONNECTED';
+                    statusText.className = 'status-text connected';
+                    baudDropdown.disabled = true;
+                } else {
+                    btn.textContent = 'Connect Serial';
+                    btn.classList.remove('btn-danger');
+                    btn.classList.add('btn-primary');
+                    statusDot.classList.remove('connected');
+                    statusText.textContent = 'DISCONNECTED';
+                    statusText.className = 'status-text disconnected';
+                    baudDropdown.disabled = false;
+                }
+            }
+
+            updateTXStatus() {
+                const txBtn = document.getElementById('txBtn');
+                const rxBtn = document.getElementById('rxBtn');
+                if (this.transmitting) {
+                    txBtn.classList.remove('btn-secondary');
+                    txBtn.classList.add('btn-danger');
+                    rxBtn.classList.remove('btn-primary');
+                    rxBtn.classList.add('btn-secondary');
+                } else {
+                    txBtn.classList.remove('btn-danger');
+                    txBtn.classList.add('btn-secondary');
+                    rxBtn.classList.remove('btn-secondary');
+                    rxBtn.classList.add('btn-primary');
+                }
+            }
+
+            updateModeFromCAT(catMode) {
+                const modeMap = {
+                    '1': 'LSB', '2': 'USB', '3': 'CW',
+                    '7': 'CW', '6': 'DIGI'
+                };
+                if (modeMap[catMode]) {
+                    this.mode = modeMap[catMode];
+                    document.querySelectorAll('.mode-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        if (btn.dataset.mode === this.mode) {
+                            btn.classList.add('active');
+                        }
+                    });
+                } else {
+                    this.logCAT(`Unknown mode code received: ${catMode}`, 'error');
+                }
+            }
+
+            updateSMeter(value) {
+                const meter = document.getElementById('sMeter');
+                let percentage = value;
+                percentage = Math.max(0, Math.min(100, percentage));
+                meter.style.width = percentage + '%';
+            }
+
+            updateSWRMeter(value) {
+                const meter = document.getElementById('swrMeter');
+                const swr = value / 100;
+                const percentage = Math.min(100, Math.max(0, (swr - 1) / 4 * 100));
+                meter.style.width = percentage + '%';
+            }
+
+          updateLcdDisplay(row1, row2) {
+    const lcdRow1El = document.getElementById('lcdRow1');
+    const lcdRow2El = document.getElementById('lcdRow2');
+    
+    if (lcdRow1El) {
+        lcdRow1El.textContent = row1;
+    }
+    if (lcdRow2El) {
+        lcdRow2El.textContent = row2;
+    }
+    
+    // Auto-detect VFO from LCD display
+    // If the first character is 'B', we're on VFO B, otherwise VFO A
+    const detectedVFO = (row1 && row1.charAt(0) === 'B') ? 'B' : 'A';
+    
+    if (detectedVFO !== this.currentVFO) {
+        this.currentVFO = detectedVFO;
+        this.updateVFOButtons();
+        this.logCAT(`VFO switched to ${this.currentVFO} (auto-detected)`, 'info');
+    }
+}
+
+         updateDisplay() {
+    this.updateBandFromFrequency();
+    this.updateLoggerInfoBar();
+}
+
+            updateClock() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                document.getElementById('currentTime').textContent = timeString;
+                setTimeout(() => this.updateClock(), 1000);
+            }
+
+            async initTimeSync() {
+                try {
+                    this.logCAT('Initializing time synchronization...', 'info');
+                    
+                    await this.syncTimeFromServer();
+                    
+                    this.clockUpdateInterval = setInterval(() => {
+                        this.updateSyncedClock();
+                        this.updateLoggerInfoBar();
+                    }, 1000);
+                    
+                    this.timeSyncInterval = setInterval(() => {
+                        this.syncTimeFromServer();
+                    }, 10 * 60 * 1000);
+                    
+                    console.log('Time synchronization initialized');
+                } catch (error) {
+                    console.error('Error initializing time sync:', error);
+                    this.logCAT(`Time sync init error: ${error.message}`, 'error');
+                    this.updateLocalClock();
+                }
+            }
+
+            async syncTimeFromServer() {
+                try {
+                    this.logCAT('Synchronizing with time server...', 'info');
+                    
+                    const timeAPIs = [
+                        'https://worldtimeapi.org/api/timezone/Etc/UTC',
+                        'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
+                        'http://worldclockapi.com/api/json/utc/now'
+                    ];
+                    
+                    let syncSuccessful = false;
+                    
+                    for (const api of timeAPIs) {
+                        try {
+                            const response = await fetch(api, {
+                                method: 'GET', cache: 'no-cache', headers: { 'Accept': 'application/json' }
+                            });
+                            
+                            if (!response.ok) continue;
+                            
+                            const data = await response.json();
+                            let serverTime;
+                            
+                            if (data.datetime) serverTime = new Date(data.datetime);
+                            else if (data.dateTime) serverTime = new Date(data.dateTime);
+                            else if (data.currentDateTime) serverTime = new Date(data.currentDateTime);
+                            else continue;
+                            
+                            const localTime = new Date();
+                            this.localTimeOffset = serverTime.getTime() - localTime.getTime();
+                            this.lastSyncTime = localTime.getTime();
+                            
+                            this.logCAT(`Time synced successfully (offset: ${this.localTimeOffset}ms)`, 'info');
+                            syncSuccessful = true;
+                            
+                            this.sendTimeToQMX();
+                            break;
+                            
+                        } catch (apiError) {
+                            console.warn(`Time API ${api} failed:`, apiError);
+                            continue;
+                        }
+                    }
+                    
+                    if (!syncSuccessful) throw new Error('All time APIs failed');
+                    
+                } catch (error) {
+                    console.error('Time sync failed:', error);
+                    this.logCAT(`Time sync failed: ${error.message}`, 'error');
+                    this.localTimeOffset = 0;
+                }
+            }
+
+            getSyncedTime() {
+                const now = new Date();
+                return new Date(now.getTime() + (this.localTimeOffset || 0));
+            }
+
+            updateSyncedClock() {
+                const syncedUTC = this.getSyncedTime();
+                const localTime = new Date(syncedUTC.getTime() - (syncedUTC.getTimezoneOffset() * 60000));
+                
+                const timeString = localTime.toLocaleTimeString('en-US', {
+                    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+                
+                const timeElement = document.getElementById('currentTime');
+                if (timeElement) {
+                    const syncAge = this.lastSyncTime ? Date.now() - this.lastSyncTime : Infinity;
+                    const syncIndicator = syncAge > 11 * 60 * 1000 ? ' (SYNC?)' : ' (SYNC)';
+                    timeElement.textContent = timeString + (this.lastSyncTime ? syncIndicator : ' (LOCAL)');
+                }
+            }
+
+          // 1. Function to update band selection based on frequency
+updateBandFromFrequency() {
+    const freqMHz = this.frequency / 1000000;
+    const detectedBand = this.getBandFromFrequency(freqMHz);
+    
+    if (detectedBand && detectedBand !== this.band) {
+        this.band = detectedBand;
+        this.updateBandButtons();
+        this.logCAT(`Auto-selected ${this.band}m band for ${freqMHz.toFixed(3)} MHz`, 'info');
+    }
+}
+
+// 2. Function to update band button highlighting
+updateBandButtons() {
+    document.querySelectorAll('.band-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.band === this.band) {
+            btn.classList.add('active');
+        }
+    });
+} 
+
+
+
+updateVFOButtons() {
+    document.querySelectorAll('#vfoA, #vfoB').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+    });
+    
+    const activeButton = document.getElementById(`vfo${this.currentVFO}`);
+    if (activeButton) {
+        activeButton.classList.remove('btn-secondary');
+        activeButton.classList.add('btn-primary');
+    }
+}
+
+// 3. Helper function to get the correct VFO command
+getVFOCommand() {
+    return this.currentVFO === 'B' ? 'FB' : 'FA';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		   updateLocalClock() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', {
+                    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+                
+                const timeElement = document.getElementById('currentTime');
+                if (timeElement) {
+                    timeElement.textContent = timeString + ' (LOCAL)';
+                }
+                
+                setTimeout(() => this.updateLocalClock(), 1000);
+            }
+
+            sendTimeToQMX() {
+                if (this.timeCommandTimeout) clearTimeout(this.timeCommandTimeout);
+                
+                this.timeCommandTimeout = setTimeout(() => {
+                    if (this.connected && this.port && this.writer) {
+                        const syncedUTC = this.getSyncedTime();
+                        const localTime = new Date(syncedUTC.getTime() - (syncedUTC.getTimezoneOffset() * 60000));
+                        
+                        const hours = localTime.getHours().toString().padStart(2, '0');
+                        const minutes = localTime.getMinutes().toString().padStart(2, '0');
+                        const seconds = localTime.getSeconds().toString().padStart(2, '0');
+                        const timeCommand = `TM${hours}${minutes}${seconds}`;
+                        
+                        this.sendCommand(timeCommand).then(() => {
+                            this.logCAT(`Local time sent to QMX: ${hours}:${minutes}:${seconds}`, 'info');
+                        }).catch(e => {
+                            console.error("Time command error:", e);
+                        });
+                    }
+                    this.timeCommandTimeout = null;
+                }, 100);
+            }
+
+
+
+updateBandForOutOfBand() {
+    const freqMHz = this.frequency / 1000000;
+    const detectedBand = this.getBandFromFrequency(freqMHz);
+    
+    if (!detectedBand) {
+        // Clear all band selections for out-of-band frequencies
+        document.querySelectorAll('.band-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        this.band = null; // or keep the last valid band
+        this.logCAT(`Frequency ${freqMHz.toFixed(3)} MHz is outside amateur bands`, 'info');
+    }
+}
+
+
+// NEW: Enable keyboard control when hovering over tuning knob
+enableTuningHoverKeys() {
+    this.isHoveringTuningKnob = true;
+    
+    if (!this.boundHandleTuningHoverKeys) {
+        this.boundHandleTuningHoverKeys = this.handleTuningHoverKeys.bind(this);
+    }
+    
+    document.addEventListener('keydown', this.boundHandleTuningHoverKeys);
+    
+    // Visual feedback - make the knob glow when hover-keyboard-active
+    const tuningKnob = document.getElementById('tuningKnob');
+    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.6)';
+}
+
+// NEW: Disable keyboard control when not hovering over tuning knob
+disableTuningHoverKeys() {
+    this.isHoveringTuningKnob = false;
+    
+    if (this.boundHandleTuningHoverKeys) {
+        document.removeEventListener('keydown', this.boundHandleTuningHoverKeys);
+    }
+    
+    // Remove visual feedback
+    const tuningKnob = document.getElementById('tuningKnob');
+    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
+}
+
+// NEW: Handle keyboard input when hovering over tuning knob
+handleTuningHoverKeys(e) {
+    if (!this.isHoveringTuningKnob) return;
+    
+    // Only handle arrow keys
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    
+    e.preventDefault();
+    
+    let direction = 0;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        direction = -1;
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        direction = 1;
+    }
+    
+    if (direction !== 0) {
+        // Use the selected step size
+        const freqDelta = direction * this.stepSize;
+        this.updateFrequency(freqDelta);
+        
+        // Update knob rotation for visual feedback
+        const rotationDelta = direction * 2;
+        this.tuningKnobRotation += rotationDelta;
+        document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+        
+        // Send frequency update
+        this.sendFrequencyDynamically();
+        
+        // Brief visual feedback
+        this.provideTuningKeyFeedback();
+    }
+}
+
+// NEW: Provide brief visual feedback for keyboard tuning
+provideTuningKeyFeedback() {
+    const tuningKnob = document.getElementById('tuningKnob');
+    const originalBoxShadow = tuningKnob.style.boxShadow;
+    
+    // Brief bright glow
+    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 255, 136, 1)';
+    
+    setTimeout(() => {
+        if (this.isHoveringTuningKnob) {
+            // Return to hover glow
+            tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.6)';
+        } else {
+            // Return to normal
+            tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
+        }
+    }, 150);
+}
+
+
+
+
+// ADD these new methods to your QMXInterface class:
+
+updateTuningSpeed(speed) {
+    // Keep track of recent speed samples (last 500ms worth)
+    const now = performance.now();
+    this.tuningSpeedSamples.push({ speed: speed, time: now });
+    
+    // Remove old samples (older than 500ms)
+    this.tuningSpeedSamples = this.tuningSpeedSamples.filter(sample => 
+        now - sample.time < 500
+    );
+    
+    // Calculate average speed
+    if (this.tuningSpeedSamples.length > 0) {
+        const avgSpeed = this.tuningSpeedSamples.reduce((sum, sample) => 
+            sum + sample.speed, 0) / this.tuningSpeedSamples.length;
+        
+        // Threshold for "fast" tuning (adjust these values as needed)
+        const fastThreshold = 2.0;  // radians/second for rotary, or scaled for wheel
+        
+        if (avgSpeed > fastThreshold && !this.isVariableStepActive) {
+            this.activateVariableStep();
+        }
+    }
+    
+    // Reset the timeout to revert to normal speed
+    this.resetVariableStepTimeout();
+}
+
+activateVariableStep() {
+    if (!this.isVariableStepActive) {
+        this.originalStepSize = this.stepSize;
+        this.stepSize = this.originalStepSize * this.fastStepMultiplier;
+        this.isVariableStepActive = true;
+        
+        // Visual feedback
+        const stepDisplay = document.getElementById('stepSize');
+        if (stepDisplay) {
+            stepDisplay.style.background = 'rgba(255, 149, 0, 0.3)';
+            stepDisplay.style.borderColor = '#ff9500';
+        }
+        
+        this.logCAT(`Fast tuning activated: ${this.stepSize} Hz step`, 'info');
+    }
+}
+
+deactivateVariableStep() {
+    if (this.isVariableStepActive) {
+        this.stepSize = this.originalStepSize;
+        this.isVariableStepActive = false;
+        
+        // Remove visual feedback
+        const stepDisplay = document.getElementById('stepSize');
+        if (stepDisplay) {
+            stepDisplay.style.background = '';
+            stepDisplay.style.borderColor = '';
+        }
+        
+        this.logCAT(`Normal tuning restored: ${this.stepSize} Hz step`, 'info');
+    }
+}
+
+getCurrentStepSize() {
+    return this.isVariableStepActive ? this.stepSize : this.originalStepSize;
+}
+
+resetVariableStepTimeout() {
+    if (this.variableStepTimeout) {
+        clearTimeout(this.variableStepTimeout);
+    }
+    
+    // Revert to normal step after 1 second of slow/no tuning
+    this.variableStepTimeout = setTimeout(() => {
+        this.deactivateVariableStep();
+        this.tuningSpeedSamples = []; // Clear speed history
+    }, 1000);
+}
+
+// This is the updated code
+initKeyerToggle() {
+    try {
+        const keyerToggle = document.getElementById('keyerModeToggle');
+        const keyerKnobContainer = document.querySelector('.knob-group:has(#rfGainKnob)');
+        
+        // Set initial state to BUG mode
+        this.setKeyerMode('bug'); // ✅ Changed from 'straight' to 'bug'
+        
+        // Add click event listener
+        keyerToggle.addEventListener('click', () => {
+            this.toggleKeyerMode();
+        });
+        
+        console.log('Keyer mode toggle initialized');
+    } catch (error) {
+        console.error('Error initializing keyer toggle:', error);
+    }
+}
+
+
+// ADD this method to toggle between modes:
+toggleKeyerMode() {
+    if (this.keyerMode === 'straight') {
+        this.setKeyerMode('bug');
+    } else {
+        this.setKeyerMode('straight');
+    }
+}
+
+
+// ADD this method to set the keyer mode:
+setKeyerMode(mode) {
+    const keyerToggle = document.getElementById('keyerModeToggle');
+    const keyerKnobContainer = document.querySelector('.knob-group:has(#rfGainKnob)');
+    
+    this.keyerMode = mode;
+    
+    if (mode === 'straight') {
+        // Set to STRAIGHT mode (0 WPM)
+        keyerToggle.classList.remove('bug');
+        if (keyerKnobContainer) {
+            keyerKnobContainer.classList.add('keyer-straight');
+        }
+        
+        // Set keyer speed to 0 (STRAIGHT)
+        this.rfGainLevel = 0;
+        this.rfGainKnobRotation = this.minRotation;
+        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+        this.updateRFGainLevel();
+        
+        this.logCAT('Keyer mode: STRAIGHT KEY', 'info');
+        
+    } else if (mode === 'bug') {
+        // Set to BUG mode (22 WPM)
+        keyerToggle.classList.add('bug');
+        if (keyerKnobContainer) {
+            keyerKnobContainer.classList.remove('keyer-straight');
+        }
+        
+        // Set keyer speed to 22 WPM
+        this.rfGainLevel = (this.bugWpmSetting / 50) * 100;  // Convert 22 WPM to percentage
+        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
+        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+        this.updateRFGainLevel();
+        
+        this.logCAT(`Keyer mode: BUG (${this.bugWpmSetting} WPM)`, 'info');
+    }
+    
+    // Send the command to the radio
+    this.sendRFGainCommand();
+ }
+ 
+ 
+
+
+ 
+
+
 
             // --- Frequency & Layout Management ---
             loadLastFrequencies() {
@@ -2929,7 +4159,7 @@ continueTuningAdjust(e) {
                         this.volumeLevel = this.catToVolume(gain);
                         this.updateVolumeUI();
                     }
-             else if (response.startsWith('FA')) {
+             } else if (response.startsWith('FA')) {
     const freq = parseInt(response.substring(2));
     if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'A') {
         this.frequency = freq;
@@ -2948,7 +4178,7 @@ else if (response.startsWith('FB')) {
     }
 }
 
-                } else if (response.startsWith('SM')) {
+                else if (response.startsWith('SM')) {
                     const sMeter = parseInt(response.substring(2));
                     if (!isNaN(sMeter)) {
                         this.updateSMeter(sMeter);
@@ -2987,1254 +4217,32 @@ else if (response.startsWith('FB')) {
                 }
             }
 
-            initMemorySystem() {
-                try {
-                    const savedMemories = localStorage.getItem('qmxMemoryChannels');
-                    if (savedMemories) {
-                        this.memoryChannels = JSON.parse(savedMemories);
-                    }
-                    document.getElementById('storeBtn').addEventListener('click', () => this.setMemoryMode('store'));
-                    document.getElementById('recallBtn').addEventListener('click', () => this.setMemoryMode('recall'));
-                    document.getElementById('editBtn').addEventListener('click', () => this.setMemoryMode('edit'));
-                    document.getElementById('clearBtn').addEventListener('click', () => this.setMemoryMode('clear'));
-                    document.getElementById('exportBtn').addEventListener('click', () => this.exportMemories());
-                    document.getElementById('importBtn').addEventListener('click', () => {
-                        document.getElementById('importFile').click();
-                    });
-                    document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAllMemories());
-                    document.getElementById('importFile').addEventListener('change', (e) => this.importMemories(e));
-                    document.querySelectorAll('.memory-btn').forEach((btn) => {
-                        const channel = parseInt(btn.dataset.channel);
-                        let clickTimer = null;
-                        btn.addEventListener('click', (e) => {
-                            if (clickTimer) {
-                                clearTimeout(clickTimer);
-                                clickTimer = null;
-                                if (this.memoryMode === 'recall') {
-                                    this.storeMemoryChannel(channel);
-                                    this.logCAT(`Quick-stored to M${channel}`, 'info');
-                                }
-                            } else {
-                                clickTimer = setTimeout(() => {
-                                    clickTimer = null;
-                                    this.handleMemoryChannel(channel);
-                                }, 250);
-                            }
-                        });
-                        btn.addEventListener('contextmenu', (e) => {
-                            e.preventDefault();
-                            this.editMemoryChannel(channel);
-                        });
-                    });
-                    document.getElementById('saveMemoryEdit').addEventListener('click', () => this.saveMemoryEdit());
-                    document.getElementById('cancelMemoryEdit').addEventListener('click', () => this.closeEditModal());
-                    document.getElementById('modalOverlay').addEventListener('click', () => this.closeEditModal());
-                    this.updateMemoryDisplay();
-                    this.setMemoryMode('recall');
-                    console.log('Memory system initialized');
-                } catch (error) {
-                    console.error('Error initializing memory system:', error);
-                }
-            }
+        
+           
+              
+           
+          
+          
 
-            setMemoryMode(mode) {
-                this.memoryMode = mode;
-                const buttons = {
-                    'store': document.getElementById('storeBtn'),
-                    'recall': document.getElementById('recallBtn'),
-                    'edit': document.getElementById('editBtn'),
-                    'clear': document.getElementById('clearBtn')
-                };
-                Object.values(buttons).forEach(btn => {
-                    btn.classList.remove('btn-primary', 'btn-danger');
-                    btn.classList.add('btn-secondary');
-                });
-                if (buttons[mode]) {
-                    buttons[mode].classList.remove('btn-secondary');
-                    if (mode === 'clear') {
-                        buttons[mode].classList.add('btn-danger');
-                    } else {
-                        buttons[mode].classList.add('btn-primary');
-                    }
-                }
-                document.querySelectorAll('.memory-btn').forEach((btn, index) => {
-                    btn.classList.remove('memory-store-warning');
-                    btn.style.cursor = mode === 'recall' ? 'pointer' : 
-                                      mode === 'store' ? 'copy' :
-                                      mode === 'edit' ? 'text' :
-                                      mode === 'clear' ? 'not-allowed' : 'pointer';
-                    if (mode === 'store' && this.memoryChannels[index]) {
-                        btn.classList.add('memory-store-warning');
-                    }
-                });
-                this.logCAT(`Memory mode: ${mode.toUpperCase()} (${this.getMemoryModeHint(mode)})`, 'info');
-            }
-
-            getMemoryModeHint(mode) {
-                switch(mode) {
-                    case 'recall': return 'Click to recall, double-click to quick-store, right-click to edit';
-                    case 'store': return 'Click any memory to store current settings';
-                    case 'edit': return 'Click any memory to edit its settings';
-                    case 'clear': return 'Click any memory to clear it';
-                    default: return '';
-                }
-            }
-
-            handleMemoryChannel(channel) {
-                switch(this.memoryMode) {
-                    case 'store': this.storeMemoryChannel(channel); break;
-                    case 'recall': this.recallMemoryChannel(channel); break;
-                    case 'edit': this.editMemoryChannel(channel); break;
-                    case 'clear': this.clearMemoryChannel(channel); break;
-                }
-            }
-
-            storeMemoryChannel(channel) {
-                const channelIndex = channel - 1;
-                const existingLabel = this.memoryChannels[channelIndex]?.label || '';
-                if (this.memoryChannels[channelIndex]) {
-                    const existingMem = this.memoryChannels[channelIndex];
-                    const freqMHz = (existingMem.frequency / 1000000).toFixed(3);
-                    const label = existingMem.label ? `"${existingMem.label}"` : '';
-                    if (!confirm(`Overwrite M${channel}?\n\nCurrent: ${freqMHz} MHz, ${existingMem.mode}${label}\n\nReplace with: ${(this.frequency / 1000000).toFixed(3)} MHz, ${this.mode}?`)) {
-                        return;
-                    }
-                }
-                const memoryData = {
-                    frequency: this.frequency,
-                    mode: this.mode,
-                    band: this.band,
-                    label: existingLabel,
-                    timestamp: new Date().toISOString()
-                };
-                this.memoryChannels[channelIndex] = memoryData;
-                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
-                this.updateMemoryDisplay();
-                this.selectedMemoryChannel = channel;
-                const freqStr = this.frequency.toString().padStart(9, '0');
-                const mhz = freqStr.substring(0, 3);
-                const khz = freqStr.substring(3, 6);
-                const hz = freqStr.substring(6, 9);
-                this.logCAT(`Stored M${channel}: ${mhz}.${khz}.${hz} Hz, ${this.mode}${existingLabel ? ', "' + existingLabel + '"' : ''}`, 'info');
-                setTimeout(() => {
-                    this.setMemoryMode('recall');
-                }, 1000);
-            }
-
-            recallMemoryChannel(channel) {
-                const channelIndex = channel - 1;
-                const memoryData = this.memoryChannels[channelIndex];
-                if (!memoryData) {
-                    this.logCAT(`Memory M${channel} is empty`, 'error');
-                    return;
-                }
-                this.frequency = memoryData.frequency;
-                this.mode = memoryData.mode;
-                this.band = memoryData.band;
-                this.updateDisplay();
-                document.querySelectorAll('.mode-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.dataset.mode === this.mode) {
-                        btn.classList.add('active');
-                    }
-                });
-               document.querySelectorAll('.band-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Only change band if user manually clicks (not auto-selection)
-        if (btn.dataset.band !== this.band) {
-            document.querySelectorAll('.band-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            this.band = btn.dataset.band;
-            this.setBandFrequency(btn.dataset.band);
-            this.logCAT(`Manually selected ${this.band}m band`, 'info');
-        }
-    });
-});
-              if (this.connected) {
-    const freqStr = this.frequency.toString().padStart(11, '0');
-    const vfoCommand = this.getVFOCommand();
-    this.sendCommand(`${vfoCommand}${freqStr}`).then(() => {
-        setTimeout(() => {
-            this.sendCommand(this.getVFOCommand());
-        }, 100);
-    }).catch(e => {
-        this.logCAT(`Failed to set frequency: ${e.message}`, 'error');
-    });
-    
-    const modeBtn = document.querySelector(`[data-mode="${this.mode}"]`);
-    if (modeBtn) {
-        const catMode = modeBtn.dataset.catmode;
-        this.sendCommand(`MD${catMode}`).catch(e => {
-            console.error("Mode command error:", e);
-        });
-    }
-	
-	}
-                const freqStr = this.frequency.toString().padStart(9, '0');
-                const mhz = freqStr.substring(0, 3);
-                const khz = freqStr.substring(3, 6);
-                const hz = freqStr.substring(6, 9);
-                const label = memoryData.label ? ` "${memoryData.label}"` : '';
-                this.logCAT(`Recalled M${channel}${label}: ${mhz}.${khz}.${hz} Hz, ${this.mode}`, 'info');
-                this.selectedMemoryChannel = channel;
-                this.updateMemoryDisplay();
-            }
-
-            editMemoryChannel(channel) {
-                const channelIndex = channel - 1;
-                const memoryData = this.memoryChannels[channelIndex];
-                this.editingChannel = channel;
-                document.getElementById('modalOverlay').classList.add('active');
-                document.getElementById('memoryEditModal').classList.add('active');
-                document.getElementById('editChannelNumber').textContent = channel;
-                const freqInput = document.getElementById('memoryFreqInput');
-                const modeSelect = document.getElementById('memoryModeSelect');
-                const bandSelect = document.getElementById('memoryBandSelect');
-                const labelInput = document.getElementById('memoryLabelInput');
-                if (memoryData) {
-                    freqInput.value = (memoryData.frequency / 1000000).toFixed(6);
-                    modeSelect.value = memoryData.mode;
-                    bandSelect.value = memoryData.band;
-                    labelInput.value = memoryData.label || '';
-                } else {
-                    freqInput.value = (this.frequency / 1000000).toFixed(6);
-                    modeSelect.value = this.mode;
-                    bandSelect.value = this.band;
-                    labelInput.value = '';
-                }
-                freqInput.addEventListener('input', () => {
-                    const freqMHz = parseFloat(freqInput.value);
-                    if (!isNaN(freqMHz)) {
-                        const suggestedBand = this.getBandFromFrequency(freqMHz);
-                        if (suggestedBand) {
-                            bandSelect.value = suggestedBand;
-                        }
-                    }
-                });
-                freqInput.focus();
-                freqInput.select();
-                const handleEnter = (e) => {
-                    if (e.key === 'Enter') {
-                        this.saveMemoryEdit();
-                    } else if (e.key === 'Escape') {
-                        this.closeEditModal();
-                    }
-                };
-                freqInput.onkeydown = handleEnter;
-                labelInput.onkeydown = handleEnter;
-            }
-
-            saveMemoryEdit() {
-                if (this.editingChannel === null) return;
-                const channelIndex = this.editingChannel - 1;
-                const freqInput = document.getElementById('memoryFreqInput').value.trim();
-                const mode = document.getElementById('memoryModeSelect').value;
-                const band = document.getElementById('memoryBandSelect').value;
-                const label = document.getElementById('memoryLabelInput').value.trim();
-                let frequency;
-                if (freqInput) {
-                    const cleanFreq = freqInput.replace(/[^0-9.]/g, '');
-                    const freqMHz = parseFloat(cleanFreq);
-                    if (isNaN(freqMHz) || freqMHz < 0.1 || freqMHz > 999.999999) {
-                        alert('Please enter a valid frequency');
-                        document.getElementById('memoryFreqInput').focus();
-                        return;
-                    }
-                    frequency = Math.round(freqMHz * 1000000);
-                } else {
-                    alert('Please enter a frequency');
-                    document.getElementById('memoryFreqInput').focus();
-                    return;
-                }
-                const memoryData = {
-                    frequency: frequency,
-                    mode: mode,
-                    band: band,
-                    label: label,
-                    timestamp: new Date().toISOString()
-                };
-                this.memoryChannels[channelIndex] = memoryData;
-                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
-                this.updateMemoryDisplay();
-                this.selectedMemoryChannel = this.editingChannel;
-                const freqStr = frequency.toString().padStart(9, '0');
-                const mhz = freqStr.substring(0, 3);
-                const khz = freqStr.substring(3, 6);
-                const hz = freqStr.substring(6, 9);
-                this.logCAT(`Updated M${this.editingChannel}: ${mhz}.${khz}.${hz} Hz, ${mode}, ${band}m${label ? ', "' + label + '"' : ''}`, 'info');
-                this.closeEditModal();
-            }
-
-            closeEditModal() {
-                document.getElementById('modalOverlay').classList.remove('active');
-                document.getElementById('memoryEditModal').classList.remove('active');
-                this.editingChannel = null;
-            }
-
-            clearMemoryChannel(channel) {
-                const channelIndex = channel - 1;
-                if (this.memoryChannels[channelIndex]) {
-                    const memData = this.memoryChannels[channelIndex];
-                    const freqMHz = (memData.frequency / 1000000).toFixed(3);
-                    const label = memData.label || `M${channel}`;
-                    if (confirm(`Clear memory channel M${channel}?\n\nFrequency: ${freqMHz} MHz\nMode: ${memData.mode}\nLabel: ${label}`)) {
-                        this.memoryChannels[channelIndex] = null;
-                        localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
-                        this.updateMemoryDisplay();
-                        this.logCAT(`Cleared memory channel M${channel}`, 'info');
-                        if (this.selectedMemoryChannel === channel) {
-                            this.selectedMemoryChannel = null;
-                        }
-                    }
-                } else {
-                    this.logCAT(`Memory M${channel} is already empty`, 'error');
-                }
-            }
-
-            clearAllMemories() {
-                const usedMemories = this.memoryChannels.filter(m => m !== null).length;
-                if (usedMemories === 0) {
-                    this.logCAT('No memory channels to clear', 'info');
-                    return;
-                }
-                if (confirm(`Clear ALL memory channels?\n\nThis will delete ${usedMemories} stored memories.\nThis action cannot be undone!`)) {
-                    this.memoryChannels = new Array(10).fill(null);
-                    localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
-                    this.selectedMemoryChannel = null;
-                    this.updateMemoryDisplay();
-                    this.logCAT(`Cleared all ${usedMemories} memory channels`, 'info');
-                }
-            }
-
-            updateMemoryDisplay() {
-                document.querySelectorAll('.memory-btn').forEach((btn, index) => {
-                    const channel = index + 1;
-                    const memoryData = this.memoryChannels[index];
-                    btn.innerHTML = '';
-                    btn.classList.remove('memory-occupied', 'memory-selected', 'memory-store-warning');
-                    if (memoryData) {
-                        btn.classList.add('memory-occupied');
-                        if (this.memoryMode === 'store') {
-                            btn.classList.add('memory-store-warning');
-                        }
-                        const channelSpan = document.createElement('span');
-                        channelSpan.textContent = `M${channel}`;
-                        btn.appendChild(channelSpan);
-                        if (memoryData.label) {
-                            const labelSpan = document.createElement('span');
-                            labelSpan.className = 'memory-label';
-                            labelSpan.textContent = memoryData.label;
-                            btn.appendChild(labelSpan);
-                        }
-                        btn.title = `M${channel}: ${(memoryData.frequency / 1000000).toFixed(3)} MHz, ${memoryData.mode}${memoryData.label ? ' - ' + memoryData.label : ''}`;
-                    } else {
-                        btn.textContent = `M${channel}`;
-                        btn.title = `M${channel}: Empty`;
-                    }
-                    if (this.selectedMemoryChannel === channel) {
-                        btn.classList.add('memory-selected');
-                    }
-                });
-            }
-
-            exportMemories() {
-                const exportData = {
-                    version: '1.0',
-                    exportDate: new Date().toISOString(),
-                    memories: this.memoryChannels
-                };
-                const jsonStr = JSON.stringify(exportData, null, 2);
-                const blob = new Blob([jsonStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `qmx_memories_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                this.logCAT('Memory channels exported successfully', 'info');
-            }
-
-            importMemories(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const importData = JSON.parse(e.target.result);
-                        if (importData.memories && Array.isArray(importData.memories)) {
-                            if (confirm('This will replace all current memory channels. Continue?')) {
-                                this.memoryChannels = importData.memories;
-                                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
-                                this.updateMemoryDisplay();
-                                this.logCAT('Memory channels imported successfully', 'info');
-                            }
-                        } else {
-                            throw new Error('Invalid file format');
-                        }
-                    } catch (error) {
-                        this.logCAT(`Import failed: ${error.message}`, 'error');
-                        alert('Failed to import memory file.');
-                    }
-                };
-                reader.readAsText(file);
-                event.target.value = '';
-            }
-
-            logCAT(message, type = 'info') {
-                if (!this.catLogElement) {
-                    this.catLogElement = document.getElementById('catLog');
-                }
-                if (!this.catLogElement) return;
-                const entry = document.createElement('div');
-                entry.className = `cat-log-entry ${type}`;
-                const timestamp = new Date().toLocaleTimeString();
-                entry.textContent = `${timestamp} ${type.toUpperCase()}: ${message}`;
-                this.catLogElement.appendChild(entry);
-                this.catLogElement.scrollTop = this.catLogElement.scrollHeight;
-                while (this.catLogElement.children.length > 200) {
-                    this.catLogElement.removeChild(this.catLogElement.firstChild);
-                }
-            }
-
-            async initializeRadio() {
-                await this.sendCommand('IF');
-                await this.sendCommand('LC');
-                await this.sendCommand('FA');
-                await this.sendCommand('MD');
-                await this.sendCommand('AG0');
-                await this.sendCommand('KS');
-                await this.sendCommand('SM');
-                await this.sendCommand('SW');
-                await this.sendCommand('PC');
-				this.sendTimeToQMX();
-            }
-
-            initEventListeners() {
-                document.getElementById('connectBtn').addEventListener('click', async () => {
-                    if (this.connected) {
-                        await this.disconnectSerial();
-                    } else {
-                        await this.connectSerial();
-                    }
-                });
-                document.querySelectorAll('.mode-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        this.mode = btn.dataset.mode;
-                        if (this.connected) {
-                            const catMode = btn.dataset.catmode;
-                            await this.sendCommand(`MD${catMode}`);
-                            this.logCAT(`Mode changed to ${this.mode}`, 'info');
-                        }
-                    });
-                });
-                document.querySelectorAll('.band-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.band-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        this.band = btn.dataset.band;
-                        this.setBandFrequency(btn.dataset.band);
-                    });
-                });
-               // MODIFY your existing stepSize change handler in initEventListeners:
-// Replace the existing stepSize event listener with this:
-document.getElementById('stepSize').addEventListener('change', (e) => {
-    this.originalStepSize = parseInt(e.target.value);
-    if (!this.isVariableStepActive) {
-        this.stepSize = this.originalStepSize;
-    }
-    this.logCAT(`Tuning step set to ${this.originalStepSize} Hz`, 'info');
-});
-                document.getElementById('vfoA').addEventListener('click', async () => {
-    this.selectVFO('A');
-    if (this.connected) {
-        await this.sendCommand('FR0');  // Select VFO A for RX
-        await this.sendCommand('FT0');  // Select VFO A for TX
-        // Request frequency update for VFO A
-        await this.sendCommand('FA');
-    }
-});
-
-document.getElementById('vfoB').addEventListener('click', async () => {
-    this.selectVFO('B');
-    if (this.connected) {
-        await this.sendCommand('FR1');  // Select VFO B for RX
-        await this.sendCommand('FT1');  // Select VFO B for TX
-        // Request frequency update for VFO B
-        await this.sendCommand('FB');
-    }
-});
-              // This is inside the initEventListeners function
-			  
-			  
-			  
-			  
-			  
-			  
-			  
-			  
-
-document.getElementById('vfoB').addEventListener('click', async () => {
-    this.selectVFO('B');
-    if (this.connected) {
-        await this.sendCommand('FR1');
-        await this.sendCommand('FT1');
-        // Add this line to ask for the new VFO's frequency
-        await this.sendCommand('FB'); 
-    }
-
-                });
-               
-
-
-
-
-
-
-
-			document.getElementById('vfoSwap').addEventListener('click', async () => {
-    if (this.connected) {
-        try {
-            this.logCAT('Swapping VFO A ↔ VFO B...', 'info');
             
-            // Get current frequencies from both VFOs
-            await this.sendCommand('FA');  // Request VFO A frequency
-            await new Promise(resolve => setTimeout(resolve, 100));
-            await this.sendCommand('FB');  // Request VFO B frequency
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Store current frequencies (they should be updated from the responses)
-            let vfoAFreq = null;
-            let vfoBFreq = null;
-            
-            // Create a temporary response handler to capture VFO frequencies
-            const originalProcessResponse = this.processResponse.bind(this);
-            let responsesReceived = 0;
-            
-            this.processResponse = (response) => {
-                if (response.startsWith('FA')) {
-                    vfoAFreq = parseInt(response.substring(2));
-                    responsesReceived++;
-                } else if (response.startsWith('FB')) {
-                    vfoBFreq = parseInt(response.substring(2));
-                    responsesReceived++;
-                } else {
-                    originalProcessResponse(response);
-                }
-            };
-            
-            // Wait for responses or timeout
-            let attempts = 0;
-            while (responsesReceived < 2 && attempts < 50) {
-                await new Promise(resolve => setTimeout(resolve, 50));
-                attempts++;
-            }
-            
-            // Restore original response handler
-            this.processResponse = originalProcessResponse;
-            
-            if (vfoAFreq && vfoBFreq && vfoAFreq !== vfoBFreq) {
-                // Perform the swap
-                await this.sendCommand(`FA${vfoBFreq.toString().padStart(11, '0')}`);
-                await new Promise(resolve => setTimeout(resolve, 50));
-                await this.sendCommand(`FB${vfoAFreq.toString().padStart(11, '0')}`);
-                
-                this.logCAT(`VFO swap completed: A=${(vfoBFreq/1000000).toFixed(3)} MHz, B=${(vfoAFreq/1000000).toFixed(3)} MHz`, 'info');
-                
-                // Update display
-                setTimeout(async () => {
-                    await this.sendCommand('IF');
-                    await this.sendCommand('LC');
-                }, 200);
-            } else {
-                this.logCAT('VFO swap failed: Could not read frequencies', 'error');
-            }
-            
-        } catch (e) {
-            this.logCAT(`VFO swap error: ${e.message}`, 'error');
-        }
-    } else {
-        this.logCAT('Cannot swap - radio not connected', 'error');
-    }
-});		   
-						   
-						   
-						   
-						   
-						   
-						   
-						   
-						   
-document.getElementById('vfoCopy').addEventListener('click', async () => {
-    if (this.connected) {
-        try {
-            // Get the current VFO's frequency first
-            const currentVFOCommand = this.currentVFO === 'A' ? 'FA' : 'FB';
-            await this.sendCommand(currentVFOCommand);
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Use the frequency from the interface (should be current)
-            const currentFreq = this.frequency.toString().padStart(11, '0');
-            
-            if (this.currentVFO === 'A') {
-                // Copy A to B
-                await this.sendCommand(`FB${currentFreq}`);
-                this.logCAT(`A→B: ${(this.frequency/1000000).toFixed(3)} MHz copied`, 'info');
-            } else {
-                // Copy B to A  
-                await this.sendCommand(`FA${currentFreq}`);
-                this.logCAT(`B→A: ${(this.frequency/1000000).toFixed(3)} MHz copied`, 'info');
-            }
-            
-            // Update display
-            setTimeout(async () => {
-                await this.sendCommand('IF');
-                await this.sendCommand('LC');
-            }, 200);
-            
-        } catch (e) {
-            this.logCAT(`VFO copy error: ${e.message}`, 'error');
-        }
-    } else {
-        this.logCAT('Cannot copy - radio not connected', 'error');
-    }
-});
-               
 
+          
+           
 
+           
 
-
-
-
-
-			   document.getElementById('txBtn').addEventListener('click', async () => {
-                    if (this.connected) {
-                        await this.sendCommand('TX');
-                        this.transmitting = true;
-                        this.updateTXStatus();
-                        this.logCAT('Switched to TRANSMIT mode', 'info');
-                    } else {
-                        this.logCAT('Cannot transmit - radio not connected', 'error');
-                    }
-                });
-                document.getElementById('rxBtn').addEventListener('click', async () => {
-                    if (this.connected) {
-                        await this.sendCommand('RX');
-                        this.transmitting = false;
-                        this.updateTXStatus();
-                        this.logCAT('Switched to RECEIVE mode', 'info');
-                    } else {
-                        this.logCAT('Cannot switch to RX - radio not connected', 'error');
-                    }
-                });
-		  }
-
-           setBandFrequency(band) {
-    if (this.lastFrequencies[band]) {
-        this.frequency = this.lastFrequencies[band];
-        this.updateDisplay();
-        if (this.connected) {
-            this.sendFrequencyImmediate();
-        }
-    }
-}
-
-         getBandFromFrequency(freqMHz) {
-    // More precise band edge definitions
-    if (freqMHz >= 1.800 && freqMHz <= 2.000) return '160';
-    if (freqMHz >= 3.500 && freqMHz <= 4.000) return '80';
-    if (freqMHz >= 7.000 && freqMHz <= 7.300) return '40';
-    if (freqMHz >= 10.100 && freqMHz <= 10.150) return '30';
-    if (freqMHz >= 14.000 && freqMHz <= 14.350) return '20';
-    if (freqMHz >= 18.068 && freqMHz <= 18.168) return '17';
-    if (freqMHz >= 21.000 && freqMHz <= 21.450) return '15';
-    if (freqMHz >= 24.890 && freqMHz <= 24.990) return '12';
-    if (freqMHz >= 28.000 && freqMHz <= 29.700) return '10';
-    if (freqMHz >= 50.000 && freqMHz <= 54.000) return '6';
-    return null; 
-	// Out of amateur bands
-}
-
-
-       
-			
-			selectVFO(vfo) {
-    this.currentVFO = vfo;
-    this.updateVFOButtons();
-    this.logCAT(`VFO ${vfo} selected`, 'info');
-}
-
-            updateConnectionStatus() {
-                const btn = document.getElementById('connectBtn');
-                const statusDot = document.getElementById('statusDot');
-                const statusText = document.getElementById('statusText');
-                const baudDropdown = document.getElementById('baudRate');
-                if (this.connected) {
-                    btn.textContent = 'Disconnect';
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-danger');
-                    statusDot.classList.add('connected');
-                    statusText.textContent = 'CONNECTED';
-                    statusText.className = 'status-text connected';
-                    baudDropdown.disabled = true;
-                } else {
-                    btn.textContent = 'Connect Serial';
-                    btn.classList.remove('btn-danger');
-                    btn.classList.add('btn-primary');
-                    statusDot.classList.remove('connected');
-                    statusText.textContent = 'DISCONNECTED';
-                    statusText.className = 'status-text disconnected';
-                    baudDropdown.disabled = false;
-                }
-            }
-
-            updateTXStatus() {
-                const txBtn = document.getElementById('txBtn');
-                const rxBtn = document.getElementById('rxBtn');
-                if (this.transmitting) {
-                    txBtn.classList.remove('btn-secondary');
-                    txBtn.classList.add('btn-danger');
-                    rxBtn.classList.remove('btn-primary');
-                    rxBtn.classList.add('btn-secondary');
-                } else {
-                    txBtn.classList.remove('btn-danger');
-                    txBtn.classList.add('btn-secondary');
-                    rxBtn.classList.remove('btn-secondary');
-                    rxBtn.classList.add('btn-primary');
-                }
-            }
-
-            updateModeFromCAT(catMode) {
-                const modeMap = {
-                    '1': 'LSB', '2': 'USB', '3': 'CW',
-                    '7': 'CW', '6': 'DIGI'
-                };
-                if (modeMap[catMode]) {
-                    this.mode = modeMap[catMode];
-                    document.querySelectorAll('.mode-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                        if (btn.dataset.mode === this.mode) {
-                            btn.classList.add('active');
-                        }
-                    });
-                } else {
-                    this.logCAT(`Unknown mode code received: ${catMode}`, 'error');
-                }
-            }
-
-            updateSMeter(value) {
-                const meter = document.getElementById('sMeter');
-                let percentage = value;
-                percentage = Math.max(0, Math.min(100, percentage));
-                meter.style.width = percentage + '%';
-            }
-
-            updateSWRMeter(value) {
-                const meter = document.getElementById('swrMeter');
-                const swr = value / 100;
-                const percentage = Math.min(100, Math.max(0, (swr - 1) / 4 * 100));
-                meter.style.width = percentage + '%';
-            }
-
-          updateLcdDisplay(row1, row2) {
-    const lcdRow1El = document.getElementById('lcdRow1');
-    const lcdRow2El = document.getElementById('lcdRow2');
-    
-    if (lcdRow1El) {
-        lcdRow1El.textContent = row1;
-    }
-    if (lcdRow2El) {
-        lcdRow2El.textContent = row2;
-    }
-    
-    // Auto-detect VFO from LCD display
-    // If the first character is 'B', we're on VFO B, otherwise VFO A
-    const detectedVFO = (row1 && row1.charAt(0) === 'B') ? 'B' : 'A';
-    
-    if (detectedVFO !== this.currentVFO) {
-        this.currentVFO = detectedVFO;
-        this.updateVFOButtons();
-        this.logCAT(`VFO switched to ${this.currentVFO} (auto-detected)`, 'info');
-    }
-}
-
-         updateDisplay() {
-    this.updateBandFromFrequency();
-    this.updateLoggerInfoBar();
-}
-
-            updateClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                document.getElementById('currentTime').textContent = timeString;
-                setTimeout(() => this.updateClock(), 1000);
-            }
-
-            async initTimeSync() {
-                try {
-                    this.logCAT('Initializing time synchronization...', 'info');
-                    
-                    await this.syncTimeFromServer();
-                    
-                    this.clockUpdateInterval = setInterval(() => {
-                        this.updateSyncedClock();
-                        this.updateLoggerInfoBar();
-                    }, 1000);
-                    
-                    this.timeSyncInterval = setInterval(() => {
-                        this.syncTimeFromServer();
-                    }, 10 * 60 * 1000);
-                    
-                    console.log('Time synchronization initialized');
-                } catch (error) {
-                    console.error('Error initializing time sync:', error);
-                    this.logCAT(`Time sync init error: ${error.message}`, 'error');
-                    this.updateLocalClock();
-                }
-            }
-
-            async syncTimeFromServer() {
-                try {
-                    this.logCAT('Synchronizing with time server...', 'info');
-                    
-                    const timeAPIs = [
-                        'https://worldtimeapi.org/api/timezone/Etc/UTC',
-                        'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
-                        'http://worldclockapi.com/api/json/utc/now'
-                    ];
-                    
-                    let syncSuccessful = false;
-                    
-                    for (const api of timeAPIs) {
-                        try {
-                            const response = await fetch(api, {
-                                method: 'GET', cache: 'no-cache', headers: { 'Accept': 'application/json' }
-                            });
-                            
-                            if (!response.ok) continue;
-                            
-                            const data = await response.json();
-                            let serverTime;
-                            
-                            if (data.datetime) serverTime = new Date(data.datetime);
-                            else if (data.dateTime) serverTime = new Date(data.dateTime);
-                            else if (data.currentDateTime) serverTime = new Date(data.currentDateTime);
-                            else continue;
-                            
-                            const localTime = new Date();
-                            this.localTimeOffset = serverTime.getTime() - localTime.getTime();
-                            this.lastSyncTime = localTime.getTime();
-                            
-                            this.logCAT(`Time synced successfully (offset: ${this.localTimeOffset}ms)`, 'info');
-                            syncSuccessful = true;
-                            
-                            this.sendTimeToQMX();
-                            break;
-                            
-                        } catch (apiError) {
-                            console.warn(`Time API ${api} failed:`, apiError);
-                            continue;
-                        }
-                    }
-                    
-                    if (!syncSuccessful) throw new Error('All time APIs failed');
-                    
-                } catch (error) {
-                    console.error('Time sync failed:', error);
-                    this.logCAT(`Time sync failed: ${error.message}`, 'error');
-                    this.localTimeOffset = 0;
-                }
-            }
-
-            getSyncedTime() {
-                const now = new Date();
-                return new Date(now.getTime() + (this.localTimeOffset || 0));
-            }
-
-            updateSyncedClock() {
-                const syncedUTC = this.getSyncedTime();
-                const localTime = new Date(syncedUTC.getTime() - (syncedUTC.getTimezoneOffset() * 60000));
-                
-                const timeString = localTime.toLocaleTimeString('en-US', {
-                    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
-                });
-                
-                const timeElement = document.getElementById('currentTime');
-                if (timeElement) {
-                    const syncAge = this.lastSyncTime ? Date.now() - this.lastSyncTime : Infinity;
-                    const syncIndicator = syncAge > 11 * 60 * 1000 ? ' (SYNC?)' : ' (SYNC)';
-                    timeElement.textContent = timeString + (this.lastSyncTime ? syncIndicator : ' (LOCAL)');
-                }
-            }
-
-          // 1. Function to update band selection based on frequency
-updateBandFromFrequency() {
-    const freqMHz = this.frequency / 1000000;
-    const detectedBand = this.getBandFromFrequency(freqMHz);
-    
-    if (detectedBand && detectedBand !== this.band) {
-        this.band = detectedBand;
-        this.updateBandButtons();
-        this.logCAT(`Auto-selected ${this.band}m band for ${freqMHz.toFixed(3)} MHz`, 'info');
-    }
-}
-
-// 2. Function to update band button highlighting
-updateBandButtons() {
-    document.querySelectorAll('.band-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.band === this.band) {
-            btn.classList.add('active');
-        }
-    });
-} 
-
-
-
-updateVFOButtons() {
-    document.querySelectorAll('#vfoA, #vfoB').forEach(btn => {
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-secondary');
-    });
-    
-    const activeButton = document.getElementById(`vfo${this.currentVFO}`);
-    if (activeButton) {
-        activeButton.classList.remove('btn-secondary');
-        activeButton.classList.add('btn-primary');
-    }
-}
-
-// 3. Helper function to get the correct VFO command
-getVFOCommand() {
-    return this.currentVFO === 'B' ? 'FB' : 'FA';
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		   updateLocalClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('en-US', {
-                    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
-                });
-                
-                const timeElement = document.getElementById('currentTime');
-                if (timeElement) {
-                    timeElement.textContent = timeString + ' (LOCAL)';
-                }
-                
-                setTimeout(() => this.updateLocalClock(), 1000);
-            }
-
-            sendTimeToQMX() {
+            cleanup() {
+                if (this.timeSyncInterval) clearInterval(this.timeSyncInterval);
+                if (this.clockUpdateInterval) clearInterval(this.clockUpdateInterval);
                 if (this.timeCommandTimeout) clearTimeout(this.timeCommandTimeout);
                 
-                this.timeCommandTimeout = setTimeout(() => {
-                    if (this.connected && this.port && this.writer) {
-                        const syncedUTC = this.getSyncedTime();
-                        const localTime = new Date(syncedUTC.getTime() - (syncedUTC.getTimezoneOffset() * 60000));
-                        
-                        const hours = localTime.getHours().toString().padStart(2, '0');
-                        const minutes = localTime.getMinutes().toString().padStart(2, '0');
-                        const seconds = localTime.getSeconds().toString().padStart(2, '0');
-                        const timeCommand = `TM${hours}${minutes}${seconds}`;
-                        
-                        this.sendCommand(timeCommand).then(() => {
-                            this.logCAT(`Local time sent to QMX: ${hours}:${minutes}:${seconds}`, 'info');
-                        }).catch(e => {
-                            console.error("Time command error:", e);
-                        });
-                    }
-                    this.timeCommandTimeout = null;
-                }, 100);
+                if (this.boundHandleTuningHoverKeys) {
+                    document.removeEventListener('keydown', this.boundHandleTuningHoverKeys);
+                }
             }
-
-
-
-updateBandForOutOfBand() {
-    const freqMHz = this.frequency / 1000000;
-    const detectedBand = this.getBandFromFrequency(freqMHz);
-    
-    if (!detectedBand) {
-        // Clear all band selections for out-of-band frequencies
-        document.querySelectorAll('.band-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        this.band = null; // or keep the last valid band
-        this.logCAT(`Frequency ${freqMHz.toFixed(3)} MHz is outside amateur bands`, 'info');
-    }
-}
-
-
-// NEW: Enable keyboard control when hovering over tuning knob
-enableTuningHoverKeys() {
-    this.isHoveringTuningKnob = true;
-    
-    if (!this.boundHandleTuningHoverKeys) {
-        this.boundHandleTuningHoverKeys = this.handleTuningHoverKeys.bind(this);
-    }
-    
-    document.addEventListener('keydown', this.boundHandleTuningHoverKeys);
-    
-    // Visual feedback - make the knob glow when hover-keyboard-active
-    const tuningKnob = document.getElementById('tuningKnob');
-    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.6)';
-}
-
-// NEW: Disable keyboard control when not hovering over tuning knob
-disableTuningHoverKeys() {
-    this.isHoveringTuningKnob = false;
-    
-    if (this.boundHandleTuningHoverKeys) {
-        document.removeEventListener('keydown', this.boundHandleTuningHoverKeys);
-    }
-    
-    // Remove visual feedback
-    const tuningKnob = document.getElementById('tuningKnob');
-    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
-}
-
-// NEW: Handle keyboard input when hovering over tuning knob
-handleTuningHoverKeys(e) {
-    if (!this.isHoveringTuningKnob) return;
-    
-    // Only handle arrow keys
-    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-    
-    e.preventDefault();
-    
-    let direction = 0;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-        direction = -1;
-    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-        direction = 1;
-    }
-    
-    if (direction !== 0) {
-        // Use the selected step size
-        const freqDelta = direction * this.stepSize;
-        this.updateFrequency(freqDelta);
-        
-        // Update knob rotation for visual feedback
-        const rotationDelta = direction * 2;
-        this.tuningKnobRotation += rotationDelta;
-        document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
-        
-        // Send frequency update
-        this.sendFrequencyDynamically();
-        
-        // Brief visual feedback
-        this.provideTuningKeyFeedback();
-    }
-}
-
-// NEW: Provide brief visual feedback for keyboard tuning
-provideTuningKeyFeedback() {
-    const tuningKnob = document.getElementById('tuningKnob');
-    const originalBoxShadow = tuningKnob.style.boxShadow;
-    
-    // Brief bright glow
-    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 255, 136, 1)';
-    
-    setTimeout(() => {
-        if (this.isHoveringTuningKnob) {
-            // Return to hover glow
-            tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.6)';
-        } else {
-            // Return to normal
-            tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
         }
-    }, 150);
-}
 
-
-
-
-// ADD these new methods to your QMXInterface class:
-
-updateTuningSpeed(speed) {
-    // Keep track of recent speed samples (last 500ms worth)
-    const now = performance.now();
-    this.tuningSpeedSamples.push({ speed: speed, time: now });
-    
-    // Remove old samples (older than 500ms)
-    this.tuningSpeedSamples = this.tuningSpeedSamples.filter(sample => 
-        now - sample.time < 500
-    );
-    
-    // Calculate average speed
-    if (this.tuningSpeedSamples.length > 0) {
-        const avgSpeed = this.tuningSpeedSamples.reduce((sum, sample) => 
-            sum + sample.speed, 0) / this.tuningSpeedSamples.length;
-        
-        // Threshold for "fast" tuning (adjust these values as needed)
-        const fastThreshold = 2.0;  // radians/second for rotary, or scaled for wheel
-        
-        if (avgSpeed > fastThreshold && !this.isVariableStepActive) {
-            this.activateVariableStep();
-        }
-    }
-    
-    // Reset the timeout to revert to normal speed
-    this.resetVariableStepTimeout();
-}
-
-activateVariableStep() {
-    if (!this.isVariableStepActive) {
-        this.originalStepSize = this.stepSize;
-        this.stepSize = this.originalStepSize * this.fastStepMultiplier;
-        this.isVariableStepActive = true;
-        
-        // Visual feedback
-        const stepDisplay = document.getElementById('stepSize');
-        if (stepDisplay) {
-            stepDisplay.style.background = 'rgba(255, 149, 0, 0.3)';
-            stepDisplay.style.borderColor = '#ff9500';
-        }
-        
-        this.logCAT(`Fast tuning activated: ${this.stepSize} Hz step`, 'info');
-    }
-}
-
-deactivateVariableStep() {
-    if (this.isVariableStepActive) {
-        this.stepSize = this.originalStepSize;
-        this.isVariableStepActive = false;
-        
-        // Remove visual feedback
-        const stepDisplay = document.getElementById('stepSize');
-        if (stepDisplay) {
-            stepDisplay.style.background = '';
-            stepDisplay.style.borderColor = '';
-        }
-        
-        this.logCAT(`Normal tuning restored: ${this.stepSize} Hz step`, 'info');
-    }
-}
-
-getCurrentStepSize() {
-    return this.isVariableStepActive ? this.stepSize : this.originalStepSize;
-}
-
-resetVariableStepTimeout() {
-    if (this.variableStepTimeout) {
-        clearTimeout(this.variableStepTimeout);
-    }
-    
-    // Revert to normal step after 1 second of slow/no tuning
-    this.variableStepTimeout = setTimeout(() => {
-        this.deactivateVariableStep();
-        this.tuningSpeedSamples = []; // Clear speed history
-    }, 1000);
-}
-
-// This is the updated code
-initKeyerToggle() {
-    try {
-        const keyerToggle = document.getElementById('keyerModeToggle');
-        const keyerKnobContainer = document.querySelector('.knob-group:has(#rfGainKnob)');
-        
-        // Set initial state to BUG mode
-        this.setKeyerMode('bug'); // ✅ Changed from 'straight' to 'bug'
-        
-        // Add click event listener
-        keyerToggle.addEventListener('click', () => {
-            this.toggleKeyerMode();
-        });
-        
-        console.log('Keyer mode toggle initialized');
-    } catch (error) {
-        console.error('Error initializing keyer toggle:', error);
-    }
-}
-
-
-// ADD this method to toggle between modes:
-toggleKeyerMode() {
-    if (this.keyerMode === 'straight') {
-        this.setKeyerMode('bug');
-    } else {
-        this.setKeyerMode('straight');
-    }
-}
-
-
-// ADD this method to set the keyer mode:
-setKeyerMode(mode) {
-    const keyerToggle = document.getElementById('keyerModeToggle');
-    const keyerKnobContainer = document.querySelector('.knob-group:has(#rfGainKnob)');
-    
-    this.keyerMode = mode;
-    
-    if (mode === 'straight') {
-        // Set to STRAIGHT mode (0 WPM)
-        keyerToggle.classList.remove('bug');
-        if (keyerKnobContainer) {
-            keyerKnobContainer.classList.add('keyer-straight');
-        }
-        
-        // Set keyer speed to 0 (STRAIGHT)
-        this.rfGainLevel = 0;
-        this.rfGainKnobRotation = this.minRotation;
-        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-        this.updateRFGainLevel();
-        
-        this.logCAT('Keyer mode: STRAIGHT KEY', 'info');
-        
-    } else if (mode === 'bug') {
-        // Set to BUG mode (22 WPM)
-        keyerToggle.classList.add('bug');
-        if (keyerKnobContainer) {
-            keyerKnobContainer.classList.remove('keyer-straight');
-        }
-        
-        // Set keyer speed to 22 WPM
-        this.rfGainLevel = (this.bugWpmSetting / 50) * 100;  // Convert 22 WPM to percentage
-        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-        this.updateRFGainLevel();
-        
-        this.logCAT(`Keyer mode: BUG (${this.bugWpmSetting} WPM)`, 'info');
-    }
-    
-    // Send the command to the radio
-    this.sendRFGainCommand();
- }
- 
- 
-
-
- 
-
-cleanup() {
-    if (this.timeSyncInterval) clearInterval(this.timeSyncInterval);
-    if (this.clockUpdateInterval) clearInterval(this.clockUpdateInterval);
-    if (this.timeCommandTimeout) clearTimeout(this.timeCommandTimeout);
-    
-
-    if (this.boundHandleTuningHoverKeys) {
-        document.removeEventListener('keydown', this.boundHandleTuningHoverKeys);
-    }
-}
-
-}
-     document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
             try {
                 new QMXInterface();
             } catch (error) {
