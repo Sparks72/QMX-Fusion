@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QRP-Labs QMX Communications Interface</title>
-<!--Uncomment this next line if you don't have the sortable.min.js script in the same directory as the Interface file. -->  
-  <!-- <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script> -->
-<!--Put this next line in comments if have not downloaded it. -->   
-   <script src="Sortable.min.js"></script>
+    <title>QRP-Labs QDX Commander with Digital Audio by DJ0CU/G4ADF</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 	
 	<style>
         * {
@@ -44,7 +41,7 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 5px;
-            background: linear-gradient(45deg, #00ff88, #00ccff);
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -87,7 +84,7 @@
 
         .sortable-ghost {
             opacity: 0.4;
-            background: #00ff88;
+            background: #ff6b35;
         }
 
         .sortable-drag {
@@ -95,14 +92,13 @@
             transform: rotate(2deg);
         }
 
-
         .frequency-display.lcd-panel {
             background: #000;
             border-radius: 10px;
             padding: 15px 20px;
             text-align: left;
-            border: 2px solid #00ff88;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            border: 2px solid #ff6b35;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
             height: 100px;
             display: flex;
             flex-direction: column;
@@ -112,8 +108,8 @@
         .lcd-row {
             font-family: 'Courier New', monospace;
             font-size: 1.8em;
-            color: #00ff88;
-            text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+            color: #ff6b35;
+            text-shadow: 0 0 8px rgba(255, 107, 53, 0.5);
             letter-spacing: 0.05em;
             white-space: pre;
             line-height: 1.2;
@@ -197,7 +193,7 @@
         }
 
         .tuning-knob:hover::after {
-            background-color: #00ff88 !important;
+            background-color: #ff6b35 !important;
         }
 
         .frequency-markings {
@@ -220,7 +216,7 @@
         .frequency-mark.major {
             width: 3px;
             height: 20px;
-            background: rgba(0, 255, 136, 0.8);
+            background: rgba(255, 107, 53, 0.8);
         }
 
         .frequency-mark.minor {
@@ -261,13 +257,13 @@
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #00ff88, #00ccff);
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
             color: #000;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
         }
 
         .btn-secondary {
@@ -313,10 +309,10 @@
         }
 
         .mode-btn.active {
-            background: linear-gradient(45deg, #00ff88, #00ccff);
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
             color: #000;
-            border-color: #00ff88;
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            border-color: #ff6b35;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
         }
 
         .mode-btn:hover:not(.active) {
@@ -367,19 +363,19 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #00ff88, #00ccff);
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
             cursor: pointer;
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         }
 
         .slider::-moz-range-thumb {
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #00ff88, #00ccff);
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
             cursor: pointer;
             border: none;
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         }
 
         .meter {
@@ -426,8 +422,8 @@
 
         #sMeter {
             background: linear-gradient(90deg, 
-                #00ff88 0%,
-                #00ff88 50%, 
+                #ff6b35 0%,
+                #ff6b35 50%, 
                 #ffff00 70%,
                 #ff9500 85%,
                 #ff4757 100%);
@@ -442,13 +438,13 @@
             height: 100%;
             background: #fff;
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.9),
-                        0 0 15px rgba(0, 255, 136, 0.5);
+                        0 0 15px rgba(255, 107, 53, 0.5);
         }
 
         #swrMeter {
             background: linear-gradient(90deg, 
-                #00ff88 0%,
-                #00ff88 30%, 
+                #ff6b35 0%,
+                #ff6b35 30%, 
                 #ffff00 50%,
                 #ff9500 70%,
                 #ff4757 100%);
@@ -505,8 +501,8 @@
         }
 
         .status-text.connected {
-            color: #00ff88;
-            text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+            color: #ff6b35;
+            text-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
             text-transform: uppercase;
         }
 
@@ -525,7 +521,7 @@
         }
 
         .status-dot.connected {
-            background: #00ff88;
+            background: #ff6b35;
         }
 
         @keyframes pulse {
@@ -563,20 +559,20 @@
         }
 
         .memory-btn.memory-occupied {
-            background: rgba(0, 255, 136, 0.2);
-            border-color: rgba(0, 255, 136, 0.5);
-            color: #00ff88;
+            background: rgba(255, 107, 53, 0.2);
+            border-color: rgba(255, 107, 53, 0.5);
+            color: #ff6b35;
         }
 
         .memory-btn.memory-selected {
-            background: linear-gradient(45deg, #00ff88, #00ccff);
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
             color: #000;
-            border-color: #00ff88;
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            border-color: #ff6b35;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
         }
 
         .memory-btn.memory-occupied:hover {
-            background: rgba(0, 255, 136, 0.3);
+            background: rgba(255, 107, 53, 0.3);
         }
 
         .memory-btn.memory-store-warning {
@@ -595,11 +591,11 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: #1a1a2e;
-            border: 2px solid #00ff88;
+            border: 2px solid #ff6b35;
             border-radius: 15px;
             padding: 25px;
             z-index: 1000;
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
             min-width: 400px;
             max-width: 500px;
         }
@@ -625,7 +621,7 @@
 
         .memory-edit-modal h3 {
             margin-bottom: 15px;
-            color: #00ff88;
+            color: #ff6b35;
         }
 
         .memory-edit-modal input {
@@ -649,7 +645,7 @@
             font-size: 0.7em;
             display: block;
             margin-top: 2px;
-            color: #00ff88;
+            color: #ff6b35;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -674,9 +670,9 @@
         }
 
         .band-btn.active {
-            background: linear-gradient(45deg, #00ff88, #00ccff);
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
             color: #000;
-            border-color: #00ff88;
+            border-color: #ff6b35;
         }
 
         .band-btn:hover:not(.active) {
@@ -700,11 +696,11 @@
         }
 
         .cat-log-entry.tx {
-            color: #00ff88;
+            color: #ff6b35;
         }
 
         .cat-log-entry.rx {
-            color: #00ccff;
+            color: #f7931e;
         }
 
         .cat-log-entry.error {
@@ -815,7 +811,7 @@
         }
 
         .volume-knob:hover::after {
-            background-color: #00ff88 !important;
+            background-color: #ff6b35 !important;
         }
 
         .volume-knob::before,
@@ -829,215 +825,137 @@
         .tuning-knob-center {
             pointer-events: none;
         }
-		
-        /* QSO Logger Styles */
-        #qsoLoggerPanel {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .qso-inputs-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px 15px;
-        }
-        .qso-inputs-grid input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
-            background: rgba(0, 0, 0, 0.2);
-            color: #fff;
-            font-size: 0.9em;
-        }
-        .qth-group, .comments-group {
-            grid-column: 1 / -1;
-        }
-        .qso-info-bar {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            color: #00ff88;
-        }
-        .qso-actions {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 10px;
-        }
-        .btn-log-qso {
-            background: linear-gradient(45deg, #00ffc8, #0099ff);
-            color: #000;
-            font-weight: bold;
-        }
-        .btn-log-qso:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 200, 0.4);
-        }
-        .log-management {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .log-management input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
-            background: rgba(0, 0, 0, 0.2);
-            color: #fff;
-            font-size: 0.9em;
-        }
-        .log-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .qso-log-table {
-            background: #000;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            overflow: hidden;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-        }
-        .log-header, .log-row {
-            display: grid;
-            grid-template-columns: 1.2fr 1fr 1fr 0.8fr 0.8fr;
-            gap: 10px;
-            padding: 8px 10px;
-            align-items: center;
-        }
-        .log-header {
-            background: rgba(0, 255, 136, 0.2);
-            color: #00ff88;
-            font-weight: bold;
-            font-size: 0.85em;
-            text-transform: uppercase;
-        }
-        .log-body {
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            flex-grow: 1;
-        }
-        .log-row {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .log-row:last-child {
-            border-bottom: none;
-        }
-        .log-row div {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .log-empty-msg {
-            color: #888;
-            text-align: center;
-            padding: 20px;
-            height: 100%;
+
+        /* Night Mode Toggle Styles */
+        .night-mode-toggle-container {
+            width: 80px;
+            height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-/* Add this CSS to hide the VFO swap and copy buttons */
-#vfoSwap,
-#vfoCopy {
-    display: none !important;
-}
+        .night-mode-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
 
-/* Optional: Adjust the VFO panel grid to only show 2 columns instead of 4 */
-#vfoPanel .controls-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-}
+        .night-mode-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
 
+        .night-mode-toggle.active {
+            background: rgba(255, 107, 53, 0.2);
+            border-color: #ff6b35;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
+        }
 
-/* Keyer Mode Toggle Styles */
-.keyer-mode-toggle {
-    margin-bottom: 8px;
-    display: flex;
-    justify-content: center;
-}
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(45deg, #666, #888);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
 
-.toggle-switch {
-    position: relative;
-    width: 80px;
-    height: 24px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-}
+        .night-mode-toggle.active .toggle-slider {
+            left: 32px;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+        }
 
-.toggle-switch:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.4);
-}
+        .toggle-label {
+            position: absolute;
+            font-size: 0.6em;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
 
-.toggle-slider {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 36px;
-    height: 18px;
-    background: linear-gradient(45deg, #ff4757, #ff6b7a);
-    border-radius: 9px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    z-index: 2;
-}
+        .toggle-label.left {
+            left: 6px;
+        }
 
-.toggle-switch.bug .toggle-slider {
-    left: 40px;
-    background: linear-gradient(45deg, #00ff88, #00ccff);
-}
+        .toggle-label.right {
+            right: 6px;
+        }
 
-.toggle-label {
-    position: absolute;
-    font-size: 0.7em;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.6);
-    transition: all 0.3s ease;
-    z-index: 1;
-    pointer-events: none;
-}
+        .night-mode-toggle:not(.active) .toggle-label.left {
+            color: #fff;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+        }
 
-.toggle-label.left {
-    left: 8px;
-}
+        .night-mode-toggle.active .toggle-label.right {
+            color: #fff;
+            text-shadow: 0 0 3px rgba(255, 107, 53, 0.8);
+        }
 
-.toggle-label.right {
-    right: 8px;
-}
+        /* Audio Processing Panel Styles */
+        .audio-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
 
-.toggle-switch:not(.bug) .toggle-label.left {
-    color: #fff;
-    text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
-}
+        .fft-canvas {
+            width: 100%;
+            height: 150px;
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
 
-.toggle-switch.bug .toggle-label.right {
-    color: #fff;
-    text-shadow: 0 0 3px rgba(0, 255, 136, 0.8);
-}
+        .waterfall-canvas {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            margin: 10px 0;
+        }
 
-/* Make the keyer knob less prominent when in STRAIGHT mode */
-.keyer-straight .volume-knob {
-    opacity: 0.5;
-    pointer-events: none;
-}
+        .audio-indicator {
+            height: 20px;
+            background: #222;
+            border-radius: 10px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
 
-.keyer-straight .knob-level {
-    opacity: 0.6;
-}
+        .audio-level {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b35, #f7931e);
+            border-radius: 10px;
+            transition: width 0.1s ease;
+            width: 0%;
+        }
+
+        .audio-status {
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            color: #ff6b35;
+            margin: 5px 0;
+        }
 
         @media (max-width: 768px) {
             .volume-knob-container {
@@ -1053,8 +971,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>QRP-Labs QMX+ By DJ0CU/G4ADF</h1>
-            <p>Professional QRP Communications Interface</p>
+            <h1>QRP-Labs QDX Commander with Digital Audio by DJ0CU/G4ADF</h1>
+            <p>QRP Digital Communications Interface with Real-Time Audio Processing</p>
         </div>
 
         <div class="main-panel">
@@ -1076,15 +994,43 @@
                     </div>
                 </div>
 
-               <div class="panel" id="modePanel">
-                <h3>Operating Mode</h3>
-                <div class="mode-buttons">
-                    <div class="mode-btn active" data-mode="USB" data-catmode="2">USB</div>
-                    <div class="mode-btn" data-mode="LSB" data-catmode="1">LSB</div>
-                    <div class="mode-btn" data-mode="CW" data-catmode="3">CW</div>
-                    <div class="mode-btn" data-mode="DIGI" data-catmode="6">DIGI</div>
+                <div class="panel" id="audioPanel">
+                    <h3>Digital Audio</h3>
+                    <div class="audio-controls">
+                        <button id="startAudioBtn" class="btn btn-primary">Start Audio</button>
+                        <button id="stopAudioBtn" class="btn btn-secondary">Stop Audio</button>
+                        <button id="testAudioBtn" class="btn btn-secondary" style="grid-column: span 2; margin-top: 10px;">Test Audio System</button>
+                    </div>
+                    <div class="control-group">
+                        <label>Sample Rate</label>
+                        <select id="sampleRate">
+                            <option value="8000">8 kHz</option>
+                            <option value="12000">12 kHz</option>
+                            <option value="16000">16 kHz</option>
+                            <option value="22050">22.05 kHz</option>
+                            <option value="44100">44.1 kHz</option>
+                            <option value="48000" selected>48 kHz</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Audio Output</label>
+                        <input type="range" id="audioVolumeSlider" class="slider" min="0" max="100" value="50">
+                        <span id="audioVolumeLevel">50%</span>
+                    </div>
+                    <div class="audio-indicator">
+                        <div class="audio-level" id="audioLevel"></div>
+                    </div>
+                    <div class="audio-status" id="audioStatus">Select QDX Audio Device</div>
                 </div>
-            </div>
+
+                <div class="panel" id="modePanel">
+                    <h3>Operating Mode</h3>
+                    <div class="mode-buttons">
+                        <div class="mode-btn active" data-mode="USB" data-catmode="2">USB</div>
+                        <div class="mode-btn" data-mode="LSB" data-catmode="1">LSB</div>
+                    </div>
+                </div>
+
                 <div class="panel" id="stepPanel">
                     <h3>Tuning Step</h3>
                     <div class="control-group">
@@ -1092,7 +1038,7 @@
                         <select id="stepSize">
                             <option value="1">1 Hz</option>
                             <option value="10">10 Hz</option>
-                            <option value="100"selected>100 Hz</option>
+                            <option value="100" selected>100 Hz</option>
                             <option value="1000">1 kHz</option>
                             <option value="10000">10 kHz</option>
                         </select>
@@ -1102,9 +1048,7 @@
                 <div class="panel" id="bandPanel">
                     <h3>Band</h3>
                     <div class="band-buttons">
-                        <div class="band-btn" data-band="160">160m</div>
                         <div class="band-btn" data-band="80">80m</div>
-                        <div class="band-btn" data-band="60">60m</div>
                         <div class="band-btn" data-band="40">40m</div>
                         <div class="band-btn" data-band="30">30m</div>
                         <div class="band-btn active" data-band="20">20m</div>
@@ -1112,7 +1056,6 @@
                         <div class="band-btn" data-band="15">15m</div>
                         <div class="band-btn" data-band="12">12m</div>
                         <div class="band-btn" data-band="10">10m</div>
-                        <div class="band-btn" data-band="6">6m</div>
                     </div>
                 </div>
 
@@ -1124,7 +1067,7 @@
 
             <div class="center-panel">
                 <div class="panel frequency-display lcd-panel" id="lcdPanel">
-                    <div id="lcdRow1" class="lcd-row">QMX Interface...</div>
+                    <div id="lcdRow1" class="lcd-row">QDX Commander...</div>
                     <div id="lcdRow2" class="lcd-row">Connect Radio</div>
                 </div>
 
@@ -1138,13 +1081,25 @@
                     </div>
                 </div>
 
+                <div class="panel" id="spectrumPanel">
+                    <h3>Spectrum Display</h3>
+                    <canvas class="fft-canvas" id="fftCanvas" width="400" height="150"></canvas>
+                    <div class="control-group">
+                        <label>FFT Size</label>
+                        <select id="fftSize">
+                            <option value="256">256</option>
+                            <option value="512">512</option>
+                            <option value="1024" selected>1024</option>
+                            <option value="2048">2048</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="panel" id="vfoPanel">
                     <h3>VFO</h3>
                     <div class="controls-grid">
                         <button class="btn btn-primary" id="vfoA">VFO A</button>
                         <button class="btn btn-secondary" id="vfoB">VFO B</button>
-                        <button class="btn btn-secondary" id="vfoSwap">A↔B</button>
-                        <button class="btn btn-secondary" id="vfoCopy">A→B</button>
                     </div>
                 </div>
 
@@ -1158,62 +1113,12 @@
             </div>
 
             <div class="right-panel">
-                <div class="panel" id="qsoLoggerPanel">
-                    <h3>QSO Logger (<span id="qsoCount">0</span> QSOs)</h3>
-                    <div class="qso-inputs-grid">
-                        <div class="control-group">
-                            <label for="qsoCallsign">CALLSIGN</label>
-                            <input type="text" id="qsoCallsign" placeholder="W1AW">
-                        </div>
-                        <div class="control-group">
-                            <label for="qsoRstSent">RST SENT</label>
-                            <input type="text" id="qsoRstSent" value="599">
-                        </div>
-                        <div class="control-group">
-                            <label for="qsoRstRcvd">RST RCVD</label>
-                            <input type="text" id="qsoRstRcvd" value="599">
-                        </div>
-                        <div class="control-group">
-                            <label for="qsoName">NAME</label>
-                            <input type="text" id="qsoName" placeholder="John">
-                        </div>
-                        <div class="control-group qth-group">
-                            <label for="qsoQth">QTH</label>
-                            <input type="text" id="qsoQth" placeholder="City, State">
-                        </div>
-                        <div class="control-group comments-group">
-                            <label for="qsoComments">COMMENTS</label>
-                            <input type="text" id="qsoComments" placeholder="Nice signal">
-                        </div>
-                    </div>
-                    <div class="qso-info-bar" id="qsoInfoBar">
-                        <span>14.205 MHz</span> &bull; <span>USB</span> &bull; <span>20m</span>
-                        <span style="float: right;">2025-01-20 14:35 UTC</span>
-                    </div>
-                    <div class="qso-actions">
-                        <button class="btn btn-log-qso" id="logQsoBtn">LOG QSO</button>
-                        <button class="btn btn-secondary" id="clearQsoInputsBtn">CLEAR</button>
-                    </div>
-                    <div class="log-management">
-                        <input type="text" id="qsoSearch" placeholder="Search callsigns...">
-                        <div class="log-buttons">
-                            <button class="btn btn-secondary" id="exportAdifBtn">EXPORT ADIF</button>
-                            <button class="btn btn-secondary" id="importAdifBtn">IMPORT ADIF</button>
-                            <button class="btn btn-danger" id="clearLogBtn">CLEAR LOG</button>
-                            <input type="file" id="importAdifFile" accept=".adi,.adif" style="display: none;">
-                        </div>
-                    </div>
-                    <div class="qso-log-table">
-                        <div class="log-header">
-                            <div>TIME</div>
-                            <div>CALL</div>
-                            <div>FREQ</div>
-                            <div>MODE</div>
-                            <div>RST</div>
-                        </div>
-                        <div class="log-body" id="qsoLogBody">
-                            <div class="log-empty-msg">No QSOs logged yet</div>
-                        </div>
+                <div class="panel" id="waterfallPanel">
+                    <h3>Waterfall Display</h3>
+                    <canvas class="waterfall-canvas" id="waterfallCanvas" width="400" height="200"></canvas>
+                    <div class="control-group">
+                        <label>Speed</label>
+                        <input type="range" id="waterfallSpeed" class="slider" min="1" max="10" value="1">
                     </div>
                 </div>
 
@@ -1230,31 +1135,24 @@
                             <div class="knob-level" id="volumeLevel">75%</div>
                         </div>
                         <div class="knob-group">
-    <!-- NEW: Toggle switch above the keyer knob -->
-    <div class="keyer-mode-toggle">
-        <div class="toggle-switch" id="keyerModeToggle">
-            <div class="toggle-slider"></div>
-            <span class="toggle-label left">STRAIGHT</span>
-            <span class="toggle-label right">BUG</span>
-        </div>
-    </div>
-    
-    <label>Keyer</label>
-    <div class="volume-knob-container">
-        <div class="volume-knob" id="rfGainKnob" tabindex="0" role="slider" aria-label="Keyer" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
-            <div class="volume-knob-center"></div>
-        </div>
-    </div>
-    <div class="knob-level" id="rfGainLevel">100%</div>
-</div>
+                            <label>Night Mode</label>
+                            <div class="night-mode-toggle-container">
+                                <div class="night-mode-toggle active" id="nightModeToggle">
+                                    <div class="toggle-slider"></div>
+                                    <span class="toggle-label left">OFF</span>
+                                    <span class="toggle-label right">ON</span>
+                                </div>
+                            </div>
+                            <div class="knob-level" id="nightModeStatus">ENABLED</div>
+                        </div>
                         <div class="knob-group">
-                            <label>Placeholder</label>
+                            <label>Signal Gen</label>
                             <div class="volume-knob-container">
-                                <div class="volume-knob" id="powerKnob" tabindex="0" role="slider" aria-label="Power Control" aria-valuemin="0" aria-valuemax="50" aria-valuenow="50">
+                                <div class="volume-knob" id="signalGenKnob" tabindex="0" role="slider" aria-label="Signal Generator" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
                                     <div class="volume-knob-center"></div>
                                 </div>
                             </div>
-                            <div class="knob-level" id="powerLevel">5.0W</div>
+                            <div class="knob-level" id="signalGenLevel">1.0kHz</div>
                         </div>
                     </div>
                 </div>
@@ -1288,7 +1186,7 @@
                 </div>
 
                 <div class="panel" id="sMeterPanel">
-                    <h3 style="color: #00ff88; text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);">Signal Strength</h3>
+                    <h3 style="color: #ff6b35; text-shadow: 0 0 5px rgba(255, 107, 53, 0.5);">Signal Strength</h3>
                     <div class="meter">
                         <div class="meter-scale">
                             <span>S1</span>
@@ -1308,8 +1206,8 @@
                     <h3 style="color: #ff9500; text-shadow: 0 0 5px rgba(255, 149, 0, 0.5);">SWR</h3>
                     <div class="meter">
                         <div class="meter-scale">
-                            <span style="color: #00ff88;">1:1</span>
-                            <span style="color: #00ff88;">1.5</span>
+                            <span style="color: #ff6b35;">1:1</span>
+                            <span style="color: #ff6b35;">1.5</span>
                             <span style="color: #ffff00;">2:1</span>
                             <span style="color: #ff9500;">3:1</span>
                             <span style="color: #ff4757;">5:1</span>
@@ -1322,12 +1220,13 @@
                 </div>
             </div>
         </div>
+
         <div class="status-bar">
             <div class="status-indicator">
                 <div class="status-dot" id="statusDot"></div>
                 <span class="status-text disconnected" id="statusText">DISCONNECTED</span>
             </div>
-            <div>QMX CAT Interface</div>
+            <div>QDX CAT Interface with Real-Time Audio</div>
             <div id="currentTime"></div>
         </div>
     </div>
@@ -1346,17 +1245,13 @@
             <select id="memoryModeSelect" style="width: 100%; padding: 10px; margin-bottom: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px;">
                 <option value="USB">USB</option>
                 <option value="LSB">LSB</option>
-                <option value="CW">CW</option>
-                <option value="DIGI">DIGI</option>
             </select>
         </div>
         
         <div class="control-group" style="margin-bottom: 15px;">
             <label style="color: #fff; opacity: 0.8;">Band</label>
             <select id="memoryBandSelect" style="width: 100%; padding: 10px; margin-bottom: 5px; background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px;">
-                <option value="160">160m</option>
                 <option value="80">80m</option>
-                <option value="60">60m</option>
                 <option value="40">40m</option>
                 <option value="30">30m</option>
                 <option value="20">20m</option>
@@ -1364,13 +1259,12 @@
                 <option value="15">15m</option>
                 <option value="12">12m</option>
                 <option value="10">10m</option>
-                <option value="6">6m</option>
             </select>
         </div>
         
         <div class="control-group" style="margin-bottom: 15px;">
             <label style="color: #fff; opacity: 0.8;">Label/Description</label>
-            <input type="text" id="memoryLabelInput" placeholder="Enter label (e.g., Local Repeater)">
+            <input type="text" id="memoryLabelInput" placeholder="Enter label (e.g., FT8 Frequency)">
         </div>
         
         <div class="btn-group">
@@ -1380,7 +1274,574 @@
     </div>
 
     <script>
-        class QMXInterface {
+        class QDXAudioProcessor {
+            constructor(qdxInterface) {
+                this.qdxInterface = qdxInterface;
+                this.audioContext = null;
+                this.analyser = null;
+                this.audioBuffer = null;
+                this.gainNode = null;
+                this.fftSize = 1024;
+                this.sampleRate = 48000;
+                this.isStreaming = false;
+                this.audioVolume = 0.5;
+                this.microphone = null;
+                this.sourceNode = null;
+                
+                // Canvas elements
+                this.fftCanvas = document.getElementById('fftCanvas');
+                this.fftCtx = this.fftCanvas.getContext('2d');
+                this.waterfallCanvas = document.getElementById('waterfallCanvas');
+                this.waterfallCtx = this.waterfallCanvas.getContext('2d');
+                
+                // Waterfall display
+                this.waterfallHistory = [];
+                this.waterfallSpeed = 1; // Much slower default for SSB monitoring
+                
+                // Audio processing
+                this.animationFrame = null;
+                this.audioDevices = [];
+                this.selectedDeviceId = null;
+                
+                this.initAudioProcessing();
+                this.initEventListeners();
+                this.updateAudioButtons(); // Initialize button states
+                
+                this.qdxInterface.logCAT('QDX Audio Processor ready', 'info');
+            }
+
+            async initAudioProcessing() {
+                try {
+                    // Initialize Web Audio API
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContext({ sampleRate: this.sampleRate });
+                    
+                    // Create analyser node
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = this.fftSize;
+                    this.analyser.smoothingTimeConstant = 0.3;
+                    this.analyser.minDecibels = -90;
+                    this.analyser.maxDecibels = -10;
+                    
+                    // Create gain node for volume control
+                    this.gainNode = this.audioContext.createGain();
+                    this.gainNode.gain.value = this.audioVolume;
+                    
+                    // Connect analyser to speakers for monitoring
+                    this.analyser.connect(this.gainNode);
+                    this.gainNode.connect(this.audioContext.destination);
+                    
+                    console.log('Audio processing initialized');
+                    this.qdxInterface.logCAT('Web Audio API initialized successfully', 'info');
+                    
+                    // Load audio devices after a short delay to ensure DOM is ready
+                    setTimeout(() => {
+                        this.loadAudioDevices();
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Failed to initialize audio processing:', error);
+                    this.qdxInterface.logCAT(`Audio init error: ${error.message}`, 'error');
+                }
+            }
+
+            async loadAudioDevices() {
+                try {
+                    this.qdxInterface.logCAT('Loading audio devices...', 'info');
+                    this.updateAudioStatus('Loading audio devices...');
+                    
+                    // Check if getUserMedia is available
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error('getUserMedia not supported in this browser');
+                    }
+                    
+                    // First enumerate without permission (limited labels)
+                    let devices = await navigator.mediaDevices.enumerateDevices();
+                    let audioInputs = devices.filter(device => device.kind === 'audioinput');
+                    this.qdxInterface.logCAT(`Found ${audioInputs.length} audio devices (without permission)`, 'info');
+                    
+                    // Request permission to get device labels
+                    try {
+                        this.qdxInterface.logCAT('Requesting microphone permission for device labels...', 'info');
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        this.qdxInterface.logCAT('Permission granted! Getting device labels...', 'info');
+                        stream.getTracks().forEach(track => track.stop());
+                        
+                        // Now enumerate with labels
+                        devices = await navigator.mediaDevices.enumerateDevices();
+                        audioInputs = devices.filter(device => device.kind === 'audioinput');
+                        this.qdxInterface.logCAT(`Found ${audioInputs.length} audio devices (with labels)`, 'info');
+                        
+                    } catch (permError) {
+                        this.qdxInterface.logCAT(`Permission denied: ${permError.message}`, 'error');
+                        this.qdxInterface.logCAT('Device labels will be limited without microphone permission', 'info');
+                    }
+                    
+                    this.audioDevices = audioInputs;
+                    
+                    // Log each device
+                    audioInputs.forEach((device, index) => {
+                        const label = device.label || `Audio Device ${index + 1}`;
+                        this.qdxInterface.logCAT(`Device ${index + 1}: ${label} (${device.deviceId.slice(0,8)}...)`, 'info');
+                    });
+                    
+                    this.updateAudioDeviceSelector();
+                    this.updateAudioStatus('Audio devices loaded');
+                    
+                } catch (error) {
+                    console.error('Failed to load audio devices:', error);
+                    this.qdxInterface.logCAT(`Device enumeration failed: ${error.message}`, 'error');
+                    this.updateAudioStatus(`Device loading failed: ${error.message}`);
+                }
+            }
+
+            updateAudioDeviceSelector() {
+                try {
+                    this.qdxInterface.logCAT('Creating audio device selector...', 'info');
+                    
+                    const sampleRateGroup = document.getElementById('sampleRate')?.parentNode;
+                    if (!sampleRateGroup) {
+                        this.qdxInterface.logCAT('Cannot find sample rate element - DOM not ready', 'error');
+                        return;
+                    }
+                    
+                    const audioPanel = sampleRateGroup.parentNode;
+                    
+                    // Remove existing device selector if it exists
+                    const existingGroup = document.getElementById('audioDeviceGroup');
+                    if (existingGroup) {
+                        existingGroup.remove();
+                    }
+                    
+                    // Create device selector group
+                    const deviceGroup = document.createElement('div');
+                    deviceGroup.className = 'control-group';
+                    deviceGroup.id = 'audioDeviceGroup';
+                    
+                    const label = document.createElement('label');
+                    label.textContent = 'Audio Input Device';
+                    deviceGroup.appendChild(label);
+                    
+                    const deviceSelect = document.createElement('select');
+                    deviceSelect.id = 'audioDevice';
+                    deviceSelect.style.cssText = `
+                        padding: 10px;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        border-radius: 8px;
+                        background: rgba(255, 255, 255, 0.1);
+                        color: #fff;
+                        font-size: 1em;
+                        transition: all 0.3s ease;
+                        width: 100%;
+                    `;
+                    
+                    // Add default option
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = "Use Default Audio Device";
+                    deviceSelect.appendChild(defaultOption);
+                    
+                    // Add device options
+                    if (this.audioDevices && this.audioDevices.length > 0) {
+                        this.audioDevices.forEach((device, index) => {
+                            const option = document.createElement('option');
+                            option.value = device.deviceId;
+                            option.textContent = device.label || `Audio Device ${index + 1}`;
+                            deviceSelect.appendChild(option);
+                        });
+                        
+                        this.qdxInterface.logCAT(`Added ${this.audioDevices.length} devices to selector`, 'info');
+                    } else {
+                        const noDeviceOption = document.createElement('option');
+                        noDeviceOption.value = "";
+                        noDeviceOption.textContent = "No audio devices found";
+                        deviceSelect.appendChild(noDeviceOption);
+                        this.qdxInterface.logCAT('No audio devices available', 'error');
+                    }
+                    
+                    // Add change event listener
+                    deviceSelect.addEventListener('change', (e) => {
+                        this.selectedDeviceId = e.target.value;
+                        const selectedText = e.target.options[e.target.selectedIndex].text;
+                        this.qdxInterface.logCAT(`Selected audio device: ${selectedText}`, 'info');
+                    });
+                    
+                    deviceGroup.appendChild(deviceSelect);
+                    
+                    // Add refresh button
+                    const refreshBtn = document.createElement('button');
+                    refreshBtn.textContent = 'Refresh Devices';
+                    refreshBtn.className = 'btn btn-secondary';
+                    refreshBtn.style.cssText = `
+                        margin-top: 5px;
+                        padding: 5px 10px;
+                        font-size: 0.8em;
+                    `;
+                    refreshBtn.addEventListener('click', () => {
+                        this.qdxInterface.logCAT('Manually refreshing audio devices...', 'info');
+                        this.loadAudioDevices();
+                    });
+                    deviceGroup.appendChild(refreshBtn);
+                    
+                    // Insert before sample rate group
+                    audioPanel.insertBefore(deviceGroup, sampleRateGroup);
+                    
+                    this.qdxInterface.logCAT('Audio device selector created successfully', 'info');
+                    
+                } catch (error) {
+                    console.error('Failed to create device selector:', error);
+                    this.qdxInterface.logCAT(`Device selector creation failed: ${error.message}`, 'error');
+                }
+            }
+
+            initEventListeners() {
+                document.getElementById('startAudioBtn').addEventListener('click', () => {
+                    this.qdxInterface.logCAT('Start Audio button clicked', 'info');
+                    this.startAudioStreaming();
+                });
+                
+                document.getElementById('stopAudioBtn').addEventListener('click', () => {
+                    this.qdxInterface.logCAT('Stop Audio button clicked', 'info');
+                    this.stopAudioStreaming();
+                });
+                
+                document.getElementById('testAudioBtn').addEventListener('click', () => {
+                    this.testAudioSystem();
+                });
+                
+                document.getElementById('sampleRate').addEventListener('change', (e) => {
+                    this.sampleRate = parseInt(e.target.value);
+                    this.qdxInterface.logCAT(`Sample rate changed to ${this.sampleRate} Hz`, 'info');
+                });
+                
+                document.getElementById('fftSize').addEventListener('change', (e) => {
+                    this.fftSize = parseInt(e.target.value);
+                    if (this.analyser) {
+                        this.analyser.fftSize = this.fftSize;
+                    }
+                    this.qdxInterface.logCAT(`FFT size changed to ${this.fftSize}`, 'info');
+                });
+                
+                document.getElementById('audioVolumeSlider').addEventListener('input', (e) => {
+                    this.audioVolume = e.target.value / 100;
+                    document.getElementById('audioVolumeLevel').textContent = `${e.target.value}%`;
+                    if (this.gainNode) {
+                        this.gainNode.gain.value = this.audioVolume;
+                    }
+                });
+                
+                document.getElementById('waterfallSpeed').addEventListener('input', (e) => {
+                    this.waterfallSpeed = parseInt(e.target.value);
+                });
+            }
+
+            async testAudioSystem() {
+                try {
+                    this.qdxInterface.logCAT('Testing audio system...', 'info');
+                    this.updateAudioStatus('Testing Audio System...');
+                    
+                    // Test if getUserMedia is available
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                        throw new Error('getUserMedia not supported in this browser');
+                    }
+                    
+                    // Test basic audio access
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this.qdxInterface.logCAT('Audio access test: SUCCESS', 'info');
+                    
+                    // Stop the test stream
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    // Test audio context
+                    if (this.audioContext) {
+                        this.qdxInterface.logCAT(`Audio context state: ${this.audioContext.state}`, 'info');
+                        this.qdxInterface.logCAT(`Audio context sample rate: ${this.audioContext.sampleRate} Hz`, 'info');
+                    }
+                    
+                    // Test devices
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const audioInputs = devices.filter(device => device.kind === 'audioinput');
+                    this.qdxInterface.logCAT(`Found ${audioInputs.length} audio input devices`, 'info');
+                    
+                    audioInputs.forEach((device, index) => {
+                        this.qdxInterface.logCAT(`Device ${index + 1}: ${device.label || 'Unknown Device'}`, 'info');
+                    });
+                    
+                    this.updateAudioStatus('Audio System Test Complete');
+                    this.qdxInterface.logCAT('Audio system test completed successfully!', 'info');
+                    
+                } catch (error) {
+                    this.qdxInterface.logCAT(`Audio system test failed: ${error.message}`, 'error');
+                    this.updateAudioStatus(`Audio Test Failed: ${error.message}`);
+                }
+            }
+
+            async startAudioStreaming() {
+                try {
+                    this.qdxInterface.logCAT('Attempting to start audio streaming...', 'info');
+                    this.updateAudioStatus('Starting Audio...');
+
+                    // Request microphone access with specific device
+                    const constraints = {
+                        audio: {
+                            deviceId: this.selectedDeviceId ? { exact: this.selectedDeviceId } : undefined,
+                            sampleRate: this.sampleRate,
+                            channelCount: 1,
+                            autoGainControl: false,
+                            noiseSuppression: false,
+                            echoCancellation: false
+                        }
+                    };
+
+                    this.qdxInterface.logCAT(`Requesting audio access with constraints: ${JSON.stringify(constraints)}`, 'info');
+                    this.microphone = await navigator.mediaDevices.getUserMedia(constraints);
+                    this.qdxInterface.logCAT('Audio access granted', 'info');
+                    
+                    // Start audio context if suspended
+                    if (this.audioContext.state === 'suspended') {
+                        this.qdxInterface.logCAT('Resuming audio context...', 'info');
+                        await this.audioContext.resume();
+                    }
+                    
+                    // Create source node from microphone
+                    this.sourceNode = this.audioContext.createMediaStreamSource(this.microphone);
+                    
+                    // Connect source to analyser for FFT processing
+                    this.sourceNode.connect(this.analyser);
+                    
+                    this.isStreaming = true;
+                    this.updateAudioStatus('Audio Streaming - Live from QDX');
+                    this.updateAudioButtons();
+                    
+                    // Start audio processing loop
+                    this.startAudioProcessingLoop();
+                    
+                    this.qdxInterface.logCAT('Audio streaming started successfully!', 'info');
+                } catch (error) {
+                    console.error('Failed to start audio streaming:', error);
+                    this.qdxInterface.logCAT(`Audio start error: ${error.message}`, 'error');
+                    this.updateAudioStatus(`Audio Error: ${error.message}`);
+                    
+                    // Provide helpful error messages
+                    if (error.name === 'NotAllowedError') {
+                        this.qdxInterface.logCAT('Microphone permission denied. Please allow microphone access and try again.', 'error');
+                    } else if (error.name === 'NotFoundError') {
+                        this.qdxInterface.logCAT('No audio input device found. Check your QDX audio connection.', 'error');
+                    } else if (error.name === 'NotReadableError') {
+                        this.qdxInterface.logCAT('Audio device is already in use by another application.', 'error');
+                    }
+                }
+            }
+
+            async stopAudioStreaming() {
+                try {
+                    this.isStreaming = false;
+                    
+                    // Stop microphone stream
+                    if (this.microphone) {
+                        this.microphone.getTracks().forEach(track => track.stop());
+                        this.microphone = null;
+                    }
+                    
+                    // Disconnect source node
+                    if (this.sourceNode) {
+                        this.sourceNode.disconnect();
+                        this.sourceNode = null;
+                    }
+                    
+                    // Stop animation loop
+                    if (this.animationFrame) {
+                        cancelAnimationFrame(this.animationFrame);
+                        this.animationFrame = null;
+                    }
+                    
+                    this.updateAudioStatus('Select QDX Audio Device');
+                    this.updateAudioButtons();
+                    
+                    this.qdxInterface.logCAT('Audio streaming stopped', 'info');
+                } catch (error) {
+                    console.error('Failed to stop audio streaming:', error);
+                    this.qdxInterface.logCAT(`Audio stop error: ${error.message}`, 'error');
+                }
+            }
+
+            startAudioProcessingLoop() {
+                if (!this.isStreaming) return;
+                
+                // Process real audio data from QDX
+                this.processRealTimeAudio();
+                
+                // Update displays
+                this.updateSpectrumDisplay();
+                this.updateWaterfallDisplay();
+                this.updateAudioLevelMeter();
+                
+                // Continue loop
+                this.animationFrame = requestAnimationFrame(() => this.startAudioProcessingLoop());
+            }
+
+            processRealTimeAudio() {
+                // This now processes real audio data from the selected audio device
+                // No simulation needed - we're getting actual audio from QDX via system audio
+            }
+
+            updateSpectrumDisplay() {
+                if (!this.analyser) return;
+                
+                const canvas = this.fftCanvas;
+                const ctx = this.fftCtx;
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // Get frequency data
+                const freqData = new Uint8Array(this.analyser.frequencyBinCount);
+                this.analyser.getByteFrequencyData(freqData);
+                
+                // Clear canvas
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, width, height);
+                
+                // Draw spectrum
+                const binWidth = width / freqData.length;
+                ctx.fillStyle = '#ff6b35';
+                
+                for (let i = 0; i < freqData.length; i++) {
+                    const barHeight = (freqData[i] / 255) * height;
+                    const x = i * binWidth;
+                    const y = height - barHeight;
+                    
+                    // Create gradient for bars
+                    const gradient = ctx.createLinearGradient(0, y, 0, height);
+                    gradient.addColorStop(0, '#ff6b35');
+                    gradient.addColorStop(0.5, '#f7931e');
+                    gradient.addColorStop(1, '#ffff00');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(x, y, binWidth - 1, barHeight);
+                }
+                
+                // Draw frequency scale
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px monospace';
+                const nyquist = this.sampleRate / 2;
+                const step = width / 5;
+                
+                for (let i = 0; i <= 5; i++) {
+                    const freq = (i / 5) * nyquist;
+                    const x = i * step;
+                    ctx.fillText(`${(freq / 1000).toFixed(1)}k`, x, height - 5);
+                }
+            }
+
+            updateWaterfallDisplay() {
+                if (!this.analyser) return;
+                
+                const canvas = this.waterfallCanvas;
+                const ctx = this.waterfallCtx;
+                const width = canvas.width;
+                const height = canvas.height;
+                
+                // Get frequency data
+                const freqData = new Uint8Array(this.analyser.frequencyBinCount);
+                this.analyser.getByteFrequencyData(freqData);
+                
+                // Shift existing waterfall data down
+                const imageData = ctx.getImageData(0, 0, width, height - this.waterfallSpeed);
+                ctx.putImageData(imageData, 0, this.waterfallSpeed);
+                
+                // Draw new line at top
+                const lineData = ctx.createImageData(width, this.waterfallSpeed);
+                const data = lineData.data;
+                
+                for (let x = 0; x < width; x++) {
+                    const freqIndex = Math.floor((x / width) * freqData.length);
+                    const intensity = freqData[freqIndex];
+                    
+                    // Create color map (blue -> green -> yellow -> red)
+                    let r, g, b;
+                    if (intensity < 64) {
+                        r = 0;
+                        g = 0;
+                        b = intensity * 4;
+                    } else if (intensity < 128) {
+                        r = 0;
+                        g = (intensity - 64) * 4;
+                        b = 255 - (intensity - 64) * 4;
+                    } else if (intensity < 192) {
+                        r = (intensity - 128) * 4;
+                        g = 255;
+                        b = 0;
+                    } else {
+                        r = 255;
+                        g = 255 - (intensity - 192) * 4;
+                        b = 0;
+                    }
+                    
+                    for (let y = 0; y < this.waterfallSpeed; y++) {
+                        const index = (y * width + x) * 4;
+                        data[index] = r;     // Red
+                        data[index + 1] = g; // Green
+                        data[index + 2] = b; // Blue
+                        data[index + 3] = 255; // Alpha
+                    }
+                }
+                
+                ctx.putImageData(lineData, 0, 0);
+            }
+
+            updateAudioLevelMeter() {
+                if (!this.analyser) return;
+                
+                // Get time domain data for level meter
+                const timeData = new Uint8Array(this.analyser.frequencyBinCount);
+                this.analyser.getByteTimeDomainData(timeData);
+                
+                // Calculate RMS level
+                let sum = 0;
+                for (let i = 0; i < timeData.length; i++) {
+                    const sample = (timeData[i] - 128) / 128;
+                    sum += sample * sample;
+                }
+                const rms = Math.sqrt(sum / timeData.length);
+                const level = Math.min(100, rms * 100 * 10); // Scale and limit
+                
+                // Update level meter
+                const levelElement = document.getElementById('audioLevel');
+                levelElement.style.width = `${level}%`;
+            }
+
+            updateAudioStatus(status) {
+                document.getElementById('audioStatus').textContent = status;
+            }
+
+            updateAudioButtons() {
+                const startBtn = document.getElementById('startAudioBtn');
+                const stopBtn = document.getElementById('stopAudioBtn');
+                
+                if (startBtn && stopBtn) {
+                    if (this.isStreaming) {
+                        startBtn.classList.remove('btn-primary');
+                        startBtn.classList.add('btn-secondary');
+                        stopBtn.classList.remove('btn-secondary');
+                        stopBtn.classList.add('btn-danger');
+                    } else {
+                        startBtn.classList.remove('btn-secondary');
+                        startBtn.classList.add('btn-primary');
+                        stopBtn.classList.remove('btn-danger');
+                        stopBtn.classList.add('btn-secondary');
+                    }
+                }
+            }
+
+            cleanup() {
+                this.stopAudioStreaming();
+                if (this.audioContext) {
+                    this.audioContext.close();
+                }
+            }
+        }
+
+        class QDXInterface {
             constructor() {
                 this.frequency = 14205000;
                 this.stepSize = 100;
@@ -1389,7 +1850,7 @@
                 this.band = '20';
                 this.currentVFO = 'A';
                 this.transmitting = false;
-				this.pollingInterval = null;
+                this.pollingInterval = null;
                 
                 this.port = null;
                 this.reader = null;
@@ -1421,77 +1882,59 @@
                 this.volumeAnimationFrame = null;
                 this.volumeTimeout = null;
                 
-                this.rfGainKnobRotation = 0;
-                this.rfGainLevel = 22;
-                this.rfGainLastAngle = 0;
-                this.isRFGainAdjusting = false;
-                this.rfGainAnimationFrame = null;
-                this.rfGainTimeout = null;
-                
-                this.powerKnobRotation = 0;
-                this.powerLevel = 50;
-                this.powerLastAngle = 0;
-                this.isPowerAdjusting = false;
-                this.powerAnimationFrame = null;
-                this.powerTimeout = null;
-                this.powerLevelBeforeAdjust = 50;
-  // NEW: Add these for hover keyboard control
-    this.isHoveringTuningKnob = false;
-    this.boundHandleTuningHoverKeys = null;
-                this.qsoLog = [];
-                this.qsoLogFilter = '';
-                 // NEW: Variable speed tuning properties
-    this.originalStepSize = 100;  // Store the user-selected step
-    this.isVariableStepActive = false;  // Track if we're in fast mode
-    this.lastTuningTime = 0;  // Track timing for speed detection
-    this.tuningSpeedSamples = [];  // Store recent speed samples
-    this.variableStepTimeout = null;  // Timeout to revert step size
-    this.fastStepMultiplier = 10;
-	
-	 this.keyerMode = 'straight';  // 'straight' or 'bug'
-    this.bugWpmSetting = 22; 
-                // NEW: Property to hold last-tuned frequencies per band - UPDATED with 60m
+                this.signalGenKnobRotation = 0;
+                this.signalGenLevel = 50;
+                this.signalGenLastAngle = 0;
+                this.isSignalGenAdjusting = false;
+                this.signalGenAnimationFrame = null;
+                this.signalGenTimeout = null;
+
+                this.nightModeEnabled = true; // Default to on
+
                 this.lastFrequencies = {
-                    '160': 1900000, '80': 3500000, '60': 5351500, '40': 7000000, '30': 10100000, '20': 14000000,
-                    '17': 18068000, '15': 21000000, '12': 24890000, '10': 28000000, '6': 50000000
+                    '80': 3500000, '40': 7000000, '30': 10100000, '20': 14000000,
+                    '17': 18068000, '15': 21000000, '12': 24890000, '10': 28000000
                 };
-                // NEW: Property for debouncing frequency saves
                 this.saveFreqTimeout = null;
 
                 try {
                     this.catLogElement = document.getElementById('catLog');
                     
                     this.loadLayout();
-                    this.loadLastFrequencies(); // NEW: Call new method to load frequencies
-                    this.frequency = this.lastFrequencies[this.band]; // NEW: Set initial frequency from saved state
+                    this.loadLastFrequencies();
+                    this.frequency = this.lastFrequencies[this.band];
 
                     this.initDraggablePanels();
                     this.initTuningKnob();
                     this.initEventListeners();
                     this.initVolumeControl();
-                    this.initRFGainControl();
-                    this.initPowerControl();
+                    this.initSignalGenControl();
+                    this.initNightModeToggle();
                     this.initMemorySystem();
-                    this.initQsoLogger();
                     this.updateDisplay();
                     this.updateTXStatus();
                     this.updateConnectionStatus();
                     this.initTimeSync();
                     
+                    // Initialize audio processor with proper error handling
+                    setTimeout(() => {
+                        this.audioProcessor = new QDXAudioProcessor(this);
+                        this.logCAT('Audio processor initialized', 'info');
+                    }, 1000);
+                    
                     window.addEventListener('blur', () => {
-                        if (this.isPowerAdjusting) this.stopPowerAdjust();
+                        if (this.isSignalGenAdjusting) this.stopSignalGenAdjust();
                         if (this.isVolumeAdjusting) this.stopVolumeAdjust();
-                        if (this.isRFGainAdjusting) this.stopRFGainAdjust();
                         if (this.isTuningAdjusting) this.stopTuningAdjust();
                     });
                 } catch (error) {
-                    console.error('Failed to initialize QMX Interface:', error);
+                    console.error('Failed to initialize QDX Interface:', error);
                 }
             }
 
             initMemorySystem() {
                 try {
-                    const savedMemories = localStorage.getItem('qmxMemoryChannels');
+                    const savedMemories = localStorage.getItem('qdxMemoryChannels');
                     if (savedMemories) {
                         this.memoryChannels = JSON.parse(savedMemories);
                     }
@@ -1610,7 +2053,7 @@
                     timestamp: new Date().toISOString()
                 };
                 this.memoryChannels[channelIndex] = memoryData;
-                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                localStorage.setItem('qdxMemoryChannels', JSON.stringify(this.memoryChannels));
                 this.updateMemoryDisplay();
                 this.selectedMemoryChannel = channel;
                 const freqStr = this.frequency.toString().padStart(9, '0');
@@ -1640,38 +2083,31 @@
                         btn.classList.add('active');
                     }
                 });
-               document.querySelectorAll('.band-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Only change band if user manually clicks (not auto-selection)
-        if (btn.dataset.band !== this.band) {
-            document.querySelectorAll('.band-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            this.band = btn.dataset.band;
-            this.setBandFrequency(btn.dataset.band);
-            this.logCAT(`Manually selected ${this.band}m band`, 'info');
-        }
-    });
-});
-              if (this.connected) {
-    const freqStr = this.frequency.toString().padStart(11, '0');
-    const vfoCommand = this.getVFOCommand();
-    this.sendCommand(`${vfoCommand}${freqStr}`).then(() => {
-        setTimeout(() => {
-            this.sendCommand(this.getVFOCommand());
-        }, 100);
-    }).catch(e => {
-        this.logCAT(`Failed to set frequency: ${e.message}`, 'error');
-    });
-    
-    const modeBtn = document.querySelector(`[data-mode="${this.mode}"]`);
-    if (modeBtn) {
-        const catMode = modeBtn.dataset.catmode;
-        this.sendCommand(`MD${catMode}`).catch(e => {
-            console.error("Mode command error:", e);
-        });
-    }
-	
-	}
+                document.querySelectorAll('.band-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.band === this.band) {
+                        btn.classList.add('active');
+                    }
+                });
+                if (this.connected) {
+                    const freqStr = this.frequency.toString().padStart(11, '0');
+                    const vfoCommand = this.getVFOCommand();
+                    this.sendCommand(`${vfoCommand}${freqStr}`).then(() => {
+                        setTimeout(() => {
+                            this.sendCommand(this.getVFOCommand());
+                        }, 100);
+                    }).catch(e => {
+                        this.logCAT(`Failed to set frequency: ${e.message}`, 'error');
+                    });
+                    
+                    const modeBtn = document.querySelector(`[data-mode="${this.mode}"]`);
+                    if (modeBtn) {
+                        const catMode = modeBtn.dataset.catmode;
+                        this.sendCommand(`MD${catMode}`).catch(e => {
+                            console.error("Mode command error:", e);
+                        });
+                    }
+                }
                 const freqStr = this.frequency.toString().padStart(9, '0');
                 const mhz = freqStr.substring(0, 3);
                 const khz = freqStr.substring(3, 6);
@@ -1756,7 +2192,7 @@
                     timestamp: new Date().toISOString()
                 };
                 this.memoryChannels[channelIndex] = memoryData;
-                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                localStorage.setItem('qdxMemoryChannels', JSON.stringify(this.memoryChannels));
                 this.updateMemoryDisplay();
                 this.selectedMemoryChannel = this.editingChannel;
                 const freqStr = frequency.toString().padStart(9, '0');
@@ -1781,7 +2217,7 @@
                     const label = memData.label || `M${channel}`;
                     if (confirm(`Clear memory channel M${channel}?\n\nFrequency: ${freqMHz} MHz\nMode: ${memData.mode}\nLabel: ${label}`)) {
                         this.memoryChannels[channelIndex] = null;
-                        localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                        localStorage.setItem('qdxMemoryChannels', JSON.stringify(this.memoryChannels));
                         this.updateMemoryDisplay();
                         this.logCAT(`Cleared memory channel M${channel}`, 'info');
                         if (this.selectedMemoryChannel === channel) {
@@ -1801,7 +2237,7 @@
                 }
                 if (confirm(`Clear ALL memory channels?\n\nThis will delete ${usedMemories} stored memories.\nThis action cannot be undone!`)) {
                     this.memoryChannels = new Array(10).fill(null);
-                    localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                    localStorage.setItem('qdxMemoryChannels', JSON.stringify(this.memoryChannels));
                     this.selectedMemoryChannel = null;
                     this.updateMemoryDisplay();
                     this.logCAT(`Cleared all ${usedMemories} memory channels`, 'info');
@@ -1850,7 +2286,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `qmx_memories_${new Date().toISOString().split('T')[0]}.json`;
+                a.download = `qdx_memories_${new Date().toISOString().split('T')[0]}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1868,7 +2304,7 @@
                         if (importData.memories && Array.isArray(importData.memories)) {
                             if (confirm('This will replace all current memory channels. Continue?')) {
                                 this.memoryChannels = importData.memories;
-                                localStorage.setItem('qmxMemoryChannels', JSON.stringify(this.memoryChannels));
+                                localStorage.setItem('qdxMemoryChannels', JSON.stringify(this.memoryChannels));
                                 this.updateMemoryDisplay();
                                 this.logCAT('Memory channels imported successfully', 'info');
                             }
@@ -1902,15 +2338,11 @@
 
             async initializeRadio() {
                 await this.sendCommand('IF');
-                await this.sendCommand('LC');
                 await this.sendCommand('FA');
                 await this.sendCommand('MD');
-                await this.sendCommand('AG0');
-                await this.sendCommand('KS');
-                await this.sendCommand('SM');
-                await this.sendCommand('SW');
-                await this.sendCommand('PC');
-				this.sendTimeToQMX();
+                await this.sendCommand('AG');
+                await this.sendCommand('ID');
+                await this.sendNightModeCommand();
             }
 
             initEventListeners() {
@@ -1941,178 +2373,27 @@
                         this.setBandFrequency(btn.dataset.band);
                     });
                 });
-               // MODIFY your existing stepSize change handler in initEventListeners:
-// Replace the existing stepSize event listener with this:
-document.getElementById('stepSize').addEventListener('change', (e) => {
-    this.originalStepSize = parseInt(e.target.value);
-    if (!this.isVariableStepActive) {
-        this.stepSize = this.originalStepSize;
-    }
-    this.logCAT(`Tuning step set to ${this.originalStepSize} Hz`, 'info');
-});
-                document.getElementById('vfoA').addEventListener('click', async () => {
-    this.selectVFO('A');
-    if (this.connected) {
-        await this.sendCommand('FR0');  // Select VFO A for RX
-        await this.sendCommand('FT0');  // Select VFO A for TX
-        // Request frequency update for VFO A
-        await this.sendCommand('FA');
-    }
-});
-
-document.getElementById('vfoB').addEventListener('click', async () => {
-    this.selectVFO('B');
-    if (this.connected) {
-        await this.sendCommand('FR1');  // Select VFO B for RX
-        await this.sendCommand('FT1');  // Select VFO B for TX
-        // Request frequency update for VFO B
-        await this.sendCommand('FB');
-    }
-});
-              // This is inside the initEventListeners function
-			  
-			  
-			  
-			  
-			  
-			  
-			  
-			  
-
-document.getElementById('vfoB').addEventListener('click', async () => {
-    this.selectVFO('B');
-    if (this.connected) {
-        await this.sendCommand('FR1');
-        await this.sendCommand('FT1');
-        // Add this line to ask for the new VFO's frequency
-        await this.sendCommand('FB'); 
-    }
-
+                document.getElementById('stepSize').addEventListener('change', (e) => {
+                    this.stepSize = parseInt(e.target.value);
+                    this.logCAT(`Tuning step set to ${this.stepSize} Hz`, 'info');
                 });
-               
-
-
-
-
-
-
-
-			document.getElementById('vfoSwap').addEventListener('click', async () => {
-    if (this.connected) {
-        try {
-            this.logCAT('Swapping VFO A ↔ VFO B...', 'info');
-            
-            // Get current frequencies from both VFOs
-            await this.sendCommand('FA');  // Request VFO A frequency
-            await new Promise(resolve => setTimeout(resolve, 100));
-            await this.sendCommand('FB');  // Request VFO B frequency
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Store current frequencies (they should be updated from the responses)
-            let vfoAFreq = null;
-            let vfoBFreq = null;
-            
-            // Create a temporary response handler to capture VFO frequencies
-            const originalProcessResponse = this.processResponse.bind(this);
-            let responsesReceived = 0;
-            
-            this.processResponse = (response) => {
-                if (response.startsWith('FA')) {
-                    vfoAFreq = parseInt(response.substring(2));
-                    responsesReceived++;
-                } else if (response.startsWith('FB')) {
-                    vfoBFreq = parseInt(response.substring(2));
-                    responsesReceived++;
-                } else {
-                    originalProcessResponse(response);
-                }
-            };
-            
-            // Wait for responses or timeout
-            let attempts = 0;
-            while (responsesReceived < 2 && attempts < 50) {
-                await new Promise(resolve => setTimeout(resolve, 50));
-                attempts++;
-            }
-            
-            // Restore original response handler
-            this.processResponse = originalProcessResponse;
-            
-            if (vfoAFreq && vfoBFreq && vfoAFreq !== vfoBFreq) {
-                // Perform the swap
-                await this.sendCommand(`FA${vfoBFreq.toString().padStart(11, '0')}`);
-                await new Promise(resolve => setTimeout(resolve, 50));
-                await this.sendCommand(`FB${vfoAFreq.toString().padStart(11, '0')}`);
-                
-                this.logCAT(`VFO swap completed: A=${(vfoBFreq/1000000).toFixed(3)} MHz, B=${(vfoAFreq/1000000).toFixed(3)} MHz`, 'info');
-                
-                // Update display
-                setTimeout(async () => {
-                    await this.sendCommand('IF');
-                    await this.sendCommand('LC');
-                }, 200);
-            } else {
-                this.logCAT('VFO swap failed: Could not read frequencies', 'error');
-            }
-            
-        } catch (e) {
-            this.logCAT(`VFO swap error: ${e.message}`, 'error');
-        }
-    } else {
-        this.logCAT('Cannot swap - radio not connected', 'error');
-    }
-});		   
-						   
-						   
-						   
-						   
-						   
-						   
-						   
-						   
-document.getElementById('vfoCopy').addEventListener('click', async () => {
-    if (this.connected) {
-        try {
-            // Get the current VFO's frequency first
-            const currentVFOCommand = this.currentVFO === 'A' ? 'FA' : 'FB';
-            await this.sendCommand(currentVFOCommand);
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Use the frequency from the interface (should be current)
-            const currentFreq = this.frequency.toString().padStart(11, '0');
-            
-            if (this.currentVFO === 'A') {
-                // Copy A to B
-                await this.sendCommand(`FB${currentFreq}`);
-                this.logCAT(`A→B: ${(this.frequency/1000000).toFixed(3)} MHz copied`, 'info');
-            } else {
-                // Copy B to A  
-                await this.sendCommand(`FA${currentFreq}`);
-                this.logCAT(`B→A: ${(this.frequency/1000000).toFixed(3)} MHz copied`, 'info');
-            }
-            
-            // Update display
-            setTimeout(async () => {
-                await this.sendCommand('IF');
-                await this.sendCommand('LC');
-            }, 200);
-            
-        } catch (e) {
-            this.logCAT(`VFO copy error: ${e.message}`, 'error');
-        }
-    } else {
-        this.logCAT('Cannot copy - radio not connected', 'error');
-    }
-});
-               
-
-
-
-
-
-
-
-			   document.getElementById('txBtn').addEventListener('click', async () => {
+                document.getElementById('vfoA').addEventListener('click', async () => {
+                    this.selectVFO('A');
+                    if (this.connected) {
+                        await this.sendCommand('FR0');
+                        await this.sendCommand('FT0');
+                        await this.sendCommand('FA');
+                    }
+                });
+                document.getElementById('vfoB').addEventListener('click', async () => {
+                    this.selectVFO('B');
+                    if (this.connected) {
+                        await this.sendCommand('FR1');
+                        await this.sendCommand('FT1');
+                        await this.sendCommand('FB');
+                    }
+                });
+                document.getElementById('txBtn').addEventListener('click', async () => {
                     if (this.connected) {
                         await this.sendCommand('TX');
                         this.transmitting = true;
@@ -2132,43 +2413,35 @@ document.getElementById('vfoCopy').addEventListener('click', async () => {
                         this.logCAT('Cannot switch to RX - radio not connected', 'error');
                     }
                 });
-		  }
+            }
 
-           setBandFrequency(band) {
-    if (this.lastFrequencies[band]) {
-        this.frequency = this.lastFrequencies[band];
-        this.updateDisplay();
-        if (this.connected) {
-            this.sendFrequencyImmediate();
-        }
-    }
-}
+            setBandFrequency(band) {
+                if (this.lastFrequencies[band]) {
+                    this.frequency = this.lastFrequencies[band];
+                    this.updateDisplay();
+                    if (this.connected) {
+                        this.sendFrequencyImmediate();
+                    }
+                }
+            }
 
-         getBandFromFrequency(freqMHz) {
-    // More precise band edge definitions with 60m added
-    if (freqMHz >= 1.800 && freqMHz <= 2.000) return '160';
-    if (freqMHz >= 3.500 && freqMHz <= 4.000) return '80';
-    if (freqMHz >= 5.330 && freqMHz <= 5.405) return '60'; // NEW: 60m band
-    if (freqMHz >= 7.000 && freqMHz <= 7.300) return '40';
-    if (freqMHz >= 10.100 && freqMHz <= 10.150) return '30';
-    if (freqMHz >= 14.000 && freqMHz <= 14.350) return '20';
-    if (freqMHz >= 18.068 && freqMHz <= 18.168) return '17';
-    if (freqMHz >= 21.000 && freqMHz <= 21.450) return '15';
-    if (freqMHz >= 24.890 && freqMHz <= 24.990) return '12';
-    if (freqMHz >= 28.000 && freqMHz <= 29.700) return '10';
-    if (freqMHz >= 50.000 && freqMHz <= 54.000) return '6';
-    return null; 
-	// Out of amateur bands
-}
-
-
-       
-			
-			selectVFO(vfo) {
-    this.currentVFO = vfo;
-    this.updateVFOButtons();
-    this.logCAT(`VFO ${vfo} selected`, 'info');
-}
+            getBandFromFrequency(freqMHz) {
+                if (freqMHz >= 3.500 && freqMHz <= 4.000) return '80';
+                if (freqMHz >= 7.000 && freqMHz <= 7.300) return '40';
+                if (freqMHz >= 10.100 && freqMHz <= 10.150) return '30';
+                if (freqMHz >= 14.000 && freqMHz <= 14.350) return '20';
+                if (freqMHz >= 18.068 && freqMHz <= 18.168) return '17';
+                if (freqMHz >= 21.000 && freqMHz <= 21.450) return '15';
+                if (freqMHz >= 24.890 && freqMHz <= 24.990) return '12';
+                if (freqMHz >= 28.000 && freqMHz <= 29.700) return '10';
+                return null;
+            }
+            
+            selectVFO(vfo) {
+                this.currentVFO = vfo;
+                this.updateVFOButtons();
+                this.logCAT(`VFO ${vfo} selected`, 'info');
+            }
 
             updateConnectionStatus() {
                 const btn = document.getElementById('connectBtn');
@@ -2212,8 +2485,7 @@ document.getElementById('vfoCopy').addEventListener('click', async () => {
 
             updateModeFromCAT(catMode) {
                 const modeMap = {
-                    '1': 'LSB', '2': 'USB', '3': 'CW',
-                    '7': 'CW', '6': 'DIGI'
+                    '1': 'LSB', '2': 'USB'
                 };
                 if (modeMap[catMode]) {
                     this.mode = modeMap[catMode];
@@ -2242,32 +2514,31 @@ document.getElementById('vfoCopy').addEventListener('click', async () => {
                 meter.style.width = percentage + '%';
             }
 
-          updateLcdDisplay(row1, row2) {
-    const lcdRow1El = document.getElementById('lcdRow1');
-    const lcdRow2El = document.getElementById('lcdRow2');
-    
-    if (lcdRow1El) {
-        lcdRow1El.textContent = row1;
-    }
-    if (lcdRow2El) {
-        lcdRow2El.textContent = row2;
-    }
-    
-    // Auto-detect VFO from LCD display
-    // If the first character is 'B', we're on VFO B, otherwise VFO A
-    const detectedVFO = (row1 && row1.charAt(0) === 'B') ? 'B' : 'A';
-    
-    if (detectedVFO !== this.currentVFO) {
-        this.currentVFO = detectedVFO;
-        this.updateVFOButtons();
-        this.logCAT(`VFO switched to ${this.currentVFO} (auto-detected)`, 'info');
-    }
-}
+            updateLcdDisplay(row1, row2) {
+                const lcdRow1El = document.getElementById('lcdRow1');
+                const lcdRow2El = document.getElementById('lcdRow2');
+                
+                if (lcdRow1El) {
+                    lcdRow1El.textContent = row1;
+                }
+                if (lcdRow2El) {
+                    lcdRow2El.textContent = row2;
+                }
+                
+                const detectedVFO = (row1 && row1.charAt(0) === 'B') ? 'B' : 'A';
+                
+                if (detectedVFO !== this.currentVFO) {
+                    this.currentVFO = detectedVFO;
+                    this.updateVFOButtons();
+                    this.logCAT(`VFO switched to ${this.currentVFO} (auto-detected)`, 'info');
+                }
+            }
 
-         updateDisplay() {
-    this.updateBandFromFrequency();
-    this.updateLoggerInfoBar();
-}
+            updateDisplay() {
+                this.updateBandFromFrequency();
+                const freqMHz = (this.frequency / 1000000).toFixed(6);
+                this.updateLcdDisplay(`${this.currentVFO}: ${freqMHz} MHz`, `${this.mode} ${this.band}m`);
+            }
 
             updateClock() {
                 const now = new Date();
@@ -2277,463 +2548,51 @@ document.getElementById('vfoCopy').addEventListener('click', async () => {
             }
 
             async initTimeSync() {
-                try {
-                    this.logCAT('Initializing time synchronization...', 'info');
-                    
-                    await this.syncTimeFromServer();
-                    
-                    this.clockUpdateInterval = setInterval(() => {
-                        this.updateSyncedClock();
-                        this.updateLoggerInfoBar();
-                    }, 1000);
-                    
-                    this.timeSyncInterval = setInterval(() => {
-                        this.syncTimeFromServer();
-                    }, 10 * 60 * 1000);
-                    
-                    console.log('Time synchronization initialized');
-                } catch (error) {
-                    console.error('Error initializing time sync:', error);
-                    this.logCAT(`Time sync init error: ${error.message}`, 'error');
-                    this.updateLocalClock();
-                }
+                this.updateClock();
             }
 
-            async syncTimeFromServer() {
-                try {
-                    this.logCAT('Synchronizing with time server...', 'info');
-                    
-                    const timeAPIs = [
-                        'https://worldtimeapi.org/api/timezone/Etc/UTC',
-                        'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
-                        'http://worldclockapi.com/api/json/utc/now'
-                    ];
-                    
-                    let syncSuccessful = false;
-                    
-                    for (const api of timeAPIs) {
-                        try {
-                            const response = await fetch(api, {
-                                method: 'GET', cache: 'no-cache', headers: { 'Accept': 'application/json' }
-                            });
-                            
-                            if (!response.ok) continue;
-                            
-                            const data = await response.json();
-                            let serverTime;
-                            
-                            if (data.datetime) serverTime = new Date(data.datetime);
-                            else if (data.dateTime) serverTime = new Date(data.dateTime);
-                            else if (data.currentDateTime) serverTime = new Date(data.currentDateTime);
-                            else continue;
-                            
-                            const localTime = new Date();
-                            this.localTimeOffset = serverTime.getTime() - localTime.getTime();
-                            this.lastSyncTime = localTime.getTime();
-                            
-                            this.logCAT(`Time synced successfully (offset: ${this.localTimeOffset}ms)`, 'info');
-                            syncSuccessful = true;
-                            
-                            this.sendTimeToQMX();
-                            break;
-                            
-                        } catch (apiError) {
-                            console.warn(`Time API ${api} failed:`, apiError);
-                            continue;
-                        }
-                    }
-                    
-                    if (!syncSuccessful) throw new Error('All time APIs failed');
-                    
-                } catch (error) {
-                    console.error('Time sync failed:', error);
-                    this.logCAT(`Time sync failed: ${error.message}`, 'error');
-                    this.localTimeOffset = 0;
-                }
-            }
-
-            getSyncedTime() {
-                const now = new Date();
-                return new Date(now.getTime() + (this.localTimeOffset || 0));
-            }
-
-            updateSyncedClock() {
-                const syncedUTC = this.getSyncedTime();
-                const localTime = new Date(syncedUTC.getTime() - (syncedUTC.getTimezoneOffset() * 60000));
+            updateBandFromFrequency() {
+                const freqMHz = this.frequency / 1000000;
+                const detectedBand = this.getBandFromFrequency(freqMHz);
                 
-                const timeString = localTime.toLocaleTimeString('en-US', {
-                    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
+                if (detectedBand && detectedBand !== this.band) {
+                    this.band = detectedBand;
+                    this.updateBandButtons();
+                    this.logCAT(`Auto-selected ${this.band}m band for ${freqMHz.toFixed(3)} MHz`, 'info');
+                }
+            }
+
+            updateBandButtons() {
+                document.querySelectorAll('.band-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.band === this.band) {
+                        btn.classList.add('active');
+                    }
+                });
+            } 
+
+            updateVFOButtons() {
+                document.querySelectorAll('#vfoA, #vfoB').forEach(btn => {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
                 });
                 
-                const timeElement = document.getElementById('currentTime');
-                if (timeElement) {
-                    const syncAge = this.lastSyncTime ? Date.now() - this.lastSyncTime : Infinity;
-                    const syncIndicator = syncAge > 11 * 60 * 1000 ? ' (SYNC?)' : ' (SYNC)';
-                    timeElement.textContent = timeString + (this.lastSyncTime ? syncIndicator : ' (LOCAL)');
+                const activeButton = document.getElementById(`vfo${this.currentVFO}`);
+                if (activeButton) {
+                    activeButton.classList.remove('btn-secondary');
+                    activeButton.classList.add('btn-primary');
                 }
             }
 
-          // 1. Function to update band selection based on frequency
-updateBandFromFrequency() {
-    const freqMHz = this.frequency / 1000000;
-    const detectedBand = this.getBandFromFrequency(freqMHz);
-    
-    if (detectedBand && detectedBand !== this.band) {
-        this.band = detectedBand;
-        this.updateBandButtons();
-        this.logCAT(`Auto-selected ${this.band}m band for ${freqMHz.toFixed(3)} MHz`, 'info');
-    }
-}
-
-// 2. Function to update band button highlighting
-updateBandButtons() {
-    document.querySelectorAll('.band-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.band === this.band) {
-            btn.classList.add('active');
-        }
-    });
-} 
-
-
-
-updateVFOButtons() {
-    document.querySelectorAll('#vfoA, #vfoB').forEach(btn => {
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-secondary');
-    });
-    
-    const activeButton = document.getElementById(`vfo${this.currentVFO}`);
-    if (activeButton) {
-        activeButton.classList.remove('btn-secondary');
-        activeButton.classList.add('btn-primary');
-    }
-}
-
-// 3. Helper function to get the correct VFO command
-getVFOCommand() {
-    return this.currentVFO === 'B' ? 'FB' : 'FA';
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		   updateLocalClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('en-US', {
-                    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
-                });
-                
-                const timeElement = document.getElementById('currentTime');
-                if (timeElement) {
-                    timeElement.textContent = timeString + ' (LOCAL)';
-                }
-                
-                setTimeout(() => this.updateLocalClock(), 1000);
+            getVFOCommand() {
+                return this.currentVFO === 'B' ? 'FB' : 'FA';
             }
 
-            sendTimeToQMX() {
-                if (this.timeCommandTimeout) clearTimeout(this.timeCommandTimeout);
-                
-                this.timeCommandTimeout = setTimeout(() => {
-                    if (this.connected && this.port && this.writer) {
-                        const syncedUTC = this.getSyncedTime();
-                        const localTime = new Date(syncedUTC.getTime() - (syncedUTC.getTimezoneOffset() * 60000));
-                        
-                        const hours = localTime.getHours().toString().padStart(2, '0');
-                        const minutes = localTime.getMinutes().toString().padStart(2, '0');
-                        const seconds = localTime.getSeconds().toString().padStart(2, '0');
-                        const timeCommand = `TM${hours}${minutes}${seconds}`;
-                        
-                        this.sendCommand(timeCommand).then(() => {
-                            this.logCAT(`Local time sent to QMX: ${hours}:${minutes}:${seconds}`, 'info');
-                        }).catch(e => {
-                            console.error("Time command error:", e);
-                        });
-                    }
-                    this.timeCommandTimeout = null;
-                }, 100);
-            }
-
-
-
-updateBandForOutOfBand() {
-    const freqMHz = this.frequency / 1000000;
-    const detectedBand = this.getBandFromFrequency(freqMHz);
-    
-    if (!detectedBand) {
-        // Clear all band selections for out-of-band frequencies
-        document.querySelectorAll('.band-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        this.band = null; // or keep the last valid band
-        this.logCAT(`Frequency ${freqMHz.toFixed(3)} MHz is outside amateur bands`, 'info');
-    }
-}
-
-
-// NEW: Enable keyboard control when hovering over tuning knob
-enableTuningHoverKeys() {
-    this.isHoveringTuningKnob = true;
-    
-    if (!this.boundHandleTuningHoverKeys) {
-        this.boundHandleTuningHoverKeys = this.handleTuningHoverKeys.bind(this);
-    }
-    
-    document.addEventListener('keydown', this.boundHandleTuningHoverKeys);
-    
-    // Visual feedback - make the knob glow when hover-keyboard-active
-    const tuningKnob = document.getElementById('tuningKnob');
-    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.6)';
-}
-
-// NEW: Disable keyboard control when not hovering over tuning knob
-disableTuningHoverKeys() {
-    this.isHoveringTuningKnob = false;
-    
-    if (this.boundHandleTuningHoverKeys) {
-        document.removeEventListener('keydown', this.boundHandleTuningHoverKeys);
-    }
-    
-    // Remove visual feedback
-    const tuningKnob = document.getElementById('tuningKnob');
-    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
-}
-
-// NEW: Handle keyboard input when hovering over tuning knob
-handleTuningHoverKeys(e) {
-    if (!this.isHoveringTuningKnob) return;
-    
-    // Only handle arrow keys
-    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-    
-    e.preventDefault();
-    
-    let direction = 0;
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-        direction = -1;
-    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-        direction = 1;
-    }
-    
-    if (direction !== 0) {
-        // Use the selected step size
-        const freqDelta = direction * this.stepSize;
-        this.updateFrequency(freqDelta);
-        
-        // Update knob rotation for visual feedback
-        const rotationDelta = direction * 2;
-        this.tuningKnobRotation += rotationDelta;
-        document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
-        
-        // Send frequency update
-        this.sendFrequencyDynamically();
-        
-        // Brief visual feedback
-        this.provideTuningKeyFeedback();
-    }
-}
-
-// NEW: Provide brief visual feedback for keyboard tuning
-provideTuningKeyFeedback() {
-    const tuningKnob = document.getElementById('tuningKnob');
-    const originalBoxShadow = tuningKnob.style.boxShadow;
-    
-    // Brief bright glow
-    tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 255, 136, 1)';
-    
-    setTimeout(() => {
-        if (this.isHoveringTuningKnob) {
-            // Return to hover glow
-            tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 255, 136, 0.6)';
-        } else {
-            // Return to normal
-            tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
-        }
-    }, 150);
-}
-
-
-
-
-// ADD these new methods to your QMXInterface class:
-
-updateTuningSpeed(speed) {
-    // Keep track of recent speed samples (last 500ms worth)
-    const now = performance.now();
-    this.tuningSpeedSamples.push({ speed: speed, time: now });
-    
-    // Remove old samples (older than 500ms)
-    this.tuningSpeedSamples = this.tuningSpeedSamples.filter(sample => 
-        now - sample.time < 500
-    );
-    
-    // Calculate average speed
-    if (this.tuningSpeedSamples.length > 0) {
-        const avgSpeed = this.tuningSpeedSamples.reduce((sum, sample) => 
-            sum + sample.speed, 0) / this.tuningSpeedSamples.length;
-        
-        // Threshold for "fast" tuning (adjust these values as needed)
-        const fastThreshold = 2.0;  // radians/second for rotary, or scaled for wheel
-        
-        if (avgSpeed > fastThreshold && !this.isVariableStepActive) {
-            this.activateVariableStep();
-        }
-    }
-    
-    // Reset the timeout to revert to normal speed
-    this.resetVariableStepTimeout();
-}
-
-activateVariableStep() {
-    if (!this.isVariableStepActive) {
-        this.originalStepSize = this.stepSize;
-        this.stepSize = this.originalStepSize * this.fastStepMultiplier;
-        this.isVariableStepActive = true;
-        
-        // Visual feedback
-        const stepDisplay = document.getElementById('stepSize');
-        if (stepDisplay) {
-            stepDisplay.style.background = 'rgba(255, 149, 0, 0.3)';
-            stepDisplay.style.borderColor = '#ff9500';
-        }
-        
-        this.logCAT(`Fast tuning activated: ${this.stepSize} Hz step`, 'info');
-    }
-}
-
-deactivateVariableStep() {
-    if (this.isVariableStepActive) {
-        this.stepSize = this.originalStepSize;
-        this.isVariableStepActive = false;
-        
-        // Remove visual feedback
-        const stepDisplay = document.getElementById('stepSize');
-        if (stepDisplay) {
-            stepDisplay.style.background = '';
-            stepDisplay.style.borderColor = '';
-        }
-        
-        this.logCAT(`Normal tuning restored: ${this.stepSize} Hz step`, 'info');
-    }
-}
-
-getCurrentStepSize() {
-    return this.isVariableStepActive ? this.stepSize : this.originalStepSize;
-}
-
-resetVariableStepTimeout() {
-    if (this.variableStepTimeout) {
-        clearTimeout(this.variableStepTimeout);
-    }
-    
-    // Revert to normal step after 1 second of slow/no tuning
-    this.variableStepTimeout = setTimeout(() => {
-        this.deactivateVariableStep();
-        this.tuningSpeedSamples = []; // Clear speed history
-    }, 1000);
-}
-
-// This is the updated code
-initKeyerToggle() {
-    try {
-        const keyerToggle = document.getElementById('keyerModeToggle');
-        const keyerKnobContainer = document.querySelector('.knob-group:has(#rfGainKnob)');
-        
-        // Set initial state to BUG mode
-        this.setKeyerMode('bug'); // ✅ Changed from 'straight' to 'bug'
-        
-        // Add click event listener
-        keyerToggle.addEventListener('click', () => {
-            this.toggleKeyerMode();
-        });
-        
-        console.log('Keyer mode toggle initialized');
-    } catch (error) {
-        console.error('Error initializing keyer toggle:', error);
-    }
-}
-
-
-// ADD this method to toggle between modes:
-toggleKeyerMode() {
-    if (this.keyerMode === 'straight') {
-        this.setKeyerMode('bug');
-    } else {
-        this.setKeyerMode('straight');
-    }
-}
-
-
-// ADD this method to set the keyer mode:
-setKeyerMode(mode) {
-    const keyerToggle = document.getElementById('keyerModeToggle');
-    const keyerKnobContainer = document.querySelector('.knob-group:has(#rfGainKnob)');
-    
-    this.keyerMode = mode;
-    
-    if (mode === 'straight') {
-        // Set to STRAIGHT mode (0 WPM)
-        keyerToggle.classList.remove('bug');
-        if (keyerKnobContainer) {
-            keyerKnobContainer.classList.add('keyer-straight');
-        }
-        
-        // Set keyer speed to 0 (STRAIGHT)
-        this.rfGainLevel = 0;
-        this.rfGainKnobRotation = this.minRotation;
-        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-        this.updateRFGainLevel();
-        
-        this.logCAT('Keyer mode: STRAIGHT KEY', 'info');
-        
-    } else if (mode === 'bug') {
-        // Set to BUG mode (22 WPM)
-        keyerToggle.classList.add('bug');
-        if (keyerKnobContainer) {
-            keyerKnobContainer.classList.remove('keyer-straight');
-        }
-        
-        // Set keyer speed to 22 WPM
-        this.rfGainLevel = (this.bugWpmSetting / 50) * 100;  // Convert 22 WPM to percentage
-        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-        this.updateRFGainLevel();
-        
-        this.logCAT(`Keyer mode: BUG (${this.bugWpmSetting} WPM)`, 'info');
-    }
-    
-    // Send the command to the radio
-    this.sendRFGainCommand();
- }
- 
- 
-
-
- 
-
-
-
-            // --- Frequency & Layout Management ---
             loadLastFrequencies() {
-                const savedFrequencies = localStorage.getItem('qmxLastFrequencies');
+                const savedFrequencies = localStorage.getItem('qdxLastFrequencies');
                 if (savedFrequencies) {
                     try {
                         const parsedFrequencies = JSON.parse(savedFrequencies);
-                        // Merge saved frequencies with defaults to ensure all bands are covered
                         this.lastFrequencies = { ...this.lastFrequencies, ...parsedFrequencies };
                         console.log('Loaded last-used frequencies.');
                     } catch(e) {
@@ -2748,8 +2607,8 @@ setKeyerMode(mode) {
                 }
                 this.saveFreqTimeout = setTimeout(() => {
                     this.lastFrequencies[this.band] = this.frequency;
-                    localStorage.setItem('qmxLastFrequencies', JSON.stringify(this.lastFrequencies));
-                }, 1000); // Save 1 second after tuning stops
+                    localStorage.setItem('qdxLastFrequencies', JSON.stringify(this.lastFrequencies));
+                }, 1000);
             }
             
             initDraggablePanels() {
@@ -2783,12 +2642,12 @@ setKeyerMode(mode) {
                     center: [...document.querySelectorAll('.center-panel .panel')].map(p => p.id),
                     right: [...document.querySelectorAll('.right-panel .panel')].map(p => p.id)
                 };
-                localStorage.setItem('qmxPanelLayout', JSON.stringify(layout));
+                localStorage.setItem('qdxPanelLayout', JSON.stringify(layout));
                 this.logCAT('Panel layout saved.', 'info');
             }
 
             loadLayout() {
-                const savedLayout = localStorage.getItem('qmxPanelLayout');
+                const savedLayout = localStorage.getItem('qdxPanelLayout');
                 if (savedLayout) {
                     try {
                         const layout = JSON.parse(savedLayout);
@@ -2809,289 +2668,9 @@ setKeyerMode(mode) {
                         console.log('Custom panel layout loaded.');
                     } catch (e) {
                         console.error("Failed to load custom layout, using default.", e);
-                        localStorage.removeItem('qmxPanelLayout');
+                        localStorage.removeItem('qdxPanelLayout');
                     }
                 }
-            }
-            
-            // --- The rest of the methods ---
-
-            // --- QSO Logger ---
-            initQsoLogger() {
-                try {
-                    document.getElementById('logQsoBtn').addEventListener('click', () => this.logQso());
-                    document.getElementById('clearQsoInputsBtn').addEventListener('click', () => this.clearQsoInputs());
-                    document.getElementById('exportAdifBtn').addEventListener('click', () => this.exportAdif());
-                    document.getElementById('importAdifBtn').addEventListener('click', () => document.getElementById('importAdifFile').click());
-                    document.getElementById('importAdifFile').addEventListener('change', (e) => this.importAdif(e));
-                    document.getElementById('clearLogBtn').addEventListener('click', () => this.clearLog());
-                    document.getElementById('qsoSearch').addEventListener('input', (e) => {
-                        this.qsoLogFilter = e.target.value;
-                        this.renderQsoLog();
-                    });
-                    document.getElementById('qsoCallsign').addEventListener('keyup', (e) => {
-                         e.target.value = e.target.value.toUpperCase();
-                         if (e.key === 'Enter') {
-                             this.logQso();
-                         }
-                    });
-
-                    this.loadQsoLog();
-                    console.log('QSO Logger initialized');
-                } catch (error) {
-                    console.error('Failed to initialize QSO Logger:', error);
-                }
-            }
-
-            updateLoggerInfoBar() {
-                try {
-                    const infoBar = document.getElementById('qsoInfoBar');
-                    if (!infoBar) return;
-                    
-                    const freqMHz = (this.frequency / 1000000).toFixed(3);
-                    const mode = this.mode;
-                    const band = this.band + 'm';
-                    
-                    const syncedUTC = this.getSyncedTime();
-                    const dateStr = syncedUTC.toISOString().slice(0, 10);
-                    const timeStr = syncedUTC.toISOString().slice(11, 19);
-
-                    infoBar.innerHTML = `
-                        <span>${freqMHz} MHz</span> &bull; 
-                        <span>${mode}</span> &bull; 
-                        <span>${band}</span>
-                        <span style="float: right;">${dateStr} ${timeStr} UTC</span>
-                    `;
-                } catch (error) {
-                    // Fail silently if elements are not ready
-                }
-            }
-
-            loadQsoLog() {
-                const savedLog = localStorage.getItem('qmxQsoLog');
-                if (savedLog) {
-                    this.qsoLog = JSON.parse(savedLog);
-                }
-                this.renderQsoLog();
-            }
-
-            saveQsoLog() {
-                localStorage.setItem('qmxQsoLog', JSON.stringify(this.qsoLog));
-            }
-
-            logQso() {
-                const callsign = document.getElementById('qsoCallsign').value.trim().toUpperCase();
-                if (!callsign) {
-                    alert('Callsign is required.');
-                    document.getElementById('qsoCallsign').focus();
-                    return;
-                }
-
-                const qso = {
-                    id: Date.now(),
-                    call: callsign,
-                    rstSent: document.getElementById('qsoRstSent').value.trim(),
-                    rstRcvd: document.getElementById('qsoRstRcvd').value.trim(),
-                    name: document.getElementById('qsoName').value.trim(),
-                    qth: document.getElementById('qsoQth').value.trim(),
-                    comments: document.getElementById('qsoComments').value.trim(),
-                    freq: (this.frequency / 1000000).toFixed(6),
-                    mode: this.mode,
-                    band: this.band + 'm',
-                    time: this.getSyncedTime().toISOString()
-                };
-                
-                this.qsoLog.unshift(qso);
-                this.saveQsoLog();
-                this.renderQsoLog();
-                this.clearQsoInputs(false);
-            }
-
-            clearQsoInputs(clearAll = true) {
-                document.getElementById('qsoCallsign').value = '';
-                document.getElementById('qsoName').value = '';
-                document.getElementById('qsoQth').value = '';
-                document.getElementById('qsoComments').value = '';
-                if(clearAll) {
-                   document.getElementById('qsoRstSent').value = '599';
-                   document.getElementById('qsoRstRcvd').value = '599';
-                }
-                document.getElementById('qsoCallsign').focus();
-            }
-
-            clearLog() {
-                if (confirm(`Are you sure you want to delete all ${this.qsoLog.length} logged QSOs? This cannot be undone.`)) {
-                    this.qsoLog = [];
-                    this.saveQsoLog();
-                    this.renderQsoLog();
-                    this.logCAT('QSO Log cleared.', 'info');
-                }
-            }
-
-            renderQsoLog() {
-                const logBody = document.getElementById('qsoLogBody');
-                const qsoCount = document.getElementById('qsoCount');
-                
-                logBody.innerHTML = '';
-                
-                const filteredLog = this.qsoLog.filter(qso => 
-                    qso.call.toUpperCase().includes(this.qsoLogFilter.toUpperCase())
-                );
-
-                if (filteredLog.length === 0) {
-                    logBody.innerHTML = `<div class="log-empty-msg">${this.qsoLog.length > 0 ? 'No matching QSOs' : 'No QSOs logged yet'}</div>`;
-                } else {
-                    filteredLog.forEach(qso => {
-                        const row = document.createElement('div');
-                        row.className = 'log-row';
-                        
-                        const time = new Date(qso.time);
-                        const timeStr = `${time.getUTCHours().toString().padStart(2, '0')}:${time.getUTCMinutes().toString().padStart(2, '0')}`;
-                        const freqStr = parseFloat(qso.freq).toFixed(3);
-
-                        row.innerHTML = `
-                            <div>${timeStr}</div>
-                            <div>${qso.call}</div>
-                            <div>${freqStr}</div>
-                            <div>${qso.mode}</div>
-                            <div>${qso.rstRcvd}</div>
-                        `;
-                        row.title = `Date: ${time.toISOString().slice(0,10)}\nName: ${qso.name}\nQTH: ${qso.qth}\nComments: ${qso.comments}`;
-                        logBody.appendChild(row);
-                    });
-                }
-                
-                qsoCount.textContent = this.qsoLog.length;
-            }
-
-            exportAdif() {
-                if (this.qsoLog.length === 0) {
-                    alert('Log is empty. Nothing to export.');
-                    return;
-                }
-
-                let adifContent = "Generated by QMX+ Professional QRP Communications Interface\n<EOH>\n\n";
-
-                this.qsoLog.slice().reverse().forEach(qso => {
-                    const time = new Date(qso.time);
-                    const qsoDate = time.toISOString().slice(0, 10).replace(/-/g, '');
-                    const timeOn = time.toISOString().slice(11, 19).replace(/:/g, '');
-
-                    let record = '';
-                    const addField = (name, value) => {
-                        if (value) {
-                            const val = String(value);
-                            record += `<${name}:${val.length}>${val} `;
-                        }
-                    };
-
-                    addField('CALL', qso.call);
-                    addField('QSO_DATE', qsoDate);
-                    addField('TIME_ON', timeOn);
-                    addField('BAND', qso.band.toUpperCase());
-                    addField('FREQ', qso.freq);
-                    addField('MODE', qso.mode);
-                    addField('RST_SENT', qso.rstSent);
-                    addField('RST_RCVD', qso.rstRcvd);
-                    addField('NAME', qso.name);
-                    addField('QTH', qso.qth);
-                    addField('COMMENT', qso.comments);
-                    
-                    adifContent += record.trim() + '<EOR>\n';
-                });
-
-                const blob = new Blob([adifContent], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `qmx_log_${new Date().toISOString().slice(0, 10)}.adi`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                this.logCAT('QSO log exported to ADIF.', 'info');
-            }
-
-            importAdif(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const content = e.target.result;
-                    try {
-                        const newQsos = this.parseAdif(content);
-                        if (newQsos.length === 0) {
-                            alert('No valid QSO records found in the file.');
-                            return;
-                        }
-
-                        if (confirm(`Found ${newQsos.length} QSOs. Do you want to add them to your log?`)) {
-                            const existingKeys = new Set(this.qsoLog.map(q => `${q.call}-${q.time.slice(0,16)}`));
-                            const addedQsos = [];
-                            newQsos.reverse().forEach(qso => {
-                                const key = `${qso.call}-${qso.time.slice(0,16)}`;
-                                if (!existingKeys.has(key)) {
-                                    this.qsoLog.unshift(qso);
-                                    addedQsos.push(qso);
-                                }
-                            });
-                            
-                            this.qsoLog.sort((a, b) => new Date(b.time) - new Date(a.time));
-                            this.saveQsoLog();
-                            this.renderQsoLog();
-                            alert(`Successfully imported ${addedQsos.length} new QSOs.`);
-                            this.logCAT(`Imported ${addedQsos.length} QSOs from ADIF file.`, 'info');
-                        }
-                    } catch (error) {
-                        alert('Failed to parse ADIF file. Error: ' + error.message);
-                        console.error('ADIF Parse Error:', error);
-                    } finally {
-                        event.target.value = '';
-                    }
-                };
-                reader.readAsText(file);
-            }
-
-            parseAdif(adifContent) {
-                const qsos = [];
-                const records = adifContent.toUpperCase().split(/<EOR>/i);
-
-                for (const record of records) {
-                    if (!record.includes('<CALL')) continue;
-
-                    let qso = { id: Date.now() + Math.random() };
-                    const fields = record.match(/<[A-Z0-9_]+:\d+>[\s\S]*?(?=\s*<|$)/g) || [];
-
-                    for (const field of fields) {
-                        const match = field.match(/<([A-Z0-9_]+):\d+>([\s\S]*)/);
-                        if (match) {
-                            const [, key, value] = match;
-                            qso[key] = value.trim();
-                        }
-                    }
-                    
-                    if (qso.CALL && qso.QSO_DATE && qso.TIME_ON) {
-                        const date = `${qso.QSO_DATE.slice(0,4)}-${qso.QSO_DATE.slice(4,6)}-${qso.QSO_DATE.slice(6,8)}`;
-                        const time = `${qso.TIME_ON.slice(0,2)}:${qso.TIME_ON.slice(2,4)}:${qso.TIME_ON.slice(4,6)}`;
-                        const fullIsoTime = new Date(`${date}T${time}Z`).toISOString();
-
-                        qsos.push({
-                            id: qso.id,
-                            call: qso.CALL || '',
-                            rstSent: qso.RST_SENT || '',
-                            rstRcvd: qso.RST_RCVD || '',
-                            name: qso.NAME || '',
-                            qth: qso.QTH || '',
-                            comments: qso.COMMENT || '',
-                            freq: qso.FREQ || '',
-                            mode: qso.MODE || '',
-                            band: qso.BAND ? (qso.BAND.endsWith('M') ? qso.BAND : qso.BAND + 'M') : '',
-                            time: fullIsoTime,
-                        });
-                    }
-                }
-                return qsos;
             }
 
             initVolumeControl() {
@@ -3223,7 +2802,7 @@ setKeyerMode(mode) {
                 this.volumeLevel = Math.max(0, Math.min(100, this.volumeLevel));
                 this.volumeKnobRotation = this.minRotation + (this.volumeLevel / 100) * this.totalRotationRange;
                 document.getElementById('volumeKnob').style.transform = `rotate(${this.volumeKnobRotation}deg)`;
-                document.getElementById('volumeLevel').textContent = `${this.volumeLevel}db`;
+                document.getElementById('volumeLevel').textContent = `${this.volumeLevel}%`;
                 document.getElementById('volumeKnob').setAttribute('aria-valuenow', this.volumeLevel);
             }
 
@@ -3233,9 +2812,7 @@ setKeyerMode(mode) {
                 }
                 this.volumeTimeout = setTimeout(() => {
                     if (this.connected && this.port && this.writer) {
-                        const scaledVolume = this.volumeToCAT(this.volumeLevel);
-                        
-                        this.sendCommand(`AG${scaledVolume.toString().padStart(3, '0')}`).catch(e => {
+                        this.sendCommand(`AG${this.volumeLevel.toString().padStart(3, '0')}`).catch(e => {
                             console.error("Volume update error:", e);
                         });
                     }
@@ -3246,291 +2823,61 @@ setKeyerMode(mode) {
             async sendVolumeCommand() {
                 if (!this.connected || !this.port || !this.writer) return;
                 try {
-                    const scaledVolume = this.volumeToCAT(this.volumeLevel);
-                    await this.sendCommand(`AG${scaledVolume.toString().padStart(3, '0')}`);
-                    this.logCAT(`Volume set to ${this.volumeLevel}%`, 'info');
+                    await this.sendCommand(`AG${this.volumeLevel.toString().padStart(3, '0')}`);
+                    this.logCAT(`AF Gain set to ${this.volumeLevel}%`, 'info');
                 } catch (e) {
-                    this.logCAT(`Volume command error: ${e.message}`, 'error');
+                    this.logCAT(`AF Gain command error: ${e.message}`, 'error');
                 }
             }
 
-            volumeToCAT(volumePercent) {
-                if (volumePercent <= 0) return 0;
-                if (volumePercent >= 100) return 255;
-                
-                const normalizedInput = volumePercent / 100;
-                const logScaled = (Math.pow(10, normalizedInput * 2) - 1) / 99;
-                return Math.round(logScaled * 255);
-            }
-
-            catToVolume(catValue) {
-                if (catValue <= 0) return 0;
-                if (catValue >= 255) return 100;
-                
-                const normalized = catValue / 255;
-                const linearValue = (normalized * 99 + 1);
-                const volumePercent = (Math.log10(linearValue) / 2) * 100;
-                return Math.round(Math.max(0, Math.min(100, volumePercent)));
-            }
-
-    // Add this line at the end of initRFGainControl():
-initRFGainControl() {
-    try {
-        const rfGainKnob = document.getElementById('rfGainKnob');
-        const rfGainLevel = document.getElementById('rfGainLevel');
-        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-        rfGainKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-        
-        this.updateRFGainLevel();
-        
-        rfGainKnob.addEventListener('mousedown', this.startRFGainAdjust.bind(this));
-        rfGainKnob.addEventListener('touchstart', this.startRFGainAdjust.bind(this), { passive: false });
-        rfGainKnob.addEventListener('wheel', this.handleRFGainWheel.bind(this));
-        rfGainKnob.addEventListener('keydown', this.handleRFGainKeyboard.bind(this));
-        rfGainKnob.setAttribute('aria-valuenow', this.rfGainLevel);
-        
-        // NEW: Initialize the keyer toggle
-        this.setKeyerMode('');      
-	   this.initKeyerToggle();
-        
-        console.log('Keyer initialized with toggle (0=STRAIGHT, 1-50 WPM)');
-    } catch (error) {
-        console.error('Error initializing Keyer:', error);
-    }
-}
-
-            startRFGainAdjust(e) {
-               
-// Don't allow manual adjustment in STRAIGHT mode
-    if (this.keyerMode === 'straight') {
-        return;
-    }
-			   e.preventDefault();
-                this.isRFGainAdjusting = true;
-                const rect = e.target.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                this.boundContinueRFGainAdjust = this.continueRFGainAdjust.bind(this);
-                this.boundStopRFGainAdjust = this.stopRFGainAdjust.bind(this);
-                if (e.type === 'mousedown') {
-                    this.rfGainLastAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-                    document.addEventListener('mousemove', this.boundContinueRFGainAdjust);
-                    document.addEventListener('mouseup', this.boundStopRFGainAdjust);
-                } else if (e.type === 'touchstart') {
-                    const t = e.touches[0];
-                    this.rfGainLastAngle = Math.atan2(t.clientY - centerY, t.clientX - centerX);
-                    document.addEventListener('touchmove', this.boundContinueRFGainAdjust, { passive: false });
-                    document.addEventListener('touchend', this.boundStopRFGainAdjust);
-                }
-            }
-
-            continueRFGainAdjust(e) {
-                if (!this.isRFGainAdjusting) return;
-                if (this.rfGainAnimationFrame) {
-                    cancelAnimationFrame(this.rfGainAnimationFrame);
-                }
-                this.rfGainAnimationFrame = requestAnimationFrame(() => {
-                    const rfGainKnob = document.getElementById('rfGainKnob');
-                    const rect = rfGainKnob.getBoundingClientRect();
-                    const centerX = rect.left + rect.width / 2;
-                    const centerY = rect.top + rect.height / 2;
-                    let currentX, currentY;
-                    if (e.type === 'mousemove') {
-                        currentX = e.clientX;
-                        currentY = e.clientY;
-                    } else if (e.type === 'touchmove') {
-                        e.preventDefault();
-                        const t = e.touches[0];
-                        currentX = t.clientX;
-                        currentY = t.clientY;
-                    }
-                    const distance = Math.sqrt(Math.pow(currentX - centerX, 2) + Math.pow(currentY - centerY, 2));
-                    if (distance < rect.width * 2) {
-                        const currentAngle = Math.atan2(currentY - centerY, currentX - centerX);
-                        let deltaAngle = currentAngle - this.rfGainLastAngle;
-                        if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
-                        if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
-                        const sensitivity = 0.7;
-                        deltaAngle *= sensitivity;
-                        const newRotation = this.rfGainKnobRotation + (deltaAngle * 180 / Math.PI);
-                        this.rfGainKnobRotation = Math.max(this.minRotation, Math.min(this.maxRotation, newRotation));
-                        rfGainKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-                        const newRFGainLevel = Math.round(((this.rfGainKnobRotation - this.minRotation) / this.totalRotationRange) * 100);
-                        if (newRFGainLevel !== this.rfGainLevel) {
-                            this.rfGainLevel = newRFGainLevel;
-                            this.updateRFGainLevel();
-                            this.sendRFGainDynamically();
-                        }
-                        this.rfGainLastAngle = currentAngle;
-                    }
-                    this.rfGainAnimationFrame = null;
-                });
-            }
-
-            stopRFGainAdjust() {
-                this.isRFGainAdjusting = false;
-                if (this.rfGainAnimationFrame) {
-                    cancelAnimationFrame(this.rfGainAnimationFrame);
-                    this.rfGainAnimationFrame = null;
-                }
-                if (this.boundContinueRFGainAdjust && this.boundStopRFGainAdjust) {
-                    document.removeEventListener('mousemove', this.boundContinueRFGainAdjust);
-                    document.removeEventListener('mouseup', this.boundStopRFGainAdjust);
-                    document.removeEventListener('touchmove', this.boundContinueRFGainAdjust);
-                    document.removeEventListener('touchend', this.boundStopRFGainAdjust);
-                    this.boundContinueRFGainAdjust = null;
-                    this.boundStopRFGainAdjust = null;
-                }
-                this.sendRFGainCommand();
-            }
-
-            handleRFGainKeyboard(e) {
-// Don't allow manual adjustment in STRAIGHT mode
-    if (this.keyerMode === 'straight') {
-        return;
-    }               
-			   if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    this.adjustRFGain(-5);
-                } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    this.adjustRFGain(5);
-                }
-            }
-
-          handleRFGainWheel(e) {
- // Don't allow manual adjustment in STRAIGHT mode
-    if (this.keyerMode === 'straight') {
-        return;
-    }   
-   e.preventDefault();
-    let steps = e.deltaY > 0 ? -1 : 1;
-    const cwSpeedDelta = steps * 1;
-    const currentCWSpeed = Math.round((this.rfGainLevel / 100) * 50);
-    const newCWSpeed = Math.max(0, Math.min(50, currentCWSpeed + cwSpeedDelta));
-    this.rfGainLevel = (newCWSpeed / 50) * 100;
-    this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-    if (this.rfGainAnimationFrame) {
-        cancelAnimationFrame(this.rfGainAnimationFrame);
-    }
-    this.rfGainAnimationFrame = requestAnimationFrame(() => {
-        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-        this.updateRFGainLevel();
-        this.sendRFGainCommand();
-        this.rfGainAnimationFrame = null;
-    });
-}
-
-            adjustRFGain(delta) {
-                this.rfGainLevel = Math.max(0, Math.min(100, this.rfGainLevel + delta));
-                this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-                if (this.rfGainAnimationFrame) {
-                    cancelAnimationFrame(this.rfGainAnimationFrame);
-                }
-                this.rfGainAnimationFrame = requestAnimationFrame(() => {
-                    document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-                    this.updateRFGainLevel();
-                    this.sendRFGainCommand();
-                    this.rfGainAnimationFrame = null;
-                });
-            }
-
- 
-// MODIFY your existing updateRFGainLevel method to show mode info:
-updateRFGainLevel() {
-    const cwSpeed = Math.round((this.rfGainLevel / 100) * 50);
-    const rfGainLevelEl = document.getElementById('rfGainLevel');
-    
-    if (cwSpeed === 0) {
-        rfGainLevelEl.textContent = 'STRAIGHT';
-        rfGainLevelEl.style.color = '#ff4757';
-    } else {
-        rfGainLevelEl.textContent = `${cwSpeed} WPM`;
-        rfGainLevelEl.style.color = '#00ff88';
-    }
-    document.getElementById('rfGainKnob').setAttribute('aria-valuenow', cwSpeed);
-}
-
-           sendRFGainDynamically() {
-    if (this.rfGainTimeout) {
-        clearTimeout(this.rfGainTimeout);
-    }
-    this.rfGainTimeout = setTimeout(() => {
-        if (this.connected && this.port && this.writer) {
-            const cwSpeed = Math.round((this.rfGainLevel / 100) * 50);
-            this.sendCommand(`KS${cwSpeed.toString().padStart(3, '0')}`).catch(e => {
-                console.error("CW Speed update error:", e);
-            });
-        }
-        this.rfGainTimeout = null;
-    }, 50);
-}
-
-           async sendRFGainCommand() {
-    if (!this.connected || !this.port || !this.writer) return;
-    try {
-        const cwSpeed = Math.round((this.rfGainLevel / 100) * 50);
-        await this.sendCommand(`KS${cwSpeed.toString().padStart(3, '0')}`);
-        if (cwSpeed === 0) {
-            this.logCAT(`Keyer set to STRAIGHT KEY mode`, 'info');
-        } else {
-            this.logCAT(`CW Speed set to ${cwSpeed} WPM`, 'info');
-        }
-    } catch (e) {
-        this.logCAT(`CW Speed command error: ${e.message}`, 'error');
-    }
-}
-
-            initPowerControl() {
+            initSignalGenControl() {
                 try {
-                    const powerKnob = document.getElementById('powerKnob');
-                    const powerLevel = document.getElementById('powerLevel');
-                    this.powerLevel = Math.max(0, Math.min(50, this.powerLevel));
-                    this.powerKnobRotation = this.minRotation + (this.powerLevel / 50) * this.totalRotationRange;
-                    powerKnob.style.transform = `rotate(${this.powerKnobRotation}deg)`;
-                    powerLevel.textContent = `${(this.powerLevel / 10).toFixed(1)}W`;
-                    powerKnob.addEventListener('mousedown', this.startPowerAdjust.bind(this));
-                    powerKnob.addEventListener('touchstart', this.startPowerAdjust.bind(this), { passive: false });
-                    powerKnob.addEventListener('wheel', this.handlePowerWheel.bind(this));
-                    powerKnob.addEventListener('keydown', this.handlePowerKeyboard.bind(this));
-                    powerKnob.setAttribute('aria-valuenow', this.powerLevel);
-                    console.log('Power control initialized at', (this.powerLevel / 10).toFixed(1), 'W');
+                    const signalGenKnob = document.getElementById('signalGenKnob');
+                    this.signalGenKnobRotation = this.minRotation + (this.signalGenLevel / 100) * this.totalRotationRange;
+                    signalGenKnob.style.transform = `rotate(${this.signalGenKnobRotation}deg)`;
+                    
+                    this.updateSignalGenLevel();
+                    
+                    signalGenKnob.addEventListener('mousedown', this.startSignalGenAdjust.bind(this));
+                    signalGenKnob.addEventListener('touchstart', this.startSignalGenAdjust.bind(this), { passive: false });
+                    signalGenKnob.addEventListener('wheel', this.handleSignalGenWheel.bind(this));
+                    signalGenKnob.addEventListener('keydown', this.handleSignalGenKeyboard.bind(this));
+                    signalGenKnob.setAttribute('aria-valuenow', this.signalGenLevel);
+                    
+                    console.log('Signal Generator control initialized');
                 } catch (error) {
-                    console.error('Error initializing Power control:', error);
+                    console.error('Error initializing Signal Generator control:', error);
                 }
             }
 
-            startPowerAdjust(e) {
+            startSignalGenAdjust(e) {
                 e.preventDefault();
-                this.isPowerAdjusting = true;
-                this.powerLevelBeforeAdjust = this.powerLevel;
+                this.isSignalGenAdjusting = true;
                 const rect = e.target.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
                 const centerY = rect.top + rect.height / 2;
-                this.boundContinuePowerAdjust = this.continuePowerAdjust.bind(this);
-                this.boundStopPowerAdjust = this.stopPowerAdjust.bind(this);
+                this.boundContinueSignalGenAdjust = this.continueSignalGenAdjust.bind(this);
+                this.boundStopSignalGenAdjust = this.stopSignalGenAdjust.bind(this);
                 if (e.type === 'mousedown') {
-                    this.powerLastAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-                    document.addEventListener('mousemove', this.boundContinuePowerAdjust);
-                    document.addEventListener('mouseup', this.boundStopPowerAdjust);
-                    document.addEventListener('mouseleave', this.boundStopPowerAdjust);
+                    this.signalGenLastAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                    document.addEventListener('mousemove', this.boundContinueSignalGenAdjust);
+                    document.addEventListener('mouseup', this.boundStopSignalGenAdjust);
                 } else if (e.type === 'touchstart') {
                     const t = e.touches[0];
-                    this.powerLastAngle = Math.atan2(t.clientY - centerY, t.clientX - centerX);
-                    document.addEventListener('touchmove', this.boundContinuePowerAdjust, { passive: false });
-                    document.addEventListener('touchend', this.boundStopPowerAdjust);
-                    document.addEventListener('touchcancel', this.boundStopPowerAdjust);
+                    this.signalGenLastAngle = Math.atan2(t.clientY - centerY, t.clientX - centerX);
+                    document.addEventListener('touchmove', this.boundContinueSignalGenAdjust, { passive: false });
+                    document.addEventListener('touchend', this.boundStopSignalGenAdjust);
                 }
             }
 
-            continuePowerAdjust(e) {
-                if (!this.isPowerAdjusting) return;
-                if (this.powerAnimationFrame) {
-                    cancelAnimationFrame(this.powerAnimationFrame);
+            continueSignalGenAdjust(e) {
+                if (!this.isSignalGenAdjusting) return;
+                if (this.signalGenAnimationFrame) {
+                    cancelAnimationFrame(this.signalGenAnimationFrame);
                 }
-                this.powerAnimationFrame = requestAnimationFrame(() => {
-                    const powerKnob = document.getElementById('powerKnob');
-                    const rect = powerKnob.getBoundingClientRect();
+                this.signalGenAnimationFrame = requestAnimationFrame(() => {
+                    const signalGenKnob = document.getElementById('signalGenKnob');
+                    const rect = signalGenKnob.getBoundingClientRect();
                     const centerX = rect.left + rect.width / 2;
                     const centerY = rect.top + rect.height / 2;
                     let currentX, currentY;
@@ -3544,147 +2891,242 @@ updateRFGainLevel() {
                         currentY = t.clientY;
                     }
                     const currentAngle = Math.atan2(currentY - centerY, currentX - centerX);
-                    let deltaAngle = currentAngle - this.powerLastAngle;
+                    let deltaAngle = currentAngle - this.signalGenLastAngle;
                     if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
                     if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
                     const sensitivity = 0.7;
                     deltaAngle *= sensitivity;
-                    const newRotation = this.powerKnobRotation + (deltaAngle * 180 / Math.PI);
-                    this.powerKnobRotation = Math.max(this.minRotation, Math.min(this.maxRotation, newRotation));
-                    powerKnob.style.transform = `rotate(${this.powerKnobRotation}deg)`;
-                    const normalizedRotation = (this.powerKnobRotation - this.minRotation) / this.totalRotationRange;
-                    const newPowerLevel = Math.round(normalizedRotation * 50);
-                    if (newPowerLevel !== this.powerLevel && newPowerLevel >= 0 && newPowerLevel <= 50) {
-                        this.powerLevel = newPowerLevel;
-                        this.updatePowerLevel();
-                        this.sendPowerDynamically();
+                    const newRotation = this.signalGenKnobRotation + (deltaAngle * 180 / Math.PI);
+                    this.signalGenKnobRotation = Math.max(this.minRotation, Math.min(this.maxRotation, newRotation));
+                    signalGenKnob.style.transform = `rotate(${this.signalGenKnobRotation}deg)`;
+                    const newSignalGenLevel = Math.round(((this.signalGenKnobRotation - this.minRotation) / this.totalRotationRange) * 100);
+                    if (newSignalGenLevel !== this.signalGenLevel) {
+                        this.signalGenLevel = newSignalGenLevel;
+                        this.updateSignalGenLevel();
+                        this.sendSignalGenDynamically();
                     }
-                    this.powerLastAngle = currentAngle;
-                    this.powerAnimationFrame = null;
+                    this.signalGenLastAngle = currentAngle;
+                    this.signalGenAnimationFrame = null;
                 });
             }
 
-            stopPowerAdjust() {
-                this.isPowerAdjusting = false;
-                if (this.powerAnimationFrame) {
-                    cancelAnimationFrame(this.powerAnimationFrame);
-                    this.powerAnimationFrame = null;
+            stopSignalGenAdjust() {
+                this.isSignalGenAdjusting = false;
+                if (this.signalGenAnimationFrame) {
+                    cancelAnimationFrame(this.signalGenAnimationFrame);
+                    this.signalGenAnimationFrame = null;
                 }
-                if (this.boundContinuePowerAdjust && this.boundStopPowerAdjust) {
-                    document.removeEventListener('mousemove', this.boundContinuePowerAdjust);
-                    document.removeEventListener('mouseup', this.boundStopPowerAdjust);
-                    document.removeEventListener('mouseleave', this.boundStopPowerAdjust);
-                    document.removeEventListener('touchmove', this.boundContinuePowerAdjust);
-                    document.removeEventListener('touchend', this.boundStopPowerAdjust);
-                    document.removeEventListener('touchcancel', this.boundStopPowerAdjust);
-                    this.boundContinuePowerAdjust = null;
-                    this.boundStopPowerAdjust = null;
+                if (this.boundContinueSignalGenAdjust && this.boundStopSignalGenAdjust) {
+                    document.removeEventListener('mousemove', this.boundContinueSignalGenAdjust);
+                    document.removeEventListener('mouseup', this.boundStopSignalGenAdjust);
+                    document.removeEventListener('touchmove', this.boundContinueSignalGenAdjust);
+                    document.removeEventListener('touchend', this.boundStopSignalGenAdjust);
+                    this.boundContinueSignalGenAdjust = null;
+                    this.boundStopSignalGenAdjust = null;
                 }
-                if (this.powerLevel < 0 || this.powerLevel > 50 || isNaN(this.powerLevel)) {
-                    this.powerLevel = this.powerLevelBeforeAdjust || 50;
-                    this.powerKnobRotation = this.minRotation + (this.powerLevel / 50) * this.totalRotationRange;
-                    document.getElementById('powerKnob').style.transform = `rotate(${this.powerKnobRotation}deg)`;
-                }
-                this.updatePowerLevel();
-                this.sendPowerCommand();
+                this.sendSignalGenCommand();
             }
 
-            handlePowerKeyboard(e) {
+            handleSignalGenKeyboard(e) {
                 if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
                     e.preventDefault();
-                    this.adjustPower(-5);
+                    this.adjustSignalGen(-5);
                 } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
                     e.preventDefault();
-                    this.adjustPower(5);
+                    this.adjustSignalGen(5);
                 }
             }
 
-            handlePowerWheel(e) {
+            handleSignalGenWheel(e) {
                 e.preventDefault();
-                let steps;
-                if (Math.abs(e.deltaY) < 50) {
-                    steps = e.deltaY > 0 ? -1 : 1;
-                } else {
-                    steps = e.deltaY > 0 ? -1 : 1;
-                }
-                const powerDelta = steps * 5;
-                this.adjustPower(powerDelta);
+                let steps = e.deltaY > 0 ? -1 : 1;
+                const signalGenDelta = steps * 5;
+                this.adjustSignalGen(signalGenDelta);
             }
 
-            adjustPower(delta) {
-                this.powerLevel = Math.max(0, Math.min(50, this.powerLevel + delta));
-                this.powerKnobRotation = this.minRotation + (this.powerLevel / 50) * this.totalRotationRange;
-                if (this.powerAnimationFrame) {
-                    cancelAnimationFrame(this.powerAnimationFrame);
+            adjustSignalGen(delta) {
+                this.signalGenLevel = Math.max(0, Math.min(100, this.signalGenLevel + delta));
+                this.signalGenKnobRotation = this.minRotation + (this.signalGenLevel / 100) * this.totalRotationRange;
+                if (this.signalGenAnimationFrame) {
+                    cancelAnimationFrame(this.signalGenAnimationFrame);
                 }
-                this.powerAnimationFrame = requestAnimationFrame(() => {
-                    document.getElementById('powerKnob').style.transform = `rotate(${this.powerKnobRotation}deg)`;
-                    this.updatePowerLevel();
-                    this.sendPowerCommand();
-                    this.powerAnimationFrame = null;
+                this.signalGenAnimationFrame = requestAnimationFrame(() => {
+                    document.getElementById('signalGenKnob').style.transform = `rotate(${this.signalGenKnobRotation}deg)`;
+                    this.updateSignalGenLevel();
+                    this.sendSignalGenCommand();
+                    this.signalGenAnimationFrame = null;
                 });
             }
 
-            updatePowerLevel() {
-                const previousLevel = this.powerLevel;
-                this.powerLevel = Math.max(0, Math.min(50, this.powerLevel));
-                if (previousLevel > 0 && this.powerLevel === 0 && !this.isPowerAdjusting) {
-                    console.warn('Power level unexpectedly dropped to 0 from', previousLevel);
-                }
-                const watts = (this.powerLevel / 10).toFixed(1);
-                document.getElementById('powerLevel').textContent = `${watts}W`;
-                document.getElementById('powerKnob').setAttribute('aria-valuenow', this.powerLevel);
+            updateSignalGenLevel() {
+                // Convert percentage to frequency (500Hz to 2000Hz range)
+                const frequency = 500 + (this.signalGenLevel / 100) * 1500;
+                document.getElementById('signalGenLevel').textContent = `${(frequency/1000).toFixed(1)}kHz`;
+                document.getElementById('signalGenKnob').setAttribute('aria-valuenow', this.signalGenLevel);
             }
 
-            sendPowerDynamically() {
-                if (this.powerTimeout) {
-                    clearTimeout(this.powerTimeout);
+            sendSignalGenDynamically() {
+                if (this.signalGenTimeout) {
+                    clearTimeout(this.signalGenTimeout);
                 }
-                this.powerTimeout = setTimeout(() => {
+                this.signalGenTimeout = setTimeout(() => {
                     if (this.connected && this.port && this.writer) {
-                        const validPowerLevel = Math.max(0, Math.min(50, this.powerLevel));
-                        this.sendCommand(`PC${validPowerLevel.toString().padStart(3, '0')}`).catch(e => {
-                            console.error("Power update error:", e);
+                        const frequency = Math.round(500 + (this.signalGenLevel / 100) * 1500);
+                        this.sendCommand(`C2${frequency.toString().padStart(8, '0')}`).catch(e => {
+                            console.error("Signal Gen update error:", e);
                         });
                     }
-                    this.powerTimeout = null;
+                    this.signalGenTimeout = null;
                 }, 50);
             }
 
-            async sendPowerCommand() {
+            async sendSignalGenCommand() {
                 if (!this.connected || !this.port || !this.writer) return;
                 try {
-                    this.powerLevel = Math.max(0, Math.min(50, this.powerLevel));
-                    await this.sendCommand(`PC${this.powerLevel.toString().padStart(3, '0')}`);
-                    this.logCAT(`Power set to ${(this.powerLevel / 10).toFixed(1)}W`, 'info');
+                    const frequency = Math.round(500 + (this.signalGenLevel / 100) * 1500);
+                    await this.sendCommand(`C2${frequency.toString().padStart(8, '0')}`);
+                    this.logCAT(`Signal Generator set to ${(frequency/1000).toFixed(1)}kHz`, 'info');
                 } catch (e) {
-                    this.logCAT(`Power command error: ${e.message}`, 'error');
+                    this.logCAT(`Signal Generator command error: ${e.message}`, 'error');
                 }
             }
 
-           initTuningKnob() {
-    try {
-        const tuningKnob = document.getElementById('tuningKnob');
-        this.createFrequencyMarkings();
-        this.tuningKnobRotation = 0;
-        tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
-        
-        // Existing event listeners
-        tuningKnob.addEventListener('mousedown', this.startTuningAdjust.bind(this));
-        tuningKnob.addEventListener('touchstart', this.startTuningAdjust.bind(this), { passive: false });
-        tuningKnob.addEventListener('wheel', this.handleTuningWheel.bind(this));
-        tuningKnob.addEventListener('keydown', this.handleTuningKeyboard.bind(this));
-        
-        // NEW: Add hover keyboard control
-        tuningKnob.addEventListener('mouseenter', this.enableTuningHoverKeys.bind(this));
-        tuningKnob.addEventListener('mouseleave', this.disableTuningHoverKeys.bind(this));
-        
-        tuningKnob.setAttribute('aria-valuenow', this.frequency);
-        console.log('CSS tuning knob initialized with hover keyboard control');
-    } catch (error) {
-        console.error('Error initializing tuning knob:', error);
-    }
-}
+            initNightModeToggle() {
+                try {
+                    const nightModeToggle = document.getElementById('nightModeToggle');
+                    
+                    // Set initial state
+                    this.updateNightModeUI();
+                    
+                    // Add click event listener
+                    nightModeToggle.addEventListener('click', () => {
+                        this.toggleNightMode();
+                    });
+                    
+                    console.log('Night Mode toggle initialized');
+                } catch (error) {
+                    console.error('Error initializing Night Mode toggle:', error);
+                }
+            }
+
+            toggleNightMode() {
+                this.nightModeEnabled = !this.nightModeEnabled;
+                this.updateNightModeUI();
+                this.sendNightModeCommand();
+            }
+
+            updateNightModeUI() {
+                const toggle = document.getElementById('nightModeToggle');
+                const status = document.getElementById('nightModeStatus');
+                
+                if (this.nightModeEnabled) {
+                    toggle.classList.add('active');
+                    status.textContent = 'ENABLED';
+                    status.style.color = '#ff6b35';
+                } else {
+                    toggle.classList.remove('active');
+                    status.textContent = 'DISABLED';
+                    status.style.color = '#fff';
+                }
+            }
+
+            async sendNightModeCommand() {
+                if (!this.connected || !this.port || !this.writer) return;
+                try {
+                    const command = this.nightModeEnabled ? 'QI1' : 'QI0';
+                    await this.sendCommand(command);
+                    this.logCAT(`Night Mode ${this.nightModeEnabled ? 'enabled' : 'disabled'}`, 'info');
+                } catch (e) {
+                    this.logCAT(`Night Mode command error: ${e.message}`, 'error');
+                }
+            }
+
+            initTuningKnob() {
+                try {
+                    const tuningKnob = document.getElementById('tuningKnob');
+                    this.createFrequencyMarkings();
+                    this.tuningKnobRotation = 0;
+                    tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+                    
+                    tuningKnob.addEventListener('mousedown', this.startTuningAdjust.bind(this));
+                    tuningKnob.addEventListener('touchstart', this.startTuningAdjust.bind(this), { passive: false });
+                    tuningKnob.addEventListener('wheel', this.handleTuningWheel.bind(this));
+                    tuningKnob.addEventListener('keydown', this.handleTuningKeyboard.bind(this));
+                    
+                    // Add hover keyboard control
+                    this.isHoveringTuningKnob = false;
+                    this.boundHandleHoverKeyboard = this.handleHoverKeyboard.bind(this);
+                    
+                    tuningKnob.addEventListener('mouseenter', () => {
+                        this.isHoveringTuningKnob = true;
+                        tuningKnob.style.boxShadow = '0 0 20px rgba(255, 107, 53, 0.6), 0 12px 24px rgba(0, 0, 0, 0.4)';
+                        document.addEventListener('keydown', this.boundHandleHoverKeyboard);
+                        this.logCAT('Tuning knob hover: Use arrow keys to tune', 'info');
+                    });
+                    
+                    tuningKnob.addEventListener('mouseleave', () => {
+                        this.isHoveringTuningKnob = false;
+                        tuningKnob.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.4), inset 0 4px 6px rgba(255, 255, 255, 0.8), inset 0 -4px 6px rgba(0, 0, 0, 0.3)';
+                        document.removeEventListener('keydown', this.boundHandleHoverKeyboard);
+                    });
+                    
+                    tuningKnob.setAttribute('aria-valuenow', this.frequency);
+                    console.log('Tuning knob initialized with hover keyboard control');
+                } catch (error) {
+                    console.error('Error initializing tuning knob:', error);
+                }
+            }
+
+            handleHoverKeyboard(e) {
+                if (!this.isHoveringTuningKnob) return;
+                
+                // Prevent default behavior for arrow keys
+                if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+                    e.preventDefault();
+                    
+                    let freqDelta = 0;
+                    const currentStep = this.stepSize;
+                    
+                    switch(e.key) {
+                        case 'ArrowLeft':
+                        case 'ArrowDown':
+                            freqDelta = -currentStep;
+                            break;
+                        case 'ArrowRight':
+                        case 'ArrowUp':
+                            freqDelta = currentStep;
+                            break;
+                    }
+                    
+                    if (freqDelta !== 0) {
+                        // Use larger steps if Shift is held
+                        if (e.shiftKey) {
+                            freqDelta *= 10;
+                        }
+                        
+                        // Use even larger steps if Ctrl is held
+                        if (e.ctrlKey) {
+                            freqDelta *= 100;
+                        }
+                        
+                        this.updateFrequency(freqDelta);
+                        
+                        // Update knob rotation
+                        const rotationDelta = (freqDelta / currentStep) * 2;
+                        this.tuningKnobRotation += rotationDelta;
+                        document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+                        
+                        // Send frequency immediately
+                        this.sendFrequencyImmediate();
+                        
+                        // Show feedback
+                        const stepText = e.shiftKey ? `${currentStep * 10} Hz` : 
+                                        e.ctrlKey ? `${currentStep * 100} Hz` : 
+                                        `${currentStep} Hz`;
+                        this.logCAT(`Keyboard tune: ${freqDelta > 0 ? '+' : ''}${freqDelta} Hz (${stepText} step)`, 'info');
+                    }
+                }
+            }
 
             createFrequencyMarkings() {
                 const markingsContainer = document.getElementById('frequencyMarkings');
@@ -3723,65 +3165,51 @@ updateRFGainLevel() {
                 }
             }
 
-// REPLACE your existing continueTuningAdjust method with this enhanced version:
-continueTuningAdjust(e) {
-    if (!this.isTuningAdjusting) return;
-    if (this.tuningAnimationFrame) {
-        cancelAnimationFrame(this.tuningAnimationFrame);
-    }
-    this.tuningAnimationFrame = requestAnimationFrame(() => {
-        const tuningKnob = document.getElementById('tuningKnob');
-        const rect = tuningKnob.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        let currentX, currentY;
-        
-        if (e.type === 'mousemove') {
-            currentX = e.clientX;
-            currentY = e.clientY;
-        } else if (e.type === 'touchmove') {
-            e.preventDefault();
-            const t = e.touches[0];
-            currentX = t.clientX;
-            currentY = t.clientY;
-        }
-        
-        const distance = Math.sqrt(Math.pow(currentX - centerX, 2) + Math.pow(currentY - centerY, 2));
-        if (distance < rect.width * 2) {
-            const currentAngle = Math.atan2(currentY - centerY, currentX - centerX);
-            let deltaAngle = currentAngle - this.tuningLastAngle;
-            if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
-            if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
-            
-            // NEW: Calculate tuning speed
-            const now = performance.now();
-            const timeDelta = now - this.lastTuningTime;
-            const angleDelta = Math.abs(deltaAngle);
-            
-            if (timeDelta > 0) {
-                const speed = angleDelta / (timeDelta / 1000); // radians per second
-                this.updateTuningSpeed(speed);
+            continueTuningAdjust(e) {
+                if (!this.isTuningAdjusting) return;
+                if (this.tuningAnimationFrame) {
+                    cancelAnimationFrame(this.tuningAnimationFrame);
+                }
+                this.tuningAnimationFrame = requestAnimationFrame(() => {
+                    const tuningKnob = document.getElementById('tuningKnob');
+                    const rect = tuningKnob.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    let currentX, currentY;
+                    
+                    if (e.type === 'mousemove') {
+                        currentX = e.clientX;
+                        currentY = e.clientY;
+                    } else if (e.type === 'touchmove') {
+                        e.preventDefault();
+                        const t = e.touches[0];
+                        currentX = t.clientX;
+                        currentY = t.clientY;
+                    }
+                    
+                    const distance = Math.sqrt(Math.pow(currentX - centerX, 2) + Math.pow(currentY - centerY, 2));
+                    if (distance < rect.width * 2) {
+                        const currentAngle = Math.atan2(currentY - centerY, currentX - centerX);
+                        let deltaAngle = currentAngle - this.tuningLastAngle;
+                        if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
+                        if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
+                        
+                        const sensitivity = 1.5;
+                        deltaAngle *= sensitivity;
+                        this.tuningKnobRotation += (deltaAngle * 180 / Math.PI);
+                        tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+                        
+                        const freqDelta = (deltaAngle * 180 / Math.PI) * this.stepSize * 0.3;
+                        
+                        if (Math.abs(freqDelta) > 0.1) {
+                            this.updateFrequency(freqDelta);
+                            this.sendFrequencyImmediate();
+                        }
+                        this.tuningLastAngle = currentAngle;
+                    }
+                    this.tuningAnimationFrame = null;
+                });
             }
-            this.lastTuningTime = now;
-            
-            const sensitivity = 1.5;
-            deltaAngle *= sensitivity;
-            this.tuningKnobRotation += (deltaAngle * 180 / Math.PI);
-            tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
-            
-            // NEW: Use variable step size
-            const currentStepSize = this.getCurrentStepSize();
-            const freqDelta = (deltaAngle * 180 / Math.PI) * currentStepSize * 0.3;
-            
-            if (Math.abs(freqDelta) > 0.1) {
-                this.updateFrequency(freqDelta);
-                this.sendFrequencyImmediate();
-            }
-            this.tuningLastAngle = currentAngle;
-        }
-        this.tuningAnimationFrame = null;
-    });
-}
 
             stopTuningAdjust() {
                 this.isTuningAdjusting = false;
@@ -3800,33 +3228,24 @@ continueTuningAdjust(e) {
                 this.sendFrequencyImmediate();
             }
 
-           handleTuningWheel(e) {
-    e.preventDefault();
-    
-    // NEW: Track wheel speed
-    const now = performance.now();
-    const timeDelta = now - this.lastTuningTime;
-    const wheelSpeed = Math.abs(e.deltaY) / Math.max(timeDelta, 16); // Normalize speed
-    this.updateTuningSpeed(wheelSpeed * 0.1); // Scale wheel speed
-    this.lastTuningTime = now;
-    
-    let steps;
-    if (Math.abs(e.deltaY) < 50) {
-        steps = e.deltaY > 0 ? -1 : 1;
-    } else {
-        steps = e.deltaY > 0 ? -1 : 1;
-    }
-    
-    // NEW: Use variable step size
-    const currentStepSize = this.getCurrentStepSize();
-    const freqDelta = steps * currentStepSize;
-    
-    this.updateFrequency(freqDelta);
-    const rotationDelta = steps * 2;
-    this.tuningKnobRotation += rotationDelta;
-    document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
-    this.sendFrequencyDynamically();
-}
+            handleTuningWheel(e) {
+                e.preventDefault();
+                
+                let steps;
+                if (Math.abs(e.deltaY) < 50) {
+                    steps = e.deltaY > 0 ? -1 : 1;
+                } else {
+                    steps = e.deltaY > 0 ? -1 : 1;
+                }
+                
+                const freqDelta = steps * this.stepSize;
+                
+                this.updateFrequency(freqDelta);
+                const rotationDelta = steps * 2;
+                this.tuningKnobRotation += rotationDelta;
+                document.getElementById('tuningKnob').style.transform = `rotate(${this.tuningKnobRotation}deg)`;
+                this.sendFrequencyDynamically();
+            }
 
             handleTuningKeyboard(e) {
                 if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
@@ -3852,31 +3271,31 @@ continueTuningAdjust(e) {
                 });
             }
 
-           sendFrequencyImmediate() {
-    if (this.connected && this.port && this.writer) {
-        const freqStr = this.frequency.toString().padStart(11, '0');
-        const vfoCommand = this.getVFOCommand();
-        this.sendCommand(`${vfoCommand}${freqStr}`).catch(e => {
-            console.error("Frequency update error:", e);
-        });
-    }
-}
+            sendFrequencyImmediate() {
+                if (this.connected && this.port && this.writer) {
+                    const freqStr = this.frequency.toString().padStart(11, '0');
+                    const vfoCommand = this.getVFOCommand();
+                    this.sendCommand(`${vfoCommand}${freqStr}`).catch(e => {
+                        console.error("Frequency update error:", e);
+                    });
+                }
+            }
 
-           sendFrequencyDynamically() {
-    if (this.catTimeout) {
-        clearTimeout(this.catTimeout);
-    }
-    this.catTimeout = setTimeout(() => {
-        if (this.connected && this.port && this.writer) {
-            const freqStr = this.frequency.toString().padStart(11, '0');
-            const vfoCommand = this.getVFOCommand();
-            this.sendCommand(`${vfoCommand}${freqStr}`).catch(e => {
-                console.error("Frequency update error:", e);
-            });
-        }
-        this.catTimeout = null;
-    }, 5);
-}
+            sendFrequencyDynamically() {
+                if (this.catTimeout) {
+                    clearTimeout(this.catTimeout);
+                }
+                this.catTimeout = setTimeout(() => {
+                    if (this.connected && this.port && this.writer) {
+                        const freqStr = this.frequency.toString().padStart(11, '0');
+                        const vfoCommand = this.getVFOCommand();
+                        this.sendCommand(`${vfoCommand}${freqStr}`).catch(e => {
+                            console.error("Frequency update error:", e);
+                        });
+                    }
+                    this.catTimeout = null;
+                }, 5);
+            }
 			
             startPolling() {
                 if (this.pollingInterval) {
@@ -3885,13 +3304,10 @@ continueTuningAdjust(e) {
                 this.pollingInterval = setInterval(async () => {
                     if (this.connected) {
                         await this.sendCommand('IF');
-                        await this.sendCommand('LC');
-                        await this.sendCommand('SM');
-                        await this.sendCommand('SW');
-                        await this.sendCommand('KS');
-						await this.sendCommand('AG0');
+                        await this.sendCommand('AG');
+                        await this.sendCommand('QI');
                     }
-                }, 350);
+                }, 500);
             }
 
             stopPolling() {
@@ -3901,43 +3317,43 @@ continueTuningAdjust(e) {
                 }
             }
 
-          parseIfResponse(data) {
-    try {
-        const freq = parseInt(data.substring(0, 11));
-        if (!isNaN(freq) && freq > 0 && freq !== this.frequency && !this.isTuningAdjusting) {
-            this.frequency = freq;
-            this.updateDisplay(); // This will now trigger band auto-selection
-            document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
-        }
-        const txStatus = data.substring(26, 27);
-        const isTransmitting = (txStatus === '1');
-        if (isTransmitting !== this.transmitting) {
-            this.transmitting = isTransmitting;
-            this.updateTXStatus();
-        }
-        const catMode = data.substring(27, 28);
-        this.updateModeFromCAT(catMode);
-    } catch (error) {
-        this.logCAT(`Error parsing IF response: ${error.message}`, 'error');
-    }
-	 }
+            parseIfResponse(data) {
+                try {
+                    const freq = parseInt(data.substring(0, 11));
+                    if (!isNaN(freq) && freq > 0 && freq !== this.frequency && !this.isTuningAdjusting) {
+                        this.frequency = freq;
+                        this.updateDisplay();
+                        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
+                    }
+                    const txStatus = data.substring(26, 27);
+                    const isTransmitting = (txStatus === '1');
+                    if (isTransmitting !== this.transmitting) {
+                        this.transmitting = isTransmitting;
+                        this.updateTXStatus();
+                    }
+                    const catMode = data.substring(27, 28);
+                    this.updateModeFromCAT(catMode);
+                } catch (error) {
+                    this.logCAT(`Error parsing IF response: ${error.message}`, 'error');
+                }
+            }
 
-          async sendFrequencyCommand() {
-    if (!this.connected || !this.port || !this.writer) return;
-    try {
-        const freqStr = this.frequency.toString().padStart(11, '0');
-        const vfoCommand = this.getVFOCommand();
-        await this.sendCommand(`${vfoCommand}${freqStr}`);
-        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
-        const displayStr = this.frequency.toString().padStart(9, '0');
-        const mhz = displayStr.substring(0, 3);
-        const khz = displayStr.substring(3, 6); 
-        const hz = displayStr.substring(6, 9);
-        this.logCAT(`VFO ${this.currentVFO} frequency set to ${mhz}.${khz}.${hz} Hz`, 'info');
-    } catch (e) {
-        this.logCAT(`Frequency command error: ${e.message}`, 'error');
-    }
-}
+            async sendFrequencyCommand() {
+                if (!this.connected || !this.port || !this.writer) return;
+                try {
+                    const freqStr = this.frequency.toString().padStart(11, '0');
+                    const vfoCommand = this.getVFOCommand();
+                    await this.sendCommand(`${vfoCommand}${freqStr}`);
+                    document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
+                    const displayStr = this.frequency.toString().padStart(9, '0');
+                    const mhz = displayStr.substring(0, 3);
+                    const khz = displayStr.substring(3, 6); 
+                    const hz = displayStr.substring(6, 9);
+                    this.logCAT(`VFO ${this.currentVFO} frequency set to ${mhz}.${khz}.${hz} Hz`, 'info');
+                } catch (e) {
+                    this.logCAT(`Frequency command error: ${e.message}`, 'error');
+                }
+            }
 
             async updateFrequency(delta) {
                 this.frequency += delta;
@@ -3972,8 +3388,6 @@ continueTuningAdjust(e) {
                     this.lastCommandTime = Date.now();
                     this.updateConnectionStatus();
                     this.logCAT(`Serial connected at ${selectedBaud} baud`, 'rx');
-                    await this.sendCommand('QB0');
-                    await this.sendCommand('Q90'); 
                     
                     this.startReading();
                     this.startConnectionHealthCheck();
@@ -3991,9 +3405,12 @@ continueTuningAdjust(e) {
             async disconnectSerial() {
                 try {
                     this.connected = false;
-                    if (this.port) {
-                        await this.sendCommand('QB1');
+                    
+                    // Stop audio streaming if active
+                    if (this.audioProcessor && this.audioProcessor.isStreaming) {
+                        await this.audioProcessor.stopAudioStreaming();
                     }
+                    
                     if (this.connectionCheckTimeout) {
                         clearTimeout(this.connectionCheckTimeout);
                         this.connectionCheckTimeout = null;
@@ -4145,108 +3562,67 @@ continueTuningAdjust(e) {
                 this.logCAT(response, 'rx');
                 if (response.startsWith('IF')) {
                     this.parseIfResponse(response.substring(2));
-                } else if (response.startsWith('LC')) {
-                    let lcdData = response.substring(2);
-                    if (lcdData.length < 32) {
-                        lcdData = lcdData.padEnd(32, ' ');
-                    }
-                    const row1 = lcdData.substring(0, 16);
-                    const row2 = lcdData.substring(16, 32);
-                    this.updateLcdDisplay(row1, row2);
                 } else if (response.startsWith('AG')) {
                     const gain = parseInt(response.substring(2));
                     if (!isNaN(gain) && !this.isVolumeAdjusting) {
-                        this.volumeLevel = this.catToVolume(gain);
+                        this.volumeLevel = gain;
                         this.updateVolumeUI();
                     }
-             } else if (response.startsWith('FA')) {
-    const freq = parseInt(response.substring(2));
-    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'A') {
-        this.frequency = freq;
-        this.updateDisplay(); // This will trigger band auto-selection
-        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
-    }
-}
-
-// And replace the FB handler:
-else if (response.startsWith('FB')) {
-    const freq = parseInt(response.substring(2));
-    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'B') {
-        this.frequency = freq;
-        this.updateDisplay(); // This will trigger band auto-selection
-        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
-    }
-}
-
-                else if (response.startsWith('SM')) {
-                    const sMeter = parseInt(response.substring(2));
-                    if (!isNaN(sMeter)) {
-                        this.updateSMeter(sMeter);
+                } else if (response.startsWith('FA')) {
+                    const freq = parseInt(response.substring(2));
+                    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'A') {
+                        this.frequency = freq;
+                        this.updateDisplay();
+                        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
                     }
-                } else if (response.startsWith('SW')) {
-                    const swr = parseInt(response.substring(2));
-                    if (!isNaN(swr)) {
-                        this.updateSWRMeter(swr);
-                    }
-                } else if (response.startsWith('PC')) {
-                    const powerTenths = parseInt(response.substring(2));
-                    if (!isNaN(powerTenths) && !this.isPowerAdjusting) {
-                        this.powerLevel = powerTenths;
-                        this.updatePowerLevel();
-                        this.powerKnobRotation = this.minRotation + (this.powerLevel / 50) * this.totalRotationRange;
-                        document.getElementById('powerKnob').style.transform = `rotate(${this.powerKnobRotation}deg)`;
+                } else if (response.startsWith('FB')) {
+                    const freq = parseInt(response.substring(2));
+                    if (!isNaN(freq) && freq > 0 && !this.isTuningAdjusting && this.currentVFO === 'B') {
+                        this.frequency = freq;
+                        this.updateDisplay();
+                        document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
                     }
                 } else if (response.startsWith('MD')) {
                     const mode = response.substring(2);
                     this.updateModeFromCAT(mode);
-              } else if (response.startsWith('KS')) {
-    const wpm = parseInt(response.substring(2));
-    if (!isNaN(wpm) && !this.isRFGainAdjusting && wpm >= 0 && wpm <= 50) {
-        this.rfGainLevel = (wpm / 50) * 100;
-        this.updateRFGainLevel();
-        this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
-        document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
-    }
-
                 } else if (response.startsWith('TX')) {
                     this.transmitting = true;
                     this.updateTXStatus();
                 } else if (response.startsWith('RX')) {
                     this.transmitting = false;
                     this.updateTXStatus();
+                } else if (response.startsWith('ID')) {
+                    this.logCAT(`Radio ID: ${response.substring(2)}`, 'info');
+                } else if (response.startsWith('C2')) {
+                    const freq = parseInt(response.substring(2));
+                    if (!isNaN(freq) && !this.isSignalGenAdjusting) {
+                        const percentage = ((freq - 500) / 1500) * 100;
+                        this.signalGenLevel = Math.max(0, Math.min(100, percentage));
+                        this.updateSignalGenLevel();
+                    }
+                } else if (response.startsWith('QI')) {
+                    const nightMode = response.substring(2);
+                    if (nightMode === '1' || nightMode === '0') {
+                        this.nightModeEnabled = (nightMode === '1');
+                        this.updateNightModeUI();
+                    }
                 }
             }
 
-        
-           
-              
-           
-          
-          
-
-            
-
-          
-           
-
-           
-
             cleanup() {
-                if (this.timeSyncInterval) clearInterval(this.timeSyncInterval);
-                if (this.clockUpdateInterval) clearInterval(this.clockUpdateInterval);
-                if (this.timeCommandTimeout) clearTimeout(this.timeCommandTimeout);
-                
-                if (this.boundHandleTuningHoverKeys) {
-                    document.removeEventListener('keydown', this.boundHandleTuningHoverKeys);
+                if (this.pollingInterval) clearInterval(this.pollingInterval);
+                if (this.connectionCheckTimeout) clearTimeout(this.connectionCheckTimeout);
+                if (this.audioProcessor) {
+                    this.audioProcessor.cleanup();
                 }
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             try {
-                new QMXInterface();
+                new QDXInterface();
             } catch (error) {
-                console.error('Failed to initialize QMX Interface:', error);
+                console.error('Failed to initialize QDX Interface:', error);
             }
         });
     </script>
