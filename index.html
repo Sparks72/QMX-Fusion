@@ -1897,6 +1897,7 @@ initFrequencyKeyboard() {
         
         // Make frequency display clickable
         document.getElementById('lcdPanel').addEventListener('click', () => this.openFrequencyKeyboard());
+	
         
         // Format buttons
         document.querySelectorAll('.freq-format-btn').forEach(btn => {
@@ -1933,7 +1934,16 @@ initFrequencyKeyboard() {
         this.setFreqInputMode(e.target.value);
     });
 
-		
+		 // NEW: Initialize permanent frequency input
+        this.initPermanentFreqInput();
+        
+        // NEW: Add mode toggle listener
+        document.getElementById('freqInputMode').addEventListener('change', (e) => {
+            this.setFreqInputMode(e.target.value);
+        });
+        
+        // NEW: Set initial mode to popup (ensure LCD panel is clickable)
+        this.setFreqInputMode('popup');
 		
         console.log('Frequency input keyboard initialized');
     } catch (error) {
@@ -4884,7 +4894,7 @@ else if (response.startsWith('FB')) {
             }
 
         
-       // Modify the initFrequencyKeyboard method to include this at the end:
+ /*      // Modify the initFrequencyKeyboard method to include this at the end:
 initFrequencyKeyboard() {
     // ... existing code ...
     
@@ -4895,7 +4905,7 @@ initFrequencyKeyboard() {
     document.getElementById('freqInputMode').addEventListener('change', (e) => {
         this.setFreqInputMode(e.target.value);
     });
-}
+}*/
 
 // NEW: Add these methods
 initPermanentFreqInput() {
@@ -4934,16 +4944,24 @@ setFreqInputMode(mode) {
         // Disable LCD click for popup
         lcdPanel.style.pointerEvents = 'none';
         lcdPanel.style.opacity = '0.8';
+        lcdPanel.style.cursor = 'not-allowed';
         this.logCAT('Frequency input: Permanent mode enabled', 'info');
     } else {
+        // Popup mode
         permanentPanel.style.display = 'none';
         // Re-enable LCD click for popup
         lcdPanel.style.pointerEvents = 'auto';
         lcdPanel.style.opacity = '1';
+        lcdPanel.style.cursor = 'pointer';
         this.logCAT('Frequency input: Popup mode enabled', 'info');
     }
+    
+    // Update the dropdown to reflect the current mode
+    const modeSelect = document.getElementById('freqInputMode');
+    if (modeSelect.value !== mode) {
+        modeSelect.value = mode;
+    }
 }
-
 setFreqInputFormatPerm(format) {
     this.freqInputModePerm = format;
     
