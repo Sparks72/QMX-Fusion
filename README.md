@@ -6,6 +6,7 @@ USB Interface for the QMX+
 ![Main Interface](screenshot1.png)
 ![Settings Panel](screenshot2.png)
 ![Settings Panel](screenshot3.png)
+![Settings Panel](screenshot4.png)
 ---
 
 
