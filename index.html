@@ -96,28 +96,29 @@
         }
 
 
-        .frequency-display.lcd-panel {
-            background: #000;
-            border-radius: 10px;
-            padding: 15px 20px;
-            text-align: left;
-            border: 2px solid #00ff88;
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-            height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+       .frequency-display.lcd-panel {
+    background: #000;
+    border-radius: 10px;
+    padding: 15px 20px;
+    text-align: left;
+    border: 2px solid #00ff88;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-        .lcd-row {
-            font-family: 'Courier New', monospace;
-            font-size: 1.8em;
-            color: #00ff88;
-            text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
-            letter-spacing: 0.05em;
-            white-space: pre;
-            line-height: 1.2;
-        }
+.frequency-display.lcd-panel:hover {
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.5);
+    transform: scale(1.02);
+}
+
+.frequency-display.lcd-panel:hover .lcd-row {
+    text-shadow: 0 0 12px rgba(0, 255, 136, 0.8);
+}
 
         .tuning-knob-container {
             width: 250px;
@@ -1038,6 +1039,309 @@
 .keyer-straight .knob-level {
     opacity: 0.6;
 }
+/* Frequency Input Keyboard Styles */
+.freq-input-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 2px solid #00ff88;
+    border-radius: 20px;
+    padding: 25px;
+    z-index: 1100;
+    box-shadow: 0 0 40px rgba(0, 255, 136, 0.8), 0 0 80px rgba(0, 255, 136, 0.4);
+    min-width: 320px;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+}
+
+.freq-input-modal.active {
+    display: block;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.freq-input-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.freq-input-header h3 {
+    color: #00ff88;
+    font-size: 1.4em;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+}
+
+/* Frequency Input Keyboard Styles - Updated for better sizing */
+.freq-input-modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 2px solid #00ff88;
+    border-radius: 20px;
+    padding: 30px;
+    z-index: 1100;
+    box-shadow: 0 0 40px rgba(0, 255, 136, 0.8), 0 0 80px rgba(0, 255, 136, 0.4);
+    width: 500px;
+    backdrop-filter: blur(10px);
+}
+
+.freq-input-modal.active {
+    display: block;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.freq-display-input {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 25px 20px !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 2.5em !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    background: #000 !important;
+    color: #00ff88 !important;
+    border: 3px solid #00ff88 !important;
+    border-radius: 12px !important;
+    margin-bottom: 25px !important;
+    letter-spacing: 0.1em !important;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.6) !important;
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.6) !important;
+    height: 80px !important;
+    box-sizing: border-box !important;
+    display: block !important;
+}
+
+.freq-display-input:focus {
+    outline: none !important;
+    border-color: #00ccff !important;
+    color: #00ccff !important;
+    text-shadow: 0 0 12px rgba(0, 204, 255, 0.8) !important;
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 204, 255, 0.6) !important;
+}
+.frequency-display.lcd-panel {
+    background: #000;
+    border-radius: 10px;
+    padding: 20px 25px;
+    text-align: left;
+    font-size: 40px;
+	border: 2px solid #00ff88;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.freq-format-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.freq-format-btn {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.freq-format-btn.active {
+    background: linear-gradient(45deg, #00ff88, #00ccff);
+    color: #000;
+    border-color: #00ff88;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.freq-format-btn:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.freq-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.freq-key {
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    user-select: none;
+}
+
+.freq-key:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.freq-key:active {
+    transform: translateY(0);
+    background: linear-gradient(45deg, #00ff88, #00ccff);
+    color: #000;
+}
+
+.freq-key.special {
+    background: rgba(255, 149, 0, 0.2);
+    border-color: rgba(255, 149, 0, 0.5);
+    color: #ff9500;
+}
+
+.freq-key.special:hover {
+    background: rgba(255, 149, 0, 0.3);
+    border-color: rgba(255, 149, 0, 0.7);
+}
+
+.freq-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.freq-action-btn {
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.freq-btn-set {
+    background: linear-gradient(45deg, #00ff88, #00ccff);
+    color: #000;
+}
+
+.freq-btn-set:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+}
+
+.freq-btn-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.freq-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.freq-btn-clear {
+    background: linear-gradient(45deg, #ff4757, #ff3838);
+    color: #fff;
+}
+
+.freq-btn-clear:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+}
+
+.freq-hints {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
+}
+
+.freq-error {
+    color: #ff4757;
+    font-size: 0.9em;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 20px;
+}
+
+/* Permanent frequency input styles */
+.freq-display-input-permanent {
+    width: 100% !important;
+    padding: 15px 12px !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 1.8em !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    background: #000 !important;
+    color: #00ff88 !important;
+    border: 2px solid #00ff88 !important;
+    border-radius: 8px !important;
+    margin-bottom: 15px !important;
+    letter-spacing: 0.1em !important;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6) !important;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+    height: 60px !important;
+    box-sizing: border-box !important;
+}
+
+.freq-display-input-permanent:focus {
+    outline: none !important;
+    border-color: #00ccff !important;
+    color: #00ccff !important;
+    text-shadow: 0 0 10px rgba(0, 204, 255, 0.8) !important;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 204, 255, 0.6) !important;
+}
+
+#freqInputPermanentPanel .freq-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+#freqInputPermanentPanel .freq-key {
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1em;
+    font-weight: bold;
+    text-align: center;
+    user-select: none;
+}
+
+#freqInputPermanentPanel .freq-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 
         @media (max-width: 768px) {
             .volume-knob-container {
@@ -1128,6 +1432,17 @@
                     <div id="lcdRow2" class="lcd-row">Connect Radio</div>
                 </div>
 
+<div class="panel" id="freqInputTogglePanel">
+    <h3>Frequency Input</h3>
+    <div class="control-group">
+        <label>Input Mode</label>
+        <select id="freqInputMode">
+            <option value="popup">Popup (Click Display)</option>
+            <option value="permanent">Always Visible</option>
+        </select>
+    </div>
+</div>
+
                 <div class="panel" id="tuningPanel">
                     <h3 style="text-align: center; margin-bottom: 15px;">Main Tuning</h3>
                     <div class="tuning-knob-container" id="tuningKnobContainer">
@@ -1137,6 +1452,44 @@
                         </div>
                     </div>
                 </div>
+
+
+
+<!-- Add this permanent version after the tuning panel -->
+<div class="panel" id="freqInputPermanentPanel" style="display: none;">
+    <h3>Direct Frequency Entry</h3>
+    <div class="freq-input-content">
+        <input type="text" id="freqDisplayInputPerm" class="freq-display-input-permanent" placeholder="" maxlength="15">
+        
+        <div class="freq-format-buttons">
+            <div class="freq-format-btn active" data-format="mhz" data-target="permanent">MHz</div>
+            <div class="freq-format-btn" data-format="khz" data-target="permanent">kHz</div>
+            <div class="freq-format-btn" data-format="hz" data-target="permanent">Hz</div>
+        </div>
+        
+        <div class="freq-keypad">
+            <div class="freq-key" data-key="1" data-target="permanent">1</div>
+            <div class="freq-key" data-key="2" data-target="permanent">2</div>
+            <div class="freq-key" data-key="3" data-target="permanent">3</div>
+            <div class="freq-key" data-key="4" data-target="permanent">4</div>
+            <div class="freq-key" data-key="5" data-target="permanent">5</div>
+            <div class="freq-key" data-key="6" data-target="permanent">6</div>
+            <div class="freq-key" data-key="7" data-target="permanent">7</div>
+            <div class="freq-key" data-key="8" data-target="permanent">8</div>
+            <div class="freq-key" data-key="9" data-target="permanent">9</div>
+            <div class="freq-key special" data-key="." data-target="permanent">.</div>
+            <div class="freq-key" data-key="0" data-target="permanent">0</div>
+            <div class="freq-key special" data-key="backspace" data-target="permanent">⌫</div>
+        </div>
+        
+        <div class="freq-actions">
+            <button class="freq-action-btn freq-btn-clear" id="freqClearBtnPerm">CLEAR</button>
+            <button class="freq-action-btn freq-btn-set" id="freqSetBtnPerm">SET</button>
+        </div>
+        
+        <div class="freq-error" id="freqErrorPerm"></div>
+    </div>
+</div>
 
                 <div class="panel" id="vfoPanel">
                     <h3>VFO</h3>
@@ -1333,6 +1686,51 @@
     </div>
 
     <div class="modal-overlay" id="modalOverlay"></div>
+	<!-- Frequency Input Keyboard Modal -->
+<div class="freq-input-modal" id="freqInputModal">
+    <div class="freq-input-header">
+        <h3>Direct Frequency Entry</h3>
+        <input type="text" id="freqDisplayInput" class="freq-display-input" placeholder="" maxlength="15">
+    </div>
+    
+    <div class="freq-format-buttons">
+        <div class="freq-format-btn active" data-format="mhz">MHz</div>
+        <div class="freq-format-btn" data-format="khz">kHz</div>
+        <div class="freq-format-btn" data-format="hz">Hz</div>
+    </div>
+    
+    <div class="freq-keypad">
+        <div class="freq-key" data-key="1">1</div>
+        <div class="freq-key" data-key="2">2</div>
+        <div class="freq-key" data-key="3">3</div>
+        <div class="freq-key" data-key="4">4</div>
+        <div class="freq-key" data-key="5">5</div>
+        <div class="freq-key" data-key="6">6</div>
+        <div class="freq-key" data-key="7">7</div>
+        <div class="freq-key" data-key="8">8</div>
+        <div class="freq-key" data-key="9">9</div>
+        <div class="freq-key special" data-key=".">.</div>
+        <div class="freq-key" data-key="0">0</div>
+        <div class="freq-key special" data-key="backspace">⌫</div>
+    </div>
+    
+    <div class="freq-actions">
+        <button class="freq-action-btn freq-btn-clear" id="freqClearBtn">CLEAR</button>
+        <button class="freq-action-btn freq-btn-cancel" id="freqCancelBtn">CANCEL</button>
+        <button class="freq-action-btn freq-btn-set" id="freqSetBtn">SET</button>
+    </div>
+    
+    <div class="freq-error" id="freqError"></div>
+    
+    <div class="freq-hints">
+        <strong>Tips:</strong><br>
+        • Click numbers or use keyboard<br>
+        • MHz: 14.205 or 14.205.000<br>
+        • kHz: 14205 or 14205.000<br>
+        • Hz: 14205000<br>
+        • Press Enter to set, Escape to cancel
+    </div>
+</div>
     <div class="memory-edit-modal" id="memoryEditModal">
         <h3>Edit Memory Channel <span id="editChannelNumber"></span></h3>
         
@@ -1473,6 +1871,7 @@
                     this.initPowerControl();
                     this.initMemorySystem();
                     this.initQsoLogger();
+					this.initFrequencyKeyboard();
                     this.updateDisplay();
                     this.updateTXStatus();
                     this.updateConnectionStatus();
@@ -1488,6 +1887,273 @@
                     console.error('Failed to initialize QMX Interface:', error);
                 }
             }
+
+
+// --- Frequency Input Keyboard ---
+initFrequencyKeyboard() {
+    try {
+        this.freqInputFormat = 'mhz';
+        this.freqInputValue = '';
+        
+        // Make frequency display clickable
+        document.getElementById('lcdPanel').addEventListener('click', () => this.openFrequencyKeyboard());
+        
+        // Format buttons
+        document.querySelectorAll('.freq-format-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.setFreqInputFormat(btn.dataset.format));
+        });
+        
+        // Keypad buttons
+        document.querySelectorAll('.freq-key').forEach(key => {
+            key.addEventListener('click', () => this.handleFreqKeyInput(key.dataset.key));
+        });
+        
+        // Action buttons
+        document.getElementById('freqSetBtn').addEventListener('click', () => this.setFrequencyFromInput());
+        document.getElementById('freqCancelBtn').addEventListener('click', () => this.closeFrequencyKeyboard());
+        document.getElementById('freqClearBtn').addEventListener('click', () => this.clearFreqInput());
+        
+        // Input field events
+        const freqInput = document.getElementById('freqDisplayInput');
+        freqInput.addEventListener('input', (e) => this.handleFreqInputChange(e));
+        freqInput.addEventListener('keydown', (e) => this.handleFreqInputKeyboard(e));
+        
+        // Modal overlay
+        document.getElementById('modalOverlay').addEventListener('click', () => {
+            if (document.getElementById('freqInputModal').classList.contains('active')) {
+                this.closeFrequencyKeyboard();
+            }
+        });
+        
+		 // NEW: Initialize permanent frequency input
+    this.initPermanentFreqInput();
+    
+    // NEW: Add mode toggle listener
+    document.getElementById('freqInputMode').addEventListener('change', (e) => {
+        this.setFreqInputMode(e.target.value);
+    });
+
+		
+		
+        console.log('Frequency input keyboard initialized');
+    } catch (error) {
+        console.error('Error initializing frequency keyboard:', error);
+    }
+}
+
+openFrequencyKeyboard() {
+    // Set current frequency in the input
+    this.freqInputValue = this.formatFrequencyForInput(this.frequency, this.freqInputFormat);
+    document.getElementById('freqDisplayInput').value = this.freqInputValue;
+    
+    // Show modal
+    document.getElementById('modalOverlay').classList.add('active');
+    document.getElementById('freqInputModal').classList.add('active');
+    
+    // Focus the input
+    setTimeout(() => {
+        document.getElementById('freqDisplayInput').focus();
+        document.getElementById('freqDisplayInput').select();
+    }, 100);
+    
+    this.clearFreqError();
+    this.logCAT('Frequency keyboard opened', 'info');
+}
+
+closeFrequencyKeyboard() {
+    document.getElementById('modalOverlay').classList.remove('active');
+    document.getElementById('freqInputModal').classList.remove('active');
+    this.clearFreqError();
+}
+
+setFreqInputFormat(format) {
+    this.freqInputFormat = format;
+    
+    // Update active button
+    document.querySelectorAll('.freq-format-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.format === format) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Update the input field with current frequency in new format
+    this.freqInputValue = this.formatFrequencyForInput(this.frequency, format);
+    document.getElementById('freqDisplayInput').value = this.freqInputValue;
+    this.clearFreqError();
+    
+    this.logCAT(`Frequency format changed to ${format.toUpperCase()}`, 'info');
+}
+
+handleFreqKeyInput(key) {
+    const freqInput = document.getElementById('freqDisplayInput');
+    
+    if (key === 'backspace') {
+        this.freqInputValue = this.freqInputValue.slice(0, -1);
+    } else {
+        // Limit input length
+        if (this.freqInputValue.length >= 15) return;
+        
+        // Handle decimal point
+        if (key === '.') {
+            // Only allow one decimal point
+            if (this.freqInputValue.includes('.')) return;
+            // Don't allow decimal at start
+            if (this.freqInputValue.length === 0) return;
+        }
+        
+        this.freqInputValue += key;
+    }
+    
+    freqInput.value = this.freqInputValue;
+    this.validateFreqInput();
+    
+    // Keep focus on input
+    freqInput.focus();
+}
+
+handleFreqInputChange(e) {
+    // Allow only numbers and decimal point
+    let value = e.target.value.replace(/[^0-9.]/g, '');
+    
+    // Ensure only one decimal point
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    this.freqInputValue = value;
+    e.target.value = value;
+    this.validateFreqInput();
+}
+
+handleFreqInputKeyboard(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        this.setFrequencyFromInput();
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        this.closeFrequencyKeyboard();
+    }
+}
+
+clearFreqInput() {
+    this.freqInputValue = '';
+    document.getElementById('freqDisplayInput').value = '';
+    this.clearFreqError();
+    document.getElementById('freqDisplayInput').focus();
+}
+
+validateFreqInput() {
+    const errorEl = document.getElementById('freqError');
+    errorEl.textContent = '';
+    
+    if (!this.freqInputValue) return true;
+    
+    const freq = this.parseFrequencyInput(this.freqInputValue, this.freqInputFormat);
+    
+    if (freq === null) {
+        errorEl.textContent = 'Invalid frequency format';
+        return false;
+    }
+    
+    if (freq < 100000 || freq > 999999999) {
+        errorEl.textContent = 'Frequency out of range (0.1 - 999.999 MHz)';
+        return false;
+    }
+    
+    return true;
+}
+
+clearFreqError() {
+    document.getElementById('freqError').textContent = '';
+}
+
+// Replace the existing setFrequencyFromInput() method with this fixed version:
+
+setFrequencyFromInput() {
+    if (!this.validateFreqInput()) return;
+    
+    const freq = this.parseFrequencyInput(this.freqInputValue, this.freqInputFormat);
+    if (freq === null) return;
+    
+    // Set the new frequency
+    this.frequency = freq;
+    
+    // Update all displays and band selection
+    this.updateDisplay();
+    this.updateBandFromFrequency(); // Ensure band is updated
+    
+    // Update the band buttons to show the correct band
+    this.updateBandButtons();
+    
+    // Save the frequency for this band
+    this.saveLastFrequency();
+    
+    // Send frequency to radio if connected
+    if (this.connected) {
+        const freqStr = this.frequency.toString().padStart(11, '0');
+        const vfoCommand = this.getVFOCommand();
+        this.sendCommand(`${vfoCommand}${freqStr}`).then(() => {
+            // Request frequency confirmation after a brief delay
+            setTimeout(() => {
+                this.sendCommand(this.getVFOCommand());
+            }, 100);
+        }).catch(e => {
+            this.logCAT(`Failed to set frequency: ${e.message}`, 'error');
+        });
+    }
+    
+    // Update the tuning knob visual position (optional visual feedback)
+    document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
+    
+    // Log the frequency change
+    const displayStr = this.frequency.toString().padStart(9, '0');
+    const mhz = displayStr.substring(0, 3);
+    const khz = displayStr.substring(3, 6);
+    const hz = displayStr.substring(6, 9);
+    this.logCAT(`Direct frequency entry: ${mhz}.${khz}.${hz} Hz`, 'info');
+    
+    // Close the frequency input modal
+    this.closeFrequencyKeyboard();
+}
+
+formatFrequencyForInput(freqHz, format) {
+    switch (format) {
+        case 'mhz':
+            return (freqHz / 1000000).toFixed(6).replace(/\.?0+$/, '');
+        case 'khz':
+            return (freqHz / 1000).toFixed(3).replace(/\.?0+$/, '');
+        case 'hz':
+            return freqHz.toString();
+        default:
+            return (freqHz / 1000000).toFixed(6).replace(/\.?0+$/, '');
+    }
+}
+
+parseFrequencyInput(input, format) {
+    if (!input) return null;
+    
+    const value = parseFloat(input);
+    if (isNaN(value) || value <= 0) return null;
+    
+    let freqHz;
+    switch (format) {
+        case 'mhz':
+            freqHz = Math.round(value * 1000000);
+            break;
+        case 'khz':
+            freqHz = Math.round(value * 1000);
+            break;
+        case 'hz':
+            freqHz = Math.round(value);
+            break;
+        default:
+            freqHz = Math.round(value * 1000000);
+    }
+    
+    return freqHz;
+}
 
             initMemorySystem() {
                 try {
@@ -4218,7 +4884,193 @@ else if (response.startsWith('FB')) {
             }
 
         
-           
+       // Modify the initFrequencyKeyboard method to include this at the end:
+initFrequencyKeyboard() {
+    // ... existing code ...
+    
+    // NEW: Initialize permanent frequency input
+    this.initPermanentFreqInput();
+    
+    // NEW: Add mode toggle listener
+    document.getElementById('freqInputMode').addEventListener('change', (e) => {
+        this.setFreqInputMode(e.target.value);
+    });
+}
+
+// NEW: Add these methods
+initPermanentFreqInput() {
+    this.freqInputModePerm = 'mhz';
+    this.freqInputValuePerm = '';
+    
+    // Format buttons for permanent panel
+    document.querySelectorAll('[data-target="permanent"].freq-format-btn').forEach(btn => {
+        btn.addEventListener('click', () => this.setFreqInputFormatPerm(btn.dataset.format));
+    });
+    
+    // Keypad buttons for permanent panel
+    document.querySelectorAll('[data-target="permanent"].freq-key').forEach(key => {
+        key.addEventListener('click', () => this.handleFreqKeyInputPerm(key.dataset.key));
+    });
+    
+    // Action buttons for permanent panel
+    document.getElementById('freqSetBtnPerm').addEventListener('click', () => this.setFrequencyFromInputPerm());
+    document.getElementById('freqClearBtnPerm').addEventListener('click', () => this.clearFreqInputPerm());
+    
+    // Input field events for permanent panel
+    const freqInputPerm = document.getElementById('freqDisplayInputPerm');
+    freqInputPerm.addEventListener('input', (e) => this.handleFreqInputChangePerm(e));
+    freqInputPerm.addEventListener('keydown', (e) => this.handleFreqInputKeyboardPerm(e));
+}
+
+setFreqInputMode(mode) {
+    const permanentPanel = document.getElementById('freqInputPermanentPanel');
+    const lcdPanel = document.getElementById('lcdPanel');
+    
+    if (mode === 'permanent') {
+        permanentPanel.style.display = 'block';
+        // Update the input with current frequency
+        this.freqInputValuePerm = this.formatFrequencyForInput(this.frequency, this.freqInputModePerm);
+        document.getElementById('freqDisplayInputPerm').value = this.freqInputValuePerm;
+        // Disable LCD click for popup
+        lcdPanel.style.pointerEvents = 'none';
+        lcdPanel.style.opacity = '0.8';
+        this.logCAT('Frequency input: Permanent mode enabled', 'info');
+    } else {
+        permanentPanel.style.display = 'none';
+        // Re-enable LCD click for popup
+        lcdPanel.style.pointerEvents = 'auto';
+        lcdPanel.style.opacity = '1';
+        this.logCAT('Frequency input: Popup mode enabled', 'info');
+    }
+}
+
+setFreqInputFormatPerm(format) {
+    this.freqInputModePerm = format;
+    
+    // Update active button
+    document.querySelectorAll('[data-target="permanent"].freq-format-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.format === format) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Update the input field with current frequency in new format
+    this.freqInputValuePerm = this.formatFrequencyForInput(this.frequency, format);
+    document.getElementById('freqDisplayInputPerm').value = this.freqInputValuePerm;
+    this.clearFreqErrorPerm();
+}
+
+handleFreqKeyInputPerm(key) {
+    const freqInput = document.getElementById('freqDisplayInputPerm');
+    
+    if (key === 'backspace') {
+        this.freqInputValuePerm = this.freqInputValuePerm.slice(0, -1);
+    } else {
+        if (this.freqInputValuePerm.length >= 15) return;
+        
+        if (key === '.') {
+            if (this.freqInputValuePerm.includes('.')) return;
+            if (this.freqInputValuePerm.length === 0) return;
+        }
+        
+        this.freqInputValuePerm += key;
+    }
+    
+    freqInput.value = this.freqInputValuePerm;
+    this.validateFreqInputPerm();
+    freqInput.focus();
+}
+
+handleFreqInputChangePerm(e) {
+    let value = e.target.value.replace(/[^0-9.]/g, '');
+    
+    const parts = value.split('.');
+    if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    this.freqInputValuePerm = value;
+    e.target.value = value;
+    this.validateFreqInputPerm();
+}
+
+handleFreqInputKeyboardPerm(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        this.setFrequencyFromInputPerm();
+    }
+}
+
+clearFreqInputPerm() {
+    this.freqInputValuePerm = '';
+    document.getElementById('freqDisplayInputPerm').value = '';
+    this.clearFreqErrorPerm();
+    document.getElementById('freqDisplayInputPerm').focus();
+}
+
+validateFreqInputPerm() {
+    const errorEl = document.getElementById('freqErrorPerm');
+    errorEl.textContent = '';
+    
+    if (!this.freqInputValuePerm) return true;
+    
+    const freq = this.parseFrequencyInput(this.freqInputValuePerm, this.freqInputModePerm);
+    
+    if (freq === null) {
+        errorEl.textContent = 'Invalid format';
+        return false;
+    }
+    
+    if (freq < 100000 || freq > 999999999) {
+        errorEl.textContent = 'Out of range';
+        return false;
+    }
+    
+    return true;
+}
+
+clearFreqErrorPerm() {
+    document.getElementById('freqErrorPerm').textContent = '';
+}
+
+setFrequencyFromInputPerm() {
+    if (!this.validateFreqInputPerm()) return;
+    
+    const freq = this.parseFrequencyInput(this.freqInputValuePerm, this.freqInputModePerm);
+    if (freq === null) return;
+    
+    // Set the new frequency (reuse existing logic)
+    this.frequency = freq;
+    this.updateDisplay();
+    this.updateBandFromFrequency();
+    this.updateBandButtons();
+    this.saveLastFrequency();
+    
+    if (this.connected) {
+        const freqStr = this.frequency.toString().padStart(11, '0');
+        const vfoCommand = this.getVFOCommand();
+        this.sendCommand(`${vfoCommand}${freqStr}`).then(() => {
+            setTimeout(() => {
+                this.sendCommand(this.getVFOCommand());
+            }, 100);
+        }).catch(e => {
+            this.logCAT(`Failed to set frequency: ${e.message}`, 'error');
+        });
+    }
+    
+    document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
+    
+    const displayStr = this.frequency.toString().padStart(9, '0');
+    const mhz = displayStr.substring(0, 3);
+    const khz = displayStr.substring(3, 6);
+    const hz = displayStr.substring(6, 9);
+    this.logCAT(`Direct frequency entry: ${mhz}.${khz}.${hz} Hz`, 'info');
+    
+    // Update the permanent input to show the set frequency
+    this.freqInputValuePerm = this.formatFrequencyForInput(this.frequency, this.freqInputModePerm);
+    document.getElementById('freqDisplayInputPerm').value = this.freqInputValuePerm;
+}    
               
            
           
@@ -4241,6 +5093,8 @@ else if (response.startsWith('FB')) {
                 }
             }
         }
+		
+		
 
         document.addEventListener('DOMContentLoaded', () => {
             try {
