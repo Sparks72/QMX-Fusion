@@ -1343,6 +1343,684 @@
     gap: 10px;
 }
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive CSS Changes for QMX Interface</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .code-section {
+            background: #000;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #00ff88;
+        }
+        .code-section h3 {
+            color: #00ff88;
+            margin-top: 0;
+        }
+        pre {
+            background: #111;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 3px solid #00ff88;
+        }
+        .highlight {
+            background: rgba(0, 255, 136, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+  
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: clamp(10px, 2vw, 20px);
+    width: 100%;
+}
+
+/* Responsive Main Panel Grid */
+.main-panel {
+    display: grid;
+    gap: clamp(10px, 2vw, 20px);
+    margin-bottom: 20px;
+    /* Default: 3 columns for large screens */
+    grid-template-columns: 1fr 400px 1fr;
+}
+
+/* Ultra-wide screens (>1600px) */
+@media (min-width: 1600px) {
+    .container {
+        max-width: 1800px;
+    }
+    .main-panel {
+        grid-template-columns: 1fr 500px 1fr;
+        gap: 30px;
+    }
+    .panel {
+        padding: 25px;
+    }
+}
+
+/* Large screens (1200px - 1599px) */
+@media (max-width: 1599px) and (min-width: 1200px) {
+    .main-panel {
+        grid-template-columns: 1fr 350px 1fr;
+    }
+}
+
+/* Medium screens (900px - 1199px) */
+@media (max-width: 1199px) and (min-width: 900px) {
+    .main-panel {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: 
+            "left center"
+            "right center";
+    }
+    .left-panel { grid-area: left; }
+    .center-panel { grid-area: center; }
+    .right-panel { grid-area: right; }
+}
+
+/* Small screens (600px - 899px) */
+@media (max-width: 899px) and (min-width: 600px) {
+    .main-panel {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "center"
+            "left" 
+            "right";
+    }
+    .left-panel { grid-area: left; }
+    .center-panel { grid-area: center; }
+    .right-panel { grid-area: right; }
+    
+    .controls-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .knobs-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+/* Very small screens (up to 599px) */
+@media (max-width: 599px) {
+    body {
+        user-select: auto; /* Allow text selection on mobile */
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .main-panel {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.8em;
+    }
+    
+    .header p {
+        font-size: 0.9em;
+    }
+    
+    .panel {
+        padding: 15px;
+    }
+    
+    .controls-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .mode-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    
+    .band-buttons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    
+    .memory-buttons {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+    }
+    
+    .knobs-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .qso-inputs-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .qso-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .log-buttons {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .freq-actions {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>2. Add responsive font and element sizing:</h3>
+        <pre><code>/* Responsive Typography */
+.header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.header p {
+    font-size: clamp(0.9rem, 2vw, 1.1rem);
+}
+
+.panel h3 {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+}
+
+.btn {
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    padding: clamp(8px, 2vw, 12px) clamp(15px, 3vw, 20px);
+}
+
+/* Responsive Controls */
+.mode-btn, .band-btn {
+    font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+    padding: clamp(6px, 1.5vw, 10px);
+}
+
+.memory-btn {
+    font-size: clamp(0.6rem, 1.5vw, 0.8rem);
+    padding: clamp(6px, 1.5vw, 8px) clamp(3px, 1vw, 4px);
+    min-height: clamp(35px, 8vw, 45px);
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>3. Make the frequency display responsive:</h3>
+        <pre><code>/* Responsive Frequency Display */
+.frequency-display.lcd-panel {
+    padding: clamp(15px, 3vw, 25px);
+    height: clamp(80px, 15vw, 120px);
+    font-size: clamp(24px, 6vw, 40px);
+}
+
+#lcdRow1, #lcdRow2 {
+   /* font-size: clamp(16px, 4vw, 20px);*/
+	font-size: clamp(24px, 8vw, 50px);
+    line-height: 1.2;
+}
+
+/* Responsive Tuning Knob */
+.tuning-knob-container {
+    width: clamp(180px, 35vw, 250px);
+    height: clamp(180px, 35vw, 250px);
+    margin: clamp(10px, 3vw, 20px) auto;
+}
+
+.frequency-markings {
+    width: clamp(200px, 40vw, 280px);
+    height: clamp(200px, 40vw, 280px);
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>4. Make volume knobs responsive:</h3>
+        <pre><code>/* Responsive Volume Knobs */
+.volume-knob-container {
+    width: clamp(60px, 12vw, 80px);
+    height: clamp(60px, 12vw, 80px);
+}
+
+.knob-group label {
+    font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+}
+
+.knob-level {
+    font-size: clamp(0.8rem, 1.8vw, 0.9rem);
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>5. Make meters responsive:</h3>
+        <pre><code>/* Responsive Meters */
+.meter {
+    height: clamp(60px, 12vw, 80px);
+    padding: clamp(10px, 2vw, 15px);
+}
+
+.meter-scale {
+    font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+}
+
+.meter-bar {
+    height: clamp(15px, 3vw, 20px);
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>6. Make modals responsive:</h3>
+        <pre><code>/* Responsive Modals */
+.memory-edit-modal,
+.freq-input-modal {
+    min-width: clamp(300px, 80vw, 500px);
+    max-width: clamp(350px, 90vw, 600px);
+    padding: clamp(15px, 4vw, 30px);
+    margin: 10px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.freq-display-input {
+    font-size: clamp(1.5rem, 4vw, 2.5rem) !important;
+    padding: clamp(15px, 3vw, 25px) clamp(10px, 2vw, 20px) !important;
+    height: clamp(60px, 12vw, 80px) !important;
+}
+
+.freq-display-input-permanent {
+    font-size: clamp(1.2rem, 3vw, 1.8rem) !important;
+    padding: clamp(10px, 2vw, 15px) clamp(8px, 2vw, 12px) !important;
+    height: clamp(45px, 10vw, 60px) !important;
+}
+
+.freq-keypad {
+    gap: clamp(6px, 1.5vw, 10px);
+}
+
+.freq-key {
+    padding: clamp(8px, 2vw, 15px);
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>7. Make status bar responsive:</h3>
+        <pre><code>/* Responsive Status Bar */
+.status-bar {
+    padding: clamp(10px, 2vw, 15px) clamp(15px, 3vw, 20px);
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.status-bar > div {
+    font-size: clamp(0.8rem, 1.8vw, 1rem);
+}
+
+@media (max-width: 599px) {
+    .status-bar {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+    }
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>8. Make QSO logger responsive:</h3>
+        <pre><code>/* Responsive QSO Logger */
+.qso-log-table {
+    min-height: clamp(150px, 30vw, 200px);
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+}
+
+.log-header, .log-row {
+    grid-template-columns: 1.2fr 1fr 1fr 0.8fr 0.8fr;
+    gap: clamp(5px, 1vw, 10px);
+    padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 10px);
+}
+
+.qso-info-bar {
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+    padding: clamp(6px, 1.5vw, 8px) clamp(10px, 2vw, 12px);
+}
+
+/* Mobile QSO Logger adjustments */
+@media (max-width: 599px) {
+    .log-header, .log-row {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 5px;
+        padding: 6px 5px;
+        font-size: 0.7rem;
+    }
+    
+    .log-header div:nth-child(4),
+    .log-header div:nth-child(5),
+    .log-row div:nth-child(4),
+    .log-row div:nth-child(5) {
+        display: none; /* Hide MODE and RST columns on very small screens */
+    }
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>9. Handle very large screens (4K+):</h3>
+        <pre><code>/* 4K and Ultra-wide Support */
+@media (min-width: 2000px) {
+    .container {
+        max-width: 2400px;
+    }
+    
+    .main-panel {
+        grid-template-columns: 1fr 600px 1fr;
+        gap: 40px;
+    }
+    
+    .panel {
+        padding: 30px;
+    }
+    
+    .header h1 {
+        font-size: 3rem;
+    }
+    
+    .tuning-knob-container {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .frequency-markings {
+        width: 330px;
+        height: 330px;
+    }
+}
+
+/* Ultra-wide aspect ratios */
+@media (min-aspect-ratio: 21/9) {
+    .main-panel {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+    
+    .center-panel {
+        grid-column: 2 / 4;
+    }
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>10. Add touch-friendly sizing for mobile:</h3>
+        <pre><code>/* Touch-friendly controls */
+@media (pointer: coarse) {
+    .btn {
+        min-height: 44px; /* Apple's recommended touch target size */
+        padding: 12px 20px;
+    }
+    
+    .mode-btn, .band-btn, .memory-btn {
+        min-height: 44px;
+        padding: 10px;
+    }
+    
+    .freq-key {
+        min-height: 44px;
+        padding: 12px;
+    }
+    
+    .slider {
+        height: 8px;
+    }
+    
+    .slider::-webkit-slider-thumb {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .slider::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+/* Landscape mobile adjustments */
+@media (max-width: 899px) and (orientation: landscape) {
+    .main-panel {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    
+    .tuning-knob-container {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .frequency-markings {
+        width: 170px;
+        height: 170px;
+    }
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>11. Responsive CAT log:</h3>
+        <pre><code>/* Responsive CAT Monitor */
+.cat-log {
+    height: clamp(100px, 20vw, 150px);
+    font-size: clamp(0.6rem, 1.4vw, 0.8rem);
+    padding: clamp(8px, 2vw, 10px);
+}
+
+@media (max-width: 599px) {
+    .cat-log {
+        height: 80px;
+        font-size: 0.65rem;
+    }
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>12. Responsive form inputs:</h3>
+        <pre><code>/* Responsive Inputs */
+select, input[type="text"] {
+    font-size: clamp(0.8rem, 2vw, 1rem);
+    padding: clamp(8px, 2vw, 10px);
+}
+
+.qso-inputs-grid input[type="text"] {
+    font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+    padding: clamp(6px, 1.5vw, 8px);
+}
+
+.control-group label {
+    font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+}</code></pre>
+    </div>
+
+    <div class="code-section">
+        <h3>13. Add horizontal scrolling for very narrow screens:</h3>
+        <pre><code>/* Horizontal scroll fallback for extremely narrow screens */
+@media (max-width: 320px) {
+    .container {
+        min-width: 320px;
+        padding: 5px;
+    }
+    
+    body {
+        overflow-x: auto;
+    }
+    
+    .main-panel {
+        gap: 10px;
+    }
+    
+    .panel {
+        padding: 10px;
+    }
+    
+    .header h1 {
+        font-size: 1.4rem;
+    }
+}
+
+/* RIT Panel Styles */
+.rit-status-display {
+    background: #000;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 50px;
+}
+
+.rit-status-display.active {
+    border-color: #00ff88;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.rit-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.rit-label {
+    font-size: 0.8em;
+    opacity: 0.7;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.rit-status {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #ff4757;
+    text-transform: uppercase;
+}
+
+.rit-status.active {
+    color: #00ff88;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+.rit-offset-display {
+    text-align: right;
+}
+
+.rit-offset-value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.rit-offset-value.positive {
+    color: #00ff88;
+}
+
+.rit-offset-value.negative {
+    color: #ff9500;
+}
+
+.rit-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.rit-adjust-buttons {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.rit-adjust-buttons .btn {
+    padding: 8px 4px;
+    font-size: 0.8em;
+    min-height: 35px;
+}
+
+.rit-fine-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.rit-fine-control label {
+    font-size: 0.8em;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.rit-knob-container {
+    width: 60px;
+    height: 60px;
+    cursor: grab;
+    user-select: none;
+}
+
+.rit-knob-container:active {
+    cursor: grabbing;
+}
+
+.rit-knob-container .volume-knob {
+    border: 1px solid #666;
+}
+
+.rit-knob-container .volume-knob:hover::after {
+    background-color: #00ff88 !important;
+}
+
+#ritKnob.rit-active::after {
+    background-color: #00ff88 !important;
+}
+
+/* RIT Active State */
+.panel#ritPanel.rit-active {
+    border-color: #00ff88;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.panel#ritPanel.rit-active h3 {
+    color: #00ff88;
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+/* Responsive RIT */
+@media (max-width: 599px) {
+    .rit-adjust-buttons {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    
+    .rit-adjust-buttons .btn {
+        font-size: 0.7em;
+        padding: 6px 2px;
+        min-height: 32px;
+    }
+    
+    .rit-knob-container {
+        width: 50px;
+        height: 50px;
+    }
+}
         @media (max-width: 768px) {
             .volume-knob-container {
                 width: 60px;
@@ -1500,6 +2178,38 @@
                         <button class="btn btn-secondary" id="vfoCopy">A→B</button>
                     </div>
                 </div>
+				
+				
+	<!-- Insert this AFTER the VFO panel in your HTML -->
+<div class="panel" id="ritPanel">
+    <h3>RIT</h3>
+    
+    <div class="rit-status-display" id="ritStatusDisplay">
+        <div class="rit-indicator">
+            <span class="rit-label">RIT</span>
+            <span class="rit-status" id="ritStatus">OFF</span>
+        </div>
+        <div class="rit-offset-display">
+            <span class="rit-offset-value" id="ritOffsetValue">+0 Hz</span>
+        </div>
+    </div>
+    
+    <div class="controls-grid">
+        <button class="btn btn-secondary" id="ritToggleBtn">RIT ON/OFF</button>
+        <button class="btn btn-secondary" id="ritClearBtn">CLEAR</button>
+    </div>
+    
+    <div class="rit-adjust-buttons">
+        <button class="btn btn-secondary rit-adjust" data-offset="-100">-100</button>
+        <button class="btn btn-secondary rit-adjust" data-offset="-10">-10</button>
+        <button class="btn btn-secondary rit-adjust" data-offset="-1">-1</button>
+        <button class="btn btn-secondary rit-adjust" data-offset="1">+1</button>
+        <button class="btn btn-secondary rit-adjust" data-offset="10">+10</button>
+        <button class="btn btn-secondary rit-adjust" data-offset="100">+100</button>
+    </div>
+</div>>
+				
+				
 
                 <div class="panel" id="transmitPanel">
                     <h3>Transmit</h3>
@@ -1833,6 +2543,10 @@
                 this.powerAnimationFrame = null;
                 this.powerTimeout = null;
                 this.powerLevelBeforeAdjust = 50;
+				
+		
+				
+				
   // NEW: Add these for hover keyboard control
     this.isHoveringTuningKnob = false;
     this.boundHandleTuningHoverKeys = null;
@@ -1855,7 +2569,15 @@
                 };
                 // NEW: Property for debouncing frequency saves
                 this.saveFreqTimeout = null;
-
+// ADD these RIT properties here:
+    this.ritEnabled = false;
+    this.ritOffset = 0;
+    this.ritKnobRotation = 0;
+    this.ritLastAngle = 0;
+    this.isRITAdjusting = false;
+    this.ritAnimationFrame = null;
+    this.ritTimeout = null;
+    this.ritStep = 10;
                 try {
                     this.catLogElement = document.getElementById('catLog');
                     
@@ -1869,6 +2591,7 @@
                     this.initVolumeControl();
                     this.initRFGainControl();
                     this.initPowerControl();
+					this.initRITControl();
                     this.initMemorySystem();
                     this.initQsoLogger();
 					this.initFrequencyKeyboard();
@@ -1876,13 +2599,15 @@
                     this.updateTXStatus();
                     this.updateConnectionStatus();
                     this.initTimeSync();
-                    
+                    window.qmxInterface = this;  
                     window.addEventListener('blur', () => {
                         if (this.isPowerAdjusting) this.stopPowerAdjust();
                         if (this.isVolumeAdjusting) this.stopVolumeAdjust();
                         if (this.isRFGainAdjusting) this.stopRFGainAdjust();
                         if (this.isTuningAdjusting) this.stopTuningAdjust();
                     });
+					
+					if (this.isRITAdjusting) this.stopRITAdjust();
                 } catch (error) {
                     console.error('Failed to initialize QMX Interface:', error);
                 }
@@ -1895,54 +2620,49 @@ initFrequencyKeyboard() {
         this.freqInputFormat = 'mhz';
         this.freqInputValue = '';
         
-        // Make frequency display clickable
+        // Make frequency display clickable to open the popup
         document.getElementById('lcdPanel').addEventListener('click', () => this.openFrequencyKeyboard());
-	
+
+        // --- Listeners for the POPUP modal ---
+        // Get the modal container to scope the selections
+        const modal = document.getElementById('freqInputModal');
         
-        // Format buttons
-        document.querySelectorAll('.freq-format-btn').forEach(btn => {
+        // Format buttons for POPUP (scoped to modal)
+        modal.querySelectorAll('.freq-format-btn').forEach(btn => {
             btn.addEventListener('click', () => this.setFreqInputFormat(btn.dataset.format));
         });
         
-        // Keypad buttons
-        document.querySelectorAll('.freq-key').forEach(key => {
+        // Keypad buttons for POPUP (scoped to modal)
+        modal.querySelectorAll('.freq-key').forEach(key => {
             key.addEventListener('click', () => this.handleFreqKeyInput(key.dataset.key));
         });
         
-        // Action buttons
+        // Action buttons for POPUP
         document.getElementById('freqSetBtn').addEventListener('click', () => this.setFrequencyFromInput());
         document.getElementById('freqCancelBtn').addEventListener('click', () => this.closeFrequencyKeyboard());
         document.getElementById('freqClearBtn').addEventListener('click', () => this.clearFreqInput());
         
-        // Input field events
+        // Input field events for POPUP
         const freqInput = document.getElementById('freqDisplayInput');
         freqInput.addEventListener('input', (e) => this.handleFreqInputChange(e));
         freqInput.addEventListener('keydown', (e) => this.handleFreqInputKeyboard(e));
         
-        // Modal overlay
+        // Modal overlay listener
         document.getElementById('modalOverlay').addEventListener('click', () => {
             if (document.getElementById('freqInputModal').classList.contains('active')) {
                 this.closeFrequencyKeyboard();
             }
         });
         
-		 // NEW: Initialize permanent frequency input
-    this.initPermanentFreqInput();
-    
-    // NEW: Add mode toggle listener
-    document.getElementById('freqInputMode').addEventListener('change', (e) => {
-        this.setFreqInputMode(e.target.value);
-    });
-
-		 // NEW: Initialize permanent frequency input
+        // --- Initialize the PERMANENT panel and its controls (ONCE) ---
         this.initPermanentFreqInput();
         
-        // NEW: Add mode toggle listener
+        // Add listener for the mode toggle dropdown
         document.getElementById('freqInputMode').addEventListener('change', (e) => {
             this.setFreqInputMode(e.target.value);
         });
         
-        // NEW: Set initial mode to popup (ensure LCD panel is clickable)
+        // Set the initial input mode to 'popup'
         this.setFreqInputMode('popup');
 		
         console.log('Frequency input keyboard initialized');
@@ -2586,6 +3306,8 @@ parseFrequencyInput(input, format) {
                 await this.sendCommand('SM');
                 await this.sendCommand('SW');
                 await this.sendCommand('PC');
+				await this.sendCommand('RT');   // Get RIT status
+                await this.sendCommand('RC');   // Clear RIT initially
 				this.sendTimeToQMX();
             }
 
@@ -4566,7 +5288,15 @@ continueTuningAdjust(e) {
                         await this.sendCommand('SW');
                         await this.sendCommand('KS');
 						await this.sendCommand('AG0');
+						await this.sendCommand('RT');  // Poll RIT status
                     }
+					
+
+					
+					
+					
+					
+					
                 }, 350);
             }
 
@@ -4816,6 +5546,15 @@ continueTuningAdjust(e) {
                     this.startConnectionHealthCheck();
                 }, 5000);
             }
+			
+			
+			
+			
+	//-----------------------------------------------------------		
+			
+			
+			
+			
 
             processResponse(response) {
                 this.logCAT(response, 'rx');
@@ -4829,6 +5568,8 @@ continueTuningAdjust(e) {
                     const row1 = lcdData.substring(0, 16);
                     const row2 = lcdData.substring(16, 32);
                     this.updateLcdDisplay(row1, row2);
+				
+				
                 } else if (response.startsWith('AG')) {
                     const gain = parseInt(response.substring(2));
                     if (!isNaN(gain) && !this.isVolumeAdjusting) {
@@ -4842,7 +5583,7 @@ continueTuningAdjust(e) {
         this.updateDisplay(); // This will trigger band auto-selection
         document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
     }
-}
+
 
 // And replace the FB handler:
 else if (response.startsWith('FB')) {
@@ -4890,9 +5631,34 @@ else if (response.startsWith('FB')) {
                 } else if (response.startsWith('RX')) {
                     this.transmitting = false;
                     this.updateTXStatus();
-                }
-            }
+               
+           
 
+
+// Add this to the processResponse() method after the existing else-if statements:
+
+   }else if (response.startsWith('RT')) {
+    // RIT status response
+    const ritStatus = response.substring(2);
+    if (ritStatus === '0' || ritStatus === '1') {
+        this.ritEnabled = (ritStatus === '1');
+        this.updateRITUI();
+        if (!this.isRITAdjusting) {
+            this.logCAT(`RIT status: ${this.ritEnabled ? 'ON' : 'OFF'}`, 'rx');
+        }
+    }
+} else if (response.startsWith('RD') || response.startsWith('RU')) {
+    // RIT offset response - extract offset value
+    const offsetStr = response.substring(2);
+    const offsetValue = parseInt(offsetStr);
+    if (!isNaN(offsetValue) && !this.isRITAdjusting) {
+        this.ritOffset = response.startsWith('RD') ? -offsetValue : offsetValue;
+        this.updateRITUI();
+    }
+}
+
+ }
+}
         
  /*      // Modify the initFrequencyKeyboard method to include this at the end:
 initFrequencyKeyboard() {
@@ -5090,11 +5856,341 @@ setFrequencyFromInputPerm() {
     document.getElementById('freqDisplayInputPerm').value = this.freqInputValuePerm;
 }    
               
-           
-          
-          
+   // Add these methods to the QMXInterface class
 
+initRITControl() {
+    try {
+        console.log('Initializing RIT control...');
+        
+        // Check if RIT elements exist
+        const ritToggleBtn = document.getElementById('ritToggleBtn');
+        const ritClearBtn = document.getElementById('ritClearBtn');
+        const ritKnob = document.getElementById('ritKnob');
+        
+        if (!ritToggleBtn) {
+            console.error('RIT Toggle button not found! Make sure HTML is added.');
+            return;
+        }
+        
+        console.log('RIT elements found, setting up event listeners...');
+        
+        // Initialize RIT state
+        this.ritEnabled = false;
+        this.ritOffset = 0;
+        this.updateRITUI();
+        
+        // RIT Toggle button - WITH DEBUGGING
+        ritToggleBtn.addEventListener('click', (e) => {
+            console.log('RIT Toggle button clicked!');
+            this.toggleRIT();
+        });
+        
+        // RIT Clear button
+        if (ritClearBtn) {
+            ritClearBtn.addEventListener('click', (e) => {
+                console.log('RIT Clear button clicked!');
+                this.clearRIT();
+            });
+        }
+        
+        // RIT adjustment buttons
+        document.querySelectorAll('.rit-adjust').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const offset = parseInt(btn.dataset.offset);
+                console.log(`RIT adjust button clicked: ${offset} Hz`);
+                this.adjustRIT(offset);
+            });
+        });
+        
+        // RIT Fine control knob
+        if (ritKnob) {
+            ritKnob.addEventListener('mousedown', this.startRITAdjust.bind(this));
+            ritKnob.addEventListener('touchstart', this.startRITAdjust.bind(this), { passive: false });
+            ritKnob.addEventListener('wheel', this.handleRITWheel.bind(this));
+            ritKnob.addEventListener('keydown', this.handleRITKeyboard.bind(this));
+        }
+        
+        console.log('RIT control initialized successfully');
+        this.logCAT('RIT control system ready', 'info');
+        
+    } catch (error) {
+        console.error('Error initializing RIT control:', error);
+        this.logCAT(`RIT init error: ${error.message}`, 'error');
+    }
+}
+
+toggleRIT() {
+    try {
+        console.log(`Toggling RIT from ${this.ritEnabled ? 'ON' : 'OFF'} to ${!this.ritEnabled ? 'ON' : 'OFF'}`);
+        
+		
+	
+		
+        this.ritEnabled = !this.ritEnabled;
+        this.updateRITUI();
+        
+        if (this.connected) {
+            const command = `RT${this.ritEnabled ? '1' : '0'}`;
+            console.log(`Sending RIT command: ${command}`);
             
+            this.sendCommand(command).then(() => {
+                this.logCAT(`RIT ${this.ritEnabled ? 'ENABLED' : 'DISABLED'}`, 'info');
+                console.log(`RIT command sent successfully: ${this.ritEnabled ? 'ENABLED' : 'DISABLED'}`);
+            }).catch(e => {
+                console.error('RIT command failed:', e);
+                this.logCAT(`RIT toggle error: ${e.message}`, 'error');
+            });
+        } else {
+            this.logCAT(`RIT ${this.ritEnabled ? 'ENABLED' : 'DISABLED'} (radio not connected)`, 'info');
+            console.log(`RIT toggled locally: ${this.ritEnabled ? 'ENABLED' : 'DISABLED'}`);
+        }
+        
+    } catch (error) {
+        console.error('Error in toggleRIT:', error);
+        this.logCAT(`RIT toggle error: ${error.message}`, 'error');
+    }
+}
+
+clearRIT() {
+    try {
+        console.log('Clearing RIT offset');
+        
+        this.ritOffset = 0;
+        this.ritKnobRotation = 0;
+        this.updateRITUI();
+        
+        if (this.connected) {
+            this.sendCommand('RC').then(() => {
+                this.logCAT('RIT offset cleared', 'info');
+                console.log('RIT clear command sent successfully');
+            }).catch(e => {
+                console.error('RIT clear command failed:', e);
+                this.logCAT(`RIT clear error: ${e.message}`, 'error');
+            });
+        } else {
+            this.logCAT('RIT offset cleared (radio not connected)', 'info');
+            console.log('RIT cleared locally');
+        }
+        
+    } catch (error) {
+        console.error('Error in clearRIT:', error);
+        this.logCAT(`RIT clear error: ${error.message}`, 'error');
+    }
+}
+
+adjustRIT(offsetHz) {
+    try {
+        console.log(`Adjusting RIT by ${offsetHz} Hz (current: ${this.ritOffset} Hz)`);
+        
+        if (!this.ritEnabled) {
+            this.logCAT('Enable RIT first before adjusting', 'error');
+            console.log('RIT adjustment blocked - RIT not enabled');
+            return;
+        }
+        
+        const newOffset = this.ritOffset + offsetHz;
+        
+        // Limit RIT range to ±9999 Hz
+        if (newOffset < -9999 || newOffset > 9999) {
+            this.logCAT(`RIT offset limited to ±9999 Hz`, 'error');
+            console.log(`RIT adjustment blocked - would exceed range: ${newOffset}`);
+            return;
+        }
+        
+        this.ritOffset = newOffset;
+        console.log(`RIT offset set to: ${this.ritOffset} Hz`);
+        
+        this.updateRITUI();
+        this.sendRITCommand();
+        
+    } catch (error) {
+        console.error('Error in adjustRIT:', error);
+        this.logCAT(`RIT adjust error: ${error.message}`, 'error');
+    }
+}
+
+updateRITUI() {
+    try {
+        console.log(`Updating RIT UI - Enabled: ${this.ritEnabled}, Offset: ${this.ritOffset}`);
+        
+        // Get elements
+        const statusDisplay = document.getElementById('ritStatusDisplay');
+        const statusText = document.getElementById('ritStatus');
+        const offsetValue = document.getElementById('ritOffsetValue');
+        const ritPanel = document.getElementById('ritPanel');
+        const ritKnob = document.getElementById('ritKnob');
+        const toggleBtn = document.getElementById('ritToggleBtn');
+        
+        // Check if elements exist
+        if (!statusDisplay || !statusText || !offsetValue) {
+            console.error('RIT UI elements not found! Check HTML structure.');
+            return;
+        }
+        
+        // Update status
+        if (this.ritEnabled) {
+            statusDisplay.classList.add('active');
+            statusText.textContent = 'ON';
+            statusText.classList.add('active');
+            if (ritPanel) ritPanel.classList.add('rit-active');
+            if (ritKnob) ritKnob.classList.add('rit-active');
+            if (toggleBtn) {
+                toggleBtn.classList.remove('btn-secondary');
+                toggleBtn.classList.add('btn-primary');
+            }
+        } else {
+            statusDisplay.classList.remove('active');
+            statusText.textContent = 'OFF';
+            statusText.classList.remove('active');
+            if (ritPanel) ritPanel.classList.remove('rit-active');
+            if (ritKnob) ritKnob.classList.remove('rit-active');
+            if (toggleBtn) {
+                toggleBtn.classList.remove('btn-primary');
+                toggleBtn.classList.add('btn-secondary');
+            }
+        }
+        
+        // Update offset display
+        const sign = this.ritOffset >= 0 ? '+' : '';
+        offsetValue.textContent = `${sign}${this.ritOffset} Hz`;
+        
+        // Update offset display color
+        offsetValue.classList.remove('positive', 'negative');
+        if (this.ritOffset > 0) {
+            offsetValue.classList.add('positive');
+        } else if (this.ritOffset < 0) {
+            offsetValue.classList.add('negative');
+        }
+        
+        // Update knob position
+        if (ritKnob) {
+            const knobOffset = Math.max(-1000, Math.min(1000, this.ritOffset));
+            const normalizedPosition = (knobOffset + 1000) / 2000;
+            this.ritKnobRotation = this.minRotation + (normalizedPosition * this.totalRotationRange);
+            ritKnob.style.transform = `rotate(${this.ritKnobRotation}deg)`;
+            ritKnob.setAttribute('aria-valuenow', this.ritOffset);
+        }
+        
+        // Update knob level display
+        const ritKnobLevel = document.getElementById('ritKnobLevel');
+        if (ritKnobLevel) {
+            ritKnobLevel.textContent = `${sign}${this.ritOffset} Hz`;
+        }
+        
+        console.log('RIT UI updated successfully');
+        
+    } catch (error) {
+        console.error('Error updating RIT UI:', error);
+        this.logCAT(`RIT UI update error: ${error.message}`, 'error');
+    }
+}
+
+sendRITCommand() {
+    if (!this.connected) {
+        console.log('RIT command not sent - radio not connected');
+        return;
+    }
+    
+    try {
+        if (this.ritTimeout) {
+            clearTimeout(this.ritTimeout);
+        }
+        
+        this.ritTimeout = setTimeout(() => {
+            console.log(`Sending RIT command for offset: ${this.ritOffset} Hz`);
+            
+            let command;
+            if (this.ritOffset === 0) {
+                command = 'RC';
+            } else if (this.ritOffset > 0) {
+                command = `RU${Math.abs(this.ritOffset).toString().padStart(4, '0')}`;
+            } else {
+                command = `RD${Math.abs(this.ritOffset).toString().padStart(4, '0')}`;
+            }
+            
+            console.log(`Sending command: ${command}`);
+            
+            this.sendCommand(command).then(() => {
+                console.log(`RIT command sent successfully: ${command}`);
+                this.logCAT(`RIT offset set: ${this.ritOffset} Hz`, 'info');
+            }).catch(e => {
+                console.error("RIT command error:", e);
+                this.logCAT(`RIT command error: ${e.message}`, 'error');
+            });
+            
+            this.ritTimeout = null;
+        }, 100);
+        
+    } catch (error) {
+        console.error('Error in sendRITCommand:', error);
+        this.logCAT(`RIT send error: ${error.message}`, 'error');
+    }
+}  
+
+    
+
+//-----------------------------------------------------
+// Add this temporary test function to check if RIT is working
+// You can call this from the browser console to test
+
+testRIT() {
+    console.log('=== RIT TEST START ===');
+    console.log('Current RIT state:', {
+        enabled: this.ritEnabled,
+        offset: this.ritOffset
+    });
+    
+    // Test the toggle function directly
+    console.log('Testing toggle function...');
+    this.toggleRIT();
+    
+    console.log('RIT state after toggle:', {
+        enabled: this.ritEnabled,
+        offset: this.ritOffset
+    });
+    
+    // Test adjustment
+    console.log('Testing 50Hz adjustment...');
+    this.adjustRIT(50);
+    
+    console.log('Final RIT state:', {
+        enabled: this.ritEnabled,
+        offset: this.ritOffset
+    });
+    console.log('=== RIT TEST END ===');
+}
+
+// Also add this method to help debug
+checkRITElements() {
+    const elements = {
+        ritPanel: document.getElementById('ritPanel'),
+        ritToggleBtn: document.getElementById('ritToggleBtn'),
+        ritStatus: document.getElementById('ritStatus'),
+        ritOffsetValue: document.getElementById('ritOffsetValue'),
+        ritKnob: document.getElementById('ritKnob')
+    };
+    
+    console.log('RIT Elements Check:', elements);
+    
+    Object.keys(elements).forEach(key => {
+        if (!elements[key]) {
+            console.error(`❌ Missing element: ${key}`);
+        } else {
+            console.log(`✅ Found element: ${key}`);
+        }
+    });
+    
+    return elements;
+}
+
+//--------------------------
+
+
+
+
+
+
+	
 
           
            
