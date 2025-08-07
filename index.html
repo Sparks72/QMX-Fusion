@@ -2030,6 +2030,69 @@ select, input[type="text"] {
                 gap: 8px;
             }
         }
+		
+		
+		/* Audio Panel Styles */
+.audio-device-grid, .audio-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.audio-levels {
+    margin-bottom: 15px;
+}
+
+.audio-meter-bar {
+    height: 20px;
+    background: #222;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.audio-meter-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00ff88 0%, #00ff88 60%, #ffff00 80%, #ff4757 100%);
+    transition: width 0.1s ease;
+}
+
+.audio-level-text {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+    text-align: center;
+    color: #00ff88;
+    margin-top: 5px;
+}
+
+.audio-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9em;
+}
+
+.audio-status .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #666;
+    margin-right: 8px;
+}
+
+.audio-status .status-dot.active {
+    background: #00ff88;
+}
+		
     </style>
 </head>
 <body>
@@ -2218,7 +2281,64 @@ select, input[type="text"] {
                         <button class="btn btn-primary" id="rxBtn">RX</button>
                     </div>
                 </div>
+            
+			
+				<div class="panel" id="audioStreamPanel">
+    <h3>🎵 Audio Streaming</h3>
+    
+    <!-- Device Selection -->
+    <div class="audio-device-grid">
+        <div class="control-group">
+            <label>Input Device</label>
+            <select id="audioInputDevice">
+                <option value="">Select Input Device...</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Output Device</label>
+            <select id="audioOutputDevice">
+                <option value="">Select Output Device...</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Audio Levels -->
+    <div class="audio-levels">
+        <div class="control-group">
+            <label>Input Level</label>
+            <div class="audio-meter">
+                <div class="audio-meter-bar">
+                    <div class="audio-meter-indicator" id="inputLevelMeter"></div>
+                </div>
+                <div class="audio-level-text" id="inputLevelText">-∞ dB</div>
             </div>
+        </div>
+    </div>
+
+    <!-- Audio Controls -->
+    <div class="audio-controls">
+        <button class="btn btn-primary" id="startStreamBtn">🎙️ START</button>
+        <button class="btn btn-secondary" id="stopStreamBtn" disabled>⏹️ STOP</button>
+        <button class="btn btn-secondary" id="refreshDevicesBtn">🔄 Refresh Devices</button>
+	</div>
+    <div class="audio-controls">
+        <button class="btn btn-secondary" id="muteInputBtn">🔇 MUTE IN</button>
+        <button class="btn btn-secondary" id="muteOutputBtn">🔇 MUTE OUT</button>
+    </div>
+
+    <!-- Status -->
+    <div class="audio-status" id="audioStatus">
+        <div class="status-indicator">
+            <div class="status-dot" id="audioStatusDot"></div>
+            <span class="status-text" id="audioStatusText">Ready to stream</span>
+        </div>
+        <div class="audio-info" id="audioInfo">48kHz 24-bit</div>
+    </div>
+</div>
+
+			
+			
+			</div>
 
             <div class="right-panel">
                 <div class="panel" id="qsoLoggerPanel">
@@ -2382,9 +2502,16 @@ select, input[type="text"] {
                             <div class="meter-indicator" id="swrMeter"></div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                
+				</div>
+				
+           
+	
+		   </div>
+        
+		
+		
+		</div>
         <div class="status-bar">
             <div class="status-indicator">
                 <div class="status-dot" id="statusDot"></div>
@@ -2544,7 +2671,19 @@ select, input[type="text"] {
                 this.powerTimeout = null;
                 this.powerLevelBeforeAdjust = 50;
 				
-		
+		// Add these after your existing properties
+
+
+// Add these audio properties:
+this.audioContext = null;
+this.inputStream = null;
+this.inputSource = null;
+this.gainNode = null;
+this.inputAnalyser = null;
+this.isAudioStreaming = false;
+this.audioDevices = { input: [], output: [] };
+this.selectedInputDevice = null;
+this.selectedOutputDevice = null;
 				
 				
   // NEW: Add these for hover keyboard control
@@ -2598,6 +2737,8 @@ select, input[type="text"] {
                     this.updateDisplay();
                     this.updateTXStatus();
                     this.updateConnectionStatus();
+					this.initAudioStreaming();
+					
                     this.initTimeSync();
                     window.qmxInterface = this;  
                     window.addEventListener('blur', () => {
@@ -6185,7 +6326,384 @@ checkRITElements() {
 
 //--------------------------
 
+async initAudioStreaming() {
+    try {
+        console.log('Initializing audio streaming...');
+        this.setupAudioEventListeners();
+        await this.enumerateAudioDevices();
+        this.logCAT('Audio streaming ready', 'info');
+    } catch (error) {
+        console.error('Audio init error:', error);
+        this.logCAT(`Audio init error: ${error.message}`, 'error');
+    }
+}
 
+setupAudioEventListeners() {
+    const inputSelect = document.getElementById('audioInputDevice');
+    const outputSelect = document.getElementById('audioOutputDevice');
+    
+    if (!inputSelect || !outputSelect) {
+        console.error('Audio select elements not found!');
+        return;
+    }
+    
+    // Input device selection with debugging
+    inputSelect.addEventListener('change', (e) => {
+        this.selectedInputDevice = e.target.value;
+        const selectedName = e.target.options[e.target.selectedIndex].text;
+        console.log('Input device changed to:', this.selectedInputDevice, '-', selectedName);
+        this.logCAT(`Input selected: ${selectedName}`, 'info');
+        
+        if (this.isAudioStreaming) {
+            this.stopAudioStream();
+        }
+    });
+    
+    // Output device selection with debugging
+    outputSelect.addEventListener('change', (e) => {
+        this.selectedOutputDevice = e.target.value;
+        const selectedName = e.target.options[e.target.selectedIndex].text;
+        console.log('Output device changed to:', this.selectedOutputDevice, '-', selectedName);
+        this.logCAT(`Output selected: ${selectedName}`, 'info');
+        
+        if (this.isAudioStreaming && this.audioContext && this.audioContext.setSinkId) {
+            this.audioContext.setSinkId(this.selectedOutputDevice).catch(console.error);
+        }
+    });
+    
+    // Button listeners
+    document.getElementById('startStreamBtn').addEventListener('click', () => {
+        console.log('START BUTTON CLICKED - selectedInputDevice:', this.selectedInputDevice);
+        this.startAudioStream();
+    });
+    // Add this to your setupAudioEventListeners() method
+document.getElementById('refreshDevicesBtn').addEventListener('click', async () => {
+    this.logCAT('Refreshing audio devices...', 'info');
+    console.log('Manual device refresh requested');
+    await this.enumerateAudioDevices();
+});
+    document.getElementById('stopStreamBtn').addEventListener('click', () => this.stopAudioStream());
+    document.getElementById('muteInputBtn').addEventListener('click', () => this.toggleInputMute());
+    document.getElementById('muteOutputBtn').addEventListener('click', () => this.toggleOutputMute());
+}
+
+async enumerateAudioDevices() {
+    try {
+        console.log('=== STARTING DEVICE ENUMERATION ===');
+        
+        // Request permission with more explicit constraints
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false
+            }
+        });
+        
+        // Stop the temporary stream
+        stream.getTracks().forEach(track => track.stop());
+        console.log('Microphone permission granted and test stream closed');
+        
+        // Small delay to ensure devices are properly enumerated
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        console.log('All devices found:', devices.length);
+        
+        const inputSelect = document.getElementById('audioInputDevice');
+        const outputSelect = document.getElementById('audioOutputDevice');
+        
+        if (!inputSelect || !outputSelect) {
+            console.error('Audio select elements not found!');
+            return;
+        }
+        
+        // Clear existing options
+        inputSelect.innerHTML = '<option value="">Select Input Device...</option>';
+        outputSelect.innerHTML = '<option value="">Select Output Device...</option>';
+        
+        // Reset arrays
+        this.audioDevices = { input: [], output: [] };
+        
+        devices.forEach((device, index) => {
+            const deviceName = device.label || `Device ${index + 1}`;
+            const deviceId = device.deviceId || `device-${index}-${device.kind}`;
+            
+            console.log(`Device ${index}: ${device.kind} - ${deviceName}`);
+            console.log(`  ID: "${deviceId}"`);
+            console.log(`  GroupID: "${device.groupId}"`);
+            
+            if (device.kind === 'audioinput') {
+                const option = document.createElement('option');
+                option.value = deviceId;
+                option.textContent = deviceName;
+                inputSelect.appendChild(option);
+                this.audioDevices.input.push({
+                    ...device,
+                    deviceId: deviceId // Ensure we have a valid ID
+                });
+            }
+            
+            else if (device.kind === 'audiooutput') {
+                const option = document.createElement('option');
+                option.value = deviceId;
+                option.textContent = deviceName;
+                outputSelect.appendChild(option);
+                this.audioDevices.output.push({
+                    ...device,
+                    deviceId: deviceId // Ensure we have a valid ID
+                });
+            }
+        });
+        
+        // Enhanced selection logic with validation
+        if (this.audioDevices.input.length > 0) {
+            const firstInput = this.audioDevices.input[0];
+            this.selectedInputDevice = firstInput.deviceId;
+            inputSelect.selectedIndex = 1; // Select first real option
+            
+            console.log('✅ SELECTED INPUT DEVICE:', firstInput.label || 'Device 1');
+            console.log('✅ INPUT DEVICE ID:', this.selectedInputDevice);
+            this.logCAT(`Selected input: ${firstInput.label || 'Device 1'}`, 'info');
+        } else {
+            console.log('❌ NO INPUT DEVICES FOUND');
+            this.selectedInputDevice = null;
+        }
+        
+        if (this.audioDevices.output.length > 0) {
+            const firstOutput = this.audioDevices.output[0];
+            this.selectedOutputDevice = firstOutput.deviceId;
+            outputSelect.selectedIndex = 1; // Select first real option
+            
+            console.log('✅ SELECTED OUTPUT DEVICE:', firstOutput.label || 'Device 2');
+            console.log('✅ OUTPUT DEVICE ID:', this.selectedOutputDevice);
+            this.logCAT(`Selected output: ${firstOutput.label || 'Device 2'}`, 'info');
+        } else {
+            console.log('❌ NO OUTPUT DEVICES FOUND');
+            this.selectedOutputDevice = null;
+        }
+        
+        console.log('=== DEVICE ENUMERATION COMPLETE ===');
+        console.log('🎯 FINAL Selected Input Device ID:', this.selectedInputDevice);
+        console.log('🎯 FINAL Selected Output Device ID:', this.selectedOutputDevice);
+        
+        // Validate that we have valid selections
+        if (!this.selectedInputDevice) {
+            console.warn('⚠️ No valid input device selected - using default');
+            this.selectedInputDevice = 'default';
+        }
+        if (!this.selectedOutputDevice) {
+            console.warn('⚠️ No valid output device selected - using default');
+            this.selectedOutputDevice = 'default';
+        }
+        
+        this.logCAT(`Ready: ${this.audioDevices.input.length} input, ${this.audioDevices.output.length} output devices`, 'info');
+        
+    } catch (error) {
+        console.error('Device enumeration error:', error);
+        this.logCAT(`Device enumeration error: ${error.message}`, 'error');
+        
+        // Fallback to default devices
+        this.selectedInputDevice = 'default';
+        this.selectedOutputDevice = 'default';
+        console.log('Using fallback default devices');
+    }
+}
+async startAudioStream() {
+    try {
+        console.log('🎯 START BUTTON CLICKED');
+        console.log('📍 selectedInputDevice:', this.selectedInputDevice);
+        
+        if (!this.selectedInputDevice) {
+            console.log('❌ No input device - setting to default');
+            this.selectedInputDevice = 'default';
+        }
+        
+        this.logCAT('Starting audio stream...', 'info');
+        
+        // Create audio context
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+            sampleRate: 48000
+        });
+        
+        console.log('Audio context created, state:', this.audioContext.state);
+        
+        if (this.audioContext.state === 'suspended') {
+            await this.audioContext.resume();
+            console.log('Audio context resumed');
+        }
+        
+        // Prepare audio constraints
+        let audioConstraints = {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+        };
+        
+        // Only specify deviceId if it's not 'default' and not empty
+        if (this.selectedInputDevice && this.selectedInputDevice !== 'default' && this.selectedInputDevice.trim() !== '') {
+            audioConstraints.deviceId = { exact: this.selectedInputDevice };
+            console.log('Using specific device ID:', this.selectedInputDevice);
+        } else {
+            console.log('Using default device (no specific ID)');
+        }
+        
+        console.log('Requesting microphone with constraints:', audioConstraints);
+        
+        // Get microphone access
+        this.inputStream = await navigator.mediaDevices.getUserMedia({
+            audio: audioConstraints
+        });
+        
+        console.log('✅ Got input stream:', this.inputStream);
+        console.log('Stream tracks:', this.inputStream.getTracks());
+        
+        // Create audio nodes
+        this.inputSource = this.audioContext.createMediaStreamSource(this.inputStream);
+        this.gainNode = this.audioContext.createGain();
+        this.gainNode.gain.value = 1.0;
+        
+        this.inputAnalyser = this.audioContext.createAnalyser();
+        this.inputAnalyser.fftSize = 256;
+        
+        // Connect audio graph: Input → Gain → Analyser → Speakers
+        this.inputSource.connect(this.gainNode);
+        this.gainNode.connect(this.inputAnalyser);
+        this.gainNode.connect(this.audioContext.destination);
+        
+        console.log('✅ Audio nodes connected');
+        
+        // Set output device if available and not default
+        if (this.selectedOutputDevice && 
+            this.selectedOutputDevice !== 'default' && 
+            this.selectedOutputDevice.trim() !== '' && 
+            this.audioContext.setSinkId) {
+            
+            try {
+                await this.audioContext.setSinkId(this.selectedOutputDevice);
+                console.log('✅ Output device set:', this.selectedOutputDevice);
+            } catch (outputError) {
+                console.warn('⚠️ Could not set output device:', outputError.message);
+            }
+        }
+        
+        // Start monitoring
+        this.startLevelMonitoring();
+        
+        // Update state
+        this.isAudioStreaming = true;
+        this.updateStreamingButtons();
+        
+        document.getElementById('audioStatusText').textContent = 'Streaming active';
+        document.getElementById('audioStatusDot').classList.add('active');
+        
+        console.log('🎉 Audio streaming started successfully!');
+        this.logCAT('✅ Audio streaming: QMX → PC Speakers', 'info');
+        
+    } catch (error) {
+        console.error('❌ Stream start error:', error);
+        this.logCAT(`Stream start error: ${error.message}`, 'error');
+        
+        // More specific error messages
+        if (error.name === 'NotAllowedError') {
+            alert('Microphone permission denied. Please allow microphone access and try again.');
+        } else if (error.name === 'NotFoundError') {
+            alert('No microphone found. Please connect a microphone and refresh the page.');
+        } else if (error.name === 'OverconstrainedError') {
+            alert('The selected audio device is not available. Trying with default device...');
+            // Retry with default device
+            this.selectedInputDevice = 'default';
+            setTimeout(() => this.startAudioStream(), 1000);
+            return;
+        } else {
+            alert(`Audio start failed: ${error.message}`);
+        }
+        
+        // Reset state on error
+        this.isAudioStreaming = false;
+        this.updateStreamingButtons();
+    }
+}
+
+
+startLevelMonitoring() {
+    if (!this.inputAnalyser) return;
+    
+    const bufferLength = this.inputAnalyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    const updateLevel = () => {
+        if (!this.isAudioStreaming) return;
+        
+        this.inputAnalyser.getByteFrequencyData(dataArray);
+        
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i] * dataArray[i];
+        }
+        const rms = Math.sqrt(sum / bufferLength);
+        const level = (rms / 255) * 100;
+        
+        const meter = document.getElementById('inputLevelMeter');
+        const text = document.getElementById('inputLevelText');
+        
+        if (meter && text) {
+            meter.style.width = `${level}%`;
+            const db = level > 0 ? (20 * Math.log10(level / 100)) : -Infinity;
+            text.textContent = isFinite(db) ? `${db.toFixed(1)} dB` : '-∞ dB';
+        }
+        
+        requestAnimationFrame(updateLevel);
+    };
+    
+    updateLevel();
+}
+
+
+
+async stopAudioStream() {
+    try {
+        if (this.inputStream) {
+            this.inputStream.getTracks().forEach(track => track.stop());
+            this.inputStream = null;
+        }
+        
+        this.isAudioStreaming = false;
+        this.updateStreamingButtons();
+        
+        document.getElementById('audioStatusText').textContent = 'Ready to stream';
+        document.getElementById('audioStatusDot').classList.remove('active');
+        
+        this.logCAT('Audio streaming stopped', 'info');
+    } catch (error) {
+        this.logCAT(`Stop error: ${error.message}`, 'error');
+    }
+}
+
+updateStreamingButtons() {
+    const startBtn = document.getElementById('startStreamBtn');
+    const stopBtn = document.getElementById('stopStreamBtn');
+    
+    if (this.isAudioStreaming) {
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        stopBtn.classList.add('btn-danger');
+    } else {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        stopBtn.classList.remove('btn-danger');
+    }
+}
+
+toggleInputMute() {
+    // Implementation for input mute
+    this.logCAT('Input mute toggled', 'info');
+}
+
+toggleOutputMute() {
+    // Implementation for output mute
+    this.logCAT('Output mute toggled', 'info');
+}
 
 
 
