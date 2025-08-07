@@ -2092,6 +2092,142 @@ select, input[type="text"] {
 .audio-status .status-dot.active {
     background: #00ff88;
 }
+
+
+
+/* Fix Audio Panel Layout */
+.audio-device-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.audio-device-grid .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0; /* Allow shrinking */
+}
+
+.audio-device-grid select {
+    width: 100%;
+    min-width: 0; /* Allow shrinking */
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 0.9em;
+    /* Ensure text doesn't overflow */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.audio-device-grid label {
+    font-size: 0.9em;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+/* Fix for very long device names */
+.audio-device-grid select option {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 5px;
+    /* Allow text wrapping in options */
+    white-space: normal;
+    overflow: visible;
+}
+
+/* Responsive audio grid for smaller screens */
+@media (max-width: 768px) {
+    .audio-device-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
+/* Fix audio controls spacing */
+.audio-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.audio-controls .btn {
+    padding: 10px 8px;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+/* Ensure audio panel content doesn't overflow */
+#audioStreamPanel {
+    min-width: 300px;
+    max-width: 100%;
+}
+
+#audioStreamPanel .panel {
+    overflow: hidden;
+}
+
+/* Audio Gain Control Styles */
+.audio-gain-control {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gain-slider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gain-level {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    text-align: center;
+    color: #00ff88;
+    font-weight: bold;
+}
+
+#audioGainSlider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+#audioGainSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #00ff88, #00ccff);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+#audioGainSlider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #00ff88, #00ccff);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
 		
     </style>
 </head>
@@ -2294,6 +2430,21 @@ select, input[type="text"] {
                 <option value="">Select Input Device...</option>
             </select>
         </div>
+		
+		
+		<!-- Add this section after the audio-device-grid -->
+<div class="audio-gain-control">
+    <div class="control-group">
+        <label>Audio Gain</label>
+        <div class="gain-slider-container">
+            <input type="range" id="audioGainSlider" class="slider" 
+                   min="0" max="500" value="100" step="10">
+            <div class="gain-level" id="audioGainLevel">1.0x (0 dB)</div>
+        </div>
+    </div>
+</div>
+			
+		
         <div class="control-group">
             <label>Output Device</label>
             <select id="audioOutputDevice">
@@ -2698,6 +2849,9 @@ this.selectedOutputDevice = null;
     this.tuningSpeedSamples = [];  // Store recent speed samples
     this.variableStepTimeout = null;  // Timeout to revert step size
     this.fastStepMultiplier = 10;
+	
+	this.audioGain = 1.0;
+this.audioGainSlider = null;
 	
 	 this.keyerMode = 'straight';  // 'straight' or 'bug'
     this.bugWpmSetting = 22; 
@@ -6332,6 +6486,17 @@ async initAudioStreaming() {
         this.setupAudioEventListeners();
         await this.enumerateAudioDevices();
         this.logCAT('Audio streaming ready', 'info');
+		// Add this to initAudioStreaming():
+// Set default gain boost
+this.audioGain = 2.0; // Start with 2x gain (+6dB)
+const gainSlider = document.getElementById('audioGainSlider');
+if (gainSlider) {
+    gainSlider.value = this.audioGain * 100;
+}
+this.updateGainDisplay();
+		
+		
+		
     } catch (error) {
         console.error('Audio init error:', error);
         this.logCAT(`Audio init error: ${error.message}`, 'error');
@@ -6381,7 +6546,20 @@ document.getElementById('refreshDevicesBtn').addEventListener('click', async () 
     this.logCAT('Refreshing audio devices...', 'info');
     console.log('Manual device refresh requested');
     await this.enumerateAudioDevices();
-});
+	});
+	
+	const gainSlider = document.getElementById('audioGainSlider');
+if (gainSlider) {
+    gainSlider.addEventListener('input', (e) => {
+        const gainValue = parseInt(e.target.value) / 100; // Convert to multiplier
+        this.audioGain = gainValue;
+        this.updateAudioGain();
+        this.updateGainDisplay();
+    });
+}
+
+
+	
     document.getElementById('stopStreamBtn').addEventListener('click', () => this.stopAudioStream());
     document.getElementById('muteInputBtn').addEventListener('click', () => this.toggleInputMute());
     document.getElementById('muteOutputBtn').addEventListener('click', () => this.toggleOutputMute());
@@ -6560,8 +6738,15 @@ async startAudioStream() {
         
         // Create audio nodes
         this.inputSource = this.audioContext.createMediaStreamSource(this.inputStream);
-        this.gainNode = this.audioContext.createGain();
-        this.gainNode.gain.value = 1.0;
+      
+        
+		
+		// In your startAudioStream() method, after creating gainNode:
+this.gainNode = this.audioContext.createGain();
+this.gainNode.gain.value = this.audioGain; // Use current gain setting instead of 1.0
+
+// Initialize gain display
+this.updateGainDisplay();
         
         this.inputAnalyser = this.audioContext.createAnalyser();
         this.inputAnalyser.fftSize = 256;
@@ -6707,7 +6892,34 @@ toggleOutputMute() {
 
 
 
+// Update audio gain in real-time
+updateAudioGain() {
+    if (this.gainNode) {
+        this.gainNode.gain.value = this.audioGain;
+        console.log('Audio gain set to:', this.audioGain, '(' + (20 * Math.log10(this.audioGain)).toFixed(1) + ' dB)');
+    }
+}
 
+// Update gain display
+updateGainDisplay() {
+    const gainLevelElement = document.getElementById('audioGainLevel');
+    if (gainLevelElement) {
+        const gainMultiplier = this.audioGain.toFixed(1);
+        const gainDB = this.audioGain > 0 ? (20 * Math.log10(this.audioGain)).toFixed(1) : '-∞';
+        gainLevelElement.textContent = `${gainMultiplier}x (${gainDB} dB)`;
+        
+        // Color coding based on gain level
+        if (this.audioGain >= 3.0) {
+            gainLevelElement.style.color = '#ff4757'; // High gain - red
+        } else if (this.audioGain >= 2.0) {
+            gainLevelElement.style.color = '#ff9500'; // Medium-high gain - orange  
+        } else if (this.audioGain >= 1.5) {
+            gainLevelElement.style.color = '#ffff00'; // Medium gain - yellow
+        } else {
+            gainLevelElement.style.color = '#00ff88'; // Normal gain - green
+        }
+    }
+}
 	
 
           
