@@ -5878,6 +5878,7 @@ continueTuningAdjust(e) {
         this.updateDisplay(); // This will trigger band auto-selection
         document.getElementById('tuningKnob').setAttribute('aria-valuenow', this.frequency);
     }
+}
 
 
 // And replace the FB handler:
@@ -5936,8 +5937,10 @@ else if (response.startsWith('FB')) {
     // RIT status response
     const ritStatus = response.substring(2);
     if (ritStatus === '0' || ritStatus === '1') {
-        this.ritEnabled = (ritStatus === '1');
-        this.updateRITUI();
+        if (ritStatus === '1') {
+            this.ritEnabled = true;
+            this.updateRITUI();
+        }
         if (!this.isRITAdjusting) {
             this.logCAT(`RIT status: ${this.ritEnabled ? 'ON' : 'OFF'}`, 'rx');
         }
@@ -5952,7 +5955,6 @@ else if (response.startsWith('FB')) {
     }
 }
 
- }
 }
         
  /*      // Modify the initFrequencyKeyboard method to include this at the end:
