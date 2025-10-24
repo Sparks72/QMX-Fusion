@@ -16,7 +16,7 @@ QMX Fusion provides browser-based control for QMX transceivers through a WebSeri
 
 ## 🌐 Live D
 
-**[► Launch Live Demo](https://sparks72.github.io/QMX-Interface/qmx-fusion-v1/)**
+**[► Launch Live Demo](https://sparks72.github.io/QMX-Interface/qmx-fusion-v1/index.html)**
 
 *Try the interface directly in your browser - no installation required!*
 
@@ -161,4 +161,5 @@ Developed for the QMX transceiver by QRP Labs.
 ---
 
 **Note**: This software is provided as-is. Always verify proper operation before on-air use.
+
 
