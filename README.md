@@ -18,7 +18,7 @@ QMX Fusion provides browser-based control for QMX transceivers through a WebSeri
 
 ## 🌐 Live Demo
 
-**[► Launch Live Demo](https://Sparks72/QMX-Interface/tree/qmx-fusion-v1/)**
+**[► Launch Live Demo](https://Sparks72/QMX-Interface)**
 
 *Try the interface directly in your browser - no installation required!*
 
