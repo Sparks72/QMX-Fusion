@@ -15,7 +15,8 @@
   <!-- <script src="Sortable.min.js"></script>-->
    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>-->
    <script src="lame.min.js"></script>
-    <style>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/dsp.js/1.0.1/dsp.min.js"></script>
+ <style>
         :root {
             --transceiver-bg: #2c3e50;
             --panel-bg: rgba(0, 0, 0, 0.2);
@@ -300,6 +301,14 @@
 
         .audio-meter-bar { height: 10px; background: #222; border-radius: 5px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.3); }
         .audio-meter-indicator { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: var(--accent-color); transition: width 0.1s ease; }
+        .audio-meter-indicator.clipping { background: #ff4757 !important; }
+        .audio-meter-peak { position: absolute; top: 0; right: 0; width: 2px; height: 100%; background: #ffff00; opacity: 0.8; transition: right 0.05s ease-out; }
+        .clipping-warning { display: flex; align-items: center; justify-content: space-between; padding: 8px; background: rgba(255, 71, 87, 0.2); border: 1px solid #ff4757; border-radius: 5px; margin-bottom: 10px; opacity: 0; transition: opacity 0.3s ease; }
+        .clipping-warning.active { opacity: 1; }
+        .clipping-warning.flash { animation: clip-flash 0.3s ease; }
+        @keyframes clip-flash { 0%, 100% { background: rgba(255, 71, 87, 0.2); } 50% { background: rgba(255, 71, 87, 0.6); } }
+        .warning-icon { font-size: 1.2em; color: #ff4757; }
+        .clip-counter { font-family: 'Courier New', monospace; color: #ff4757; font-weight: bold; font-size: 0.9em; }
         .audio-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .audio-device-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
         
@@ -1575,6 +1584,134 @@
     transition: transform 0.15s ease-out;
     transform-origin: 315px 105px; /* Pivot point at the gauge center */
 }
+
+
+
+
+<!-- Tablets and below (1024px) -->
+@media (max-width: 1024px) {
+    .main-panel {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .header h1 {
+        font-size: 2em;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+}
+
+<!-- Mobile devices (768px and below)-->
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 1.5em;
+    }
+    
+    .header p {
+        font-size: 0.9em;
+    }
+    
+    .main-panel {
+        grid-template-columns: 1fr;
+    }
+    
+    .tuning-knob-container {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .frequency-markings {
+        width: 230px;
+        height: 230px;
+    }
+    
+    .lcd-row {
+        font-size: 1.4em;
+    }
+    
+    .controls-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .panel {
+        padding: 15px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+}
+
+<!-- Small mobile devices (480px and below) -->
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.2em;
+    }
+    
+    .header p {
+        font-size: 0.8em;
+    }
+    
+    .tuning-knob-container {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .frequency-markings {
+        width: 210px;
+        height: 210px;
+    }
+    
+    .lcd-row {
+        font-size: 1.2em;
+    }
+    
+    .panel {
+        padding: 12px;
+    }
+    
+    button {
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
+}
+
+/* Custom scrollbar for solar container */
+#solarScrollContainer::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+#solarScrollContainer::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+#solarScrollContainer::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+#solarScrollContainer::-webkit-scrollbar-thumb:hover {
+    background: #00cc77;
+}
+
+#solarScrollContainer::-webkit-scrollbar-corner {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Drag cursor */
+#solarScrollContainer.dragging {
+    cursor: grabbing !important;
+}
+
+#solarScrollContainer.no-drag {
+    cursor: default !important;
+}
+
 	</style>
 </head>
 <body>
@@ -1596,7 +1733,7 @@
     <button class="restore-tab right" id="restoreRightPanel">◀</button>
         
         <div class="left-panel">
-	<div class="panel" data-panel="color-picker">
+	<div class="panel" id="themeColorsPanel" data-panel="themeColorsPanel">
     <h3>🎨 Theme Colors</h3>
     <div class="color-picker-container">
         <div class="color-input-wrapper">
@@ -1627,6 +1764,68 @@
 						
 			
 			</div>
+<div class="panel" id="quickControlsPanel">
+    <h3>⚡ Quick Controls</h3>
+    
+    <!-- Top row: Connection and Audio buttons -->
+   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+        <button id="quickToggleConnect" class="btn btn-primary">CONNECT</button>
+        <button id="quickToggleAudio" class="btn btn-secondary">START AUDIO</button>
+    </div>
+    
+    <!-- Second row: Meters and TX/RX -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+        <div class="quick-indicator" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; padding: 8px; text-align: center;">
+            <div style="font-size: 0.8em; margin-bottom: 3px;">S-METER</div>
+            <div id="quickSMeter" style="font-size: 1.2em; font-weight: bold; color: var(--accent-color);">S0</div>
+        </div>
+        <div class="quick-indicator" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; padding: 8px; text-align: center;">
+            <div style="font-size: 0.8em; margin-bottom: 3px;">SWR</div>
+            <div id="quickSWR" style="font-size: 1.2em; font-weight: bold; color: var(--accent-color);">1.0</div>
+        </div>
+        <button id="quickTX" class="btn btn-secondary" style="padding: 5px;">TX</button>
+        <button id="quickRX" class="btn btn-secondary" style="padding: 5px;">RX</button>
+    </div>
+    
+    <!-- Knobs row - EXACT copies of main Controls knobs -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+        <!-- VOL Knob (AF Gain) -->
+        <div class="knob-group" style="text-align: center;">
+            <label>VOL</label>
+            <div class="volume-knob-container">
+                <div class="volume-knob" id="quickVolKnob" tabindex="0"></div>
+            </div>
+            <div class="knob-level" id="quickVolLevel">50%</div>
+        </div>
+        
+        <!-- RF GAIN Knob -->
+        <div class="knob-group" style="text-align: center;">
+            <label>RF GAIN</label>
+            <div class="volume-knob-container">
+                <div class="volume-knob" id="quickRFKnob" tabindex="0"></div>
+            </div>
+            <div class="knob-level" id="quickRFLevel">0</div>
+        </div>
+        
+        <!-- CW SPEED Knob -->
+        <div class="knob-group" style="text-align: center;">
+            <label>CW SPEED</label>
+            <div class="volume-knob-container">
+                <div class="volume-knob" id="quickCWKnob" tabindex="0"></div>
+            </div>
+            <div class="knob-level" id="quickCWLevel">18 WPM</div>
+        </div>
+    </div>
+    
+    <!-- Loudness slider -->
+    <div style="margin-top: 10px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9em;">
+            <span style="min-width: 80px;">LOUDNESS</span>
+           <input type="range" id="quickLoudness" min="10" max="800" value="100" style="flex: 1;">
+            <span id="quickLoudnessValue" style="min-width: 35px; font-family: 'Courier New', monospace; color: var(--accent-color);">1.0x</span>
+        </label>
+    </div>
+</div>
      <div class="zoom-controls">
     <button class="zoom-btn" id="zoomOut">-</button>
     <span class="zoom-level" id="zoomLevel">100%</span>
@@ -1694,18 +1893,30 @@
             <span class="status-text" id="audioStatusText">Ready to stream</span>
         </div>
     </div>
+    <!-- Clipping Warning Indicator -->
+    <div class="clipping-warning" id="clippingWarning">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="warning-icon">⚠️</span>
+            <span style="font-size: 0.9em; font-weight: bold;">CLIPPING DETECTED</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="clip-counter" id="clipCount">0</span>
+            <button class="btn" id="resetClipCount" style="padding: 4px 8px; font-size: 0.75em;">Reset</button>
+        </div>
+    </div>
     <!-- Add audio level meter -->
     <div class="audio-meter-container" style="margin-bottom: 10px;">
         <label style="font-size: 0.8em;">Input Level</label>
         <div class="audio-meter-bar">
             <div class="audio-meter-indicator" id="inputLevelMeter"></div>
+            <div class="audio-meter-peak" id="inputPeakIndicator"></div>
         </div>
         <div id="inputLevelText" style="font-size: 0.8em; text-align: center;">-∞ dB</div>
     </div>
     <!-- Add audio gain control -->
     <div class="control-group" style="margin-bottom: 10px;">
         <label>Audio Gain</label>
-        <input type="range" id="audioGainSlider" min="10" max="500" value="200" style="width: 100%;">
+     <input type="range" id="audioGainSlider" min="10" max="800" value="100" style="width: 100%;">  <!-- Changed from 300 (3.0x) to 100 (1.0x) to prevent overload -->
         <div id="audioGainLevel" class="knob-level" style="text-align: center;">2.0x (+6.0 dB)</div>
     </div>
 
@@ -1747,6 +1958,9 @@
         <canvas id="spectrumCanvas"></canvas>
     </div>
 <div class="spectrum-controls-new" style="margin-top: 10px;">
+
+
+
 
 <!-- SSB DSP Filter Control -->
 <div class="panel" data-panel-id="ssb-filter">
@@ -1816,7 +2030,7 @@
         
         <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.8em; width: 80px;">Low Cutoff:</span>
-            <input type="range" id="ssbLowCutoff" min="0" max="1000" value="300" step="50" style="flex: 1;">
+            <input type="range" id="ssbLowCutoff" min="0" max="1000" value="100" step="50" style="flex: 1;">  <!-- Changed from 300 (3.0x) to 100 (1.0x) to prevent overload --> 
             <span id="ssbLowValue" style="font-size: 0.8em; width: 60px; text-align: right;">300 Hz</span>
         </div>
         
@@ -1852,7 +2066,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <span style="font-size: 0.8em; width: 60px;">Bandwidth:</span>
             <select id="cwBandwidth" style="flex: 1; margin: 0 8px; font-size: 0.8em;">
-                <option value="300" selected>300 Hz (Native)</option>
+                <option value="100"   selected>300 Hz (Native)</option> <!-- Changed from 300 (3.0x) to 100 (1.0x) to prevent overload -->
                 <option value="250">250 Hz</option>
                 <option value="200">200 Hz</option>
                 <option value="150">150 Hz</option>
@@ -1872,12 +2086,29 @@
     <!-- Target Pitch - centered -->
     <div style="text-align: center; margin-bottom: 8px;">
         <span style="font-size: 0.9em;">Target CW Pitch:</span>
+		
+				
+		
+       
         <select id="targetPitch" style="margin-left: 8px;">
             <option value="600">600 Hz</option>
             <option value="700" selected>700 Hz</option>
             <option value="800">800 Hz</option>
         </select>
+		</div>
+		
+		<div style="text-align: center; margin-bottom: 8px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 5px;">
+        <span style="font-size: 0.9em;">Spectrum Mode:</span>
+        <select id="spectrumMode" style="margin-left: 8px; width: 150px;">
+            <option value="audio" selected>Audio (3.2kHz)</option>
+            <option value="iq">I/Q Waterfall (48kHz)</option>
+        </select>
     </div>
+		
+		
+		
+		
+				
     
     <!-- Threshold slider - full width -->
     <div style="display: block; margin-bottom: 6px;">
@@ -1933,6 +2164,128 @@
         </div>
 
         <div class="right-panel">
+		
+		
+		
+		
+		
+		
+		
+		
+		
+<!-- ============================================ -->
+<!-- SOLAR CONDITIONS - SCROLLABLE LARGE IMAGE -->
+<!-- Replace your existing solar panel with this -->
+<!-- ============================================ -->
+
+<div class="panel" id="solarConditionsPanel">
+    <h3>Solar Conditions</h3>
+    
+    <!-- Size Control -->
+    <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+        <label style="font-size: 0.85em; white-space: nowrap;">Image Size:</label>
+        <input type="range" 
+               id="imageSizeSlider" 
+               min="100" 
+               max="300" 
+               value="150" 
+               style="flex: 1;"
+               oninput="qmxInterface.updateImageSize(this.value)">
+        <span id="imageSizeValue" style="font-size: 0.85em; color: var(--accent-color); min-width: 50px;">150%</span>
+    </div>
+    
+    <!-- Scrollable Container -->
+    <div id="solarScrollContainer" style="
+        width: 100%;
+        height: 500px;
+        overflow: auto;
+        background: #000;
+        border: 2px solid #333;
+        border-radius: 5px;
+        position: relative;
+        cursor: grab;
+    ">
+        <!-- Large Image -->
+        <img src="https://www.hamqsl.com/solar101vhf.php" 
+             id="solarImg"
+             style="
+                width: 150%;
+                display: block;
+                user-select: none;
+                -webkit-user-drag: none;
+             "
+             alt="Solar Conditions"
+             draggable="false">
+    </div>
+    
+    <!-- Scroll Position Indicator -->
+    <div id="scrollIndicator" style="
+        text-align: center;
+        font-size: 0.7em;
+        color: #666;
+        margin-top: 5px;
+        height: 16px;
+    "></div>
+    
+    <!-- Controls -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-top: 10px;">
+        <button onclick="qmxInterface.refreshSolarImage()" 
+                class="btn btn-secondary" 
+                style="font-size: 0.8em; padding: 8px;">
+            🔄 Refresh
+        </button>
+        
+        <button onclick="qmxInterface.resetScrollPosition()" 
+                class="btn btn-secondary" 
+                style="font-size: 0.8em; padding: 8px;">
+            🎯 Reset View
+        </button>
+        
+        <button onclick="qmxInterface.toggleDragScroll()" 
+                id="dragScrollBtn"
+                class="btn btn-primary" 
+                style="font-size: 0.8em; padding: 8px;">
+            ✋ Drag: ON
+        </button>
+        
+        <button onclick="window.open('https://www.hamqsl.com/solar.html', '_blank')" 
+                class="btn btn-secondary" 
+                style="font-size: 0.8em; padding: 8px;">
+            🔗 Full
+        </button>
+    </div>
+    
+    <!-- Info Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 5px; font-size: 0.7em; color: #888;">
+        <div id="solarLastUpdate">
+            Click Refresh to update
+        </div>
+        <div>
+            Source: HamQSL.com
+        </div>
+    </div>
+    
+    <!-- Tips -->
+    <div style="margin-top: 8px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 5px; font-size: 0.7em; color: #888;">
+        💡 <strong>Tips:</strong> Drag to pan, use slider to adjust size, mouse wheel to scroll. Win+Shift+S to screenshot.
+    </div>
+</div>
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 			<div class="panel" id="panelVisibilitySettings">
     <h3>Panel Visibility</h3>
     <div class="control-group" style="max-height: 400px; overflow-y: auto;">
@@ -2008,15 +2361,35 @@
             <input type="checkbox" class="panel-toggle" data-panel="ritPanel" checked>
             RIT Control
         </label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <input type="checkbox" class="panel-toggle" data-panel="themeColorsPanel" checked>
+            Theme Colors
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <input type="checkbox" class="panel-toggle" data-panel="audioRecorderPanel" checked>
+            Audio Recorder
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <input type="checkbox" class="panel-toggle" data-panel="cwDecoderPanel" checked>
+            CW Decoder
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <input type="checkbox" class="panel-toggle" data-panel="solarConditionsPanel" checked>
+            Solar Conditions
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <input type="checkbox" class="panel-toggle" data-panel="ssbControlPanel" checked>
+            SSB Control
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <input type="checkbox" class="panel-toggle" data-panel="quickControlsPanel" checked>
+            Quick Controls
+        </label>
     </div>
     <div class="controls-grid" style="margin-top: 10px;">
         <button class="btn btn-secondary" id="showAllPanels">Show All</button>
         <button class="btn btn-secondary" id="hideAllPanels">Hide All</button>
     </div>
-	 <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <input type="checkbox" class="panel-toggle" data-panel="audioRecorderPanel" checked>
-            Audio Recorder
-        </label>
 </div>
 		
 		<div class="panel" id="voiceKeyerPanel">
@@ -2307,7 +2680,7 @@
 			 
              <div class="panel" id="controlsPanel">
                 <h3>Controls</h3>
-           <div class="knobs-row">
+           <div class="knobs-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: start;">
     <div class="knob-group">
         <label>AF Gain</label>
         <div class="volume-knob-container">
@@ -2330,20 +2703,66 @@
         </div>
         <div class="knob-level" id="rfGainLevel">22 WPM</div>
     </div>
+    
+    <div class="knob-group">
+        <label>RF Gain</label>
+        <div class="volume-knob-container">
+            <div class="volume-knob" id="actualRfGainKnob" tabindex="0"></div>
+        </div>
+        <div class="knob-level" id="actualRfGainLevel">63 dB</div>
+    </div>
 
-  <!-- NEW: Power meter inside controls panel -->
-        <div style="margin-top: 15px;">
-            <label style="font-size: 0.8em; opacity: 0.8; text-transform: uppercase;">Power Out</label>
-            <div class="meter" style="margin-top: 5px;">
-                <div class="meter-bar">
-                    <div class="meter-indicator" id="powerMeter"></div>
+  <!-- NEW: Compact Vertical Power meter with text alongside -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-width: 80px;">
+            <label style="font-size: 0.7em; opacity: 0.8; text-transform: uppercase; margin-bottom: 8px; font-weight: bold;">POWER OUT</label>
+            <div style="display: flex; flex-direction: row; align-items: center; gap: 8px;">
+                <div class="meter-vertical" style="height: 120px; width: 25px; position: relative;">
+                    <div class="meter-bar-vertical" style="height: 100%; width: 100%; background: var(--display-bg); border: 2px solid var(--accent-color); border-radius: 12px; position: relative; overflow: hidden;">
+                        <div class="meter-indicator-vertical" id="powerMeterVertical" style="position: absolute; bottom: 0; left: 0; right: 0; height: 0%; background: linear-gradient(to top, var(--accent-color), #00ff00); transition: height 0.1s ease-out;"></div>
+                    </div>
                 </div>
+                <div id="powerTextVertical" style="font-family: 'Courier New', monospace; color: var(--accent-color); font-size: 0.9em; font-weight: bold; writing-mode: vertical-rl; transform: rotate(180deg);">0.0W</div>
             </div>
-            <div id="powerText" style="text-align: center; font-family: 'Courier New', monospace; color: var(--accent-color); margin-top: 5px;">0.0W</div>
         </div>
 
 </div>
             </div>
+            
+            <div class="panel" id="ssbControlPanel">
+                <h3>SSB Control</h3>
+                
+                <!-- TX/RX Status Display -->
+                <div style="text-align: center; margin-bottom: 15px; padding: 10px; background: var(--display-bg); border: 2px solid var(--accent-color); border-radius: 6px;">
+                    <div id="ssbTxRxStatus" style="font-family: 'Courier New', monospace; color: var(--accent-color); font-size: 1.2em; font-weight: bold;">RX MODE</div>
+                </div>
+                
+                <!-- TX/RX Control Buttons -->
+                <div class="controls-grid" style="margin-bottom: 15px;">
+                    <button class="btn btn-primary" id="ssbRxBtn">RECEIVE</button>
+                    <button class="btn btn-danger" id="ssbTxBtn">TRANSMIT</button>
+                </div>
+                
+                <!-- Microphone Source Selection -->
+                <div class="control-group" style="margin-bottom: 15px;">
+                    <label>Microphone Source</label>
+                    <select id="ssbMicSource">
+                        <option value="0">PC/USB Audio</option>
+                        <option value="1">Test Tone (700+1900 Hz)</option>
+                        <option value="2">External Mic</option>
+                    </select>
+                </div>
+                
+                <!-- Current Source Display -->
+                <div id="ssbSourceStatus" style="text-align: center; font-size: 0.9em; color: #888; margin-bottom: 10px;">
+                    Current: PC/USB Audio
+                </div>
+                
+                <!-- Instructions -->
+                <div style="font-size: 0.8em; color: #ccc; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                    <strong>Note:</strong> For PC microphone operation, ensure audio streaming is configured and started in the Audio Stream panel.
+                </div>
+            </div>
+            
  <div class="panel" id="metersPanel">
     <h3>S-Meter & SWR</h3>
    <svg id="combinedMeterAnalog" viewBox="0 0 420 130" style="width: 100%; height: auto;">
@@ -2450,6 +2869,49 @@
                 </div>
                 <div style="font-size: 0.8em; margin-top: 10px; overflow-wrap: break-word;">
                     <strong>Save Path:</strong> <span id="saveDirectoryPath">Not set</span>
+                </div>
+            </div>
+            
+            <div class="panel" id="cwDecoderPanel">
+                <h3>CW Decoder</h3>
+                <div class="control-group" style="margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="enableCwDecoder" style="width: 18px; height: 18px;">
+                        <span style="font-size: 0.9em;">Enable Auto-Polling</span>
+                    </label>
+                </div>
+                <div class="control-group" style="margin-bottom: 10px;">
+                    <label>Poll Interval (ms)</label>
+                    <select id="cwDecoderInterval">
+                        <option value="100">100 ms</option>
+                        <option value="200" selected>200 ms</option>
+                        <option value="500">500 ms</option>
+                        <option value="1000">1000 ms</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <button class="btn btn-secondary" id="cwDecoderClear" style="width: 100%;">Clear Buffer</button>
+                </div>
+                <div id="cwDecoderStatus" style="text-align: center; margin-bottom: 10px; font-size: 0.9em; color: #888;">
+                    Decoder: OFF
+                </div>
+                <div id="cwDecoderDisplay" style="background: var(--display-bg); 
+                     border: 2px solid var(--accent-color); 
+                     border-radius: 6px; 
+                     padding: 10px; 
+                     min-height: 150px;
+                     max-height: 300px;
+                     overflow-y: auto;
+                     font-family: 'Courier New', monospace; 
+                     color: var(--accent-color); 
+                     font-size: 0.9em;
+                     word-wrap: break-word;">
+                    <div style="color: #888; text-align: center; padding: 20px;">
+                        Waiting for decoded CW text...
+                    </div>
+                </div>
+                <div style="margin-top: 10px; font-size: 0.8em; color: #888;">
+                    <strong>Last Update:</strong> <span id="cwDecoderTimestamp">--:--:--</span>
                 </div>
             </div>
         </div>
@@ -2593,8 +3055,75 @@
 </body>
 
    <script>
+   class ComplexFFT {
+    constructor(size) {
+        this.size = size;
+        this.rev = new Uint32Array(size);
+        this.sin = new Float32Array(size / 2);
+        this.cos = new Float32Array(size / 2);
+        
+        // Precompute tables
+        for (let i = 0; i < size; i++) {
+            let j = i, k = 0, n = size >> 1;
+            while (n > 0) {
+                if (j & 1) k += n;
+                j >>= 1; n >>= 1;
+            }
+            this.rev[i] = k;
+        }
+        
+        for (let i = 0; i < size / 2; i++) {
+            const angle = -2 * Math.PI * i / size;
+            this.cos[i] = Math.cos(angle);
+            this.sin[i] = Math.sin(angle);
+        }
+    }
+
+    // Input: real[] and imag[] arrays of 'size' length
+    // Output: overwrites real/imag with FFT results
+    transform(real, imag) {
+        const n = this.size;
+        
+        // Bit-reverse permutation
+        for (let i = 0; i < n; i++) {
+            if (i < this.rev[i]) {
+                [real[i], real[this.rev[i]]] = [real[this.rev[i]], real[i]];
+                [imag[i], imag[this.rev[i]]] = [imag[this.rev[i]], imag[i]];
+            }
+        }
+        
+        // Cooley-Tukey
+        let step = 1;
+        while (step < n) {
+            const jump = step << 1;
+            let wStep = n / jump;
+            for (let i = 0; i < step; i++) {
+                const wIndex = i * wStep;
+                const wRe = this.cos[wIndex]; // Using precomputed trig
+                const wIm = this.sin[wIndex];
+                
+                for (let j = i; j < n; j += jump) {
+                    const k = j + step;
+                    const tRe = wRe * real[k] - wIm * imag[k];
+                    const tIm = wRe * imag[k] + wIm * real[k];
+                    
+                    real[k] = real[j] - tRe;
+                    imag[k] = imag[j] - tIm;
+                    real[j] += tRe;
+                    imag[j] += tIm;
+                }
+            }
+            step = jump;
+        }
+    }
+}
 
         class QMXInterface {
+		
+		// --- Simple Native Complex FFT (No libraries needed) ---
+
+		
+		
             constructor() {
                 this.frequency = 14205000;
                 this.stepSize = 1;
@@ -2643,6 +3172,14 @@
                 this.rfGainAnimationFrame = null;
                 this.rfGainTimeout = null;
                 
+                // Actual RF Gain control variables (RG CAT command)
+                this.actualRfGainKnobRotation = 0;
+                this.actualRfGainLevel = 63; // Default 63dB
+                this.actualRfGainLastAngle = 0;
+                this.isActualRfGainAdjusting = false;
+                this.actualRfGainAnimationFrame = null;
+                this.actualRfGainTimeout = null;
+                
                 this.powerKnobRotation = 0;
                 this.powerLevel = 50;
                 this.powerLastAngle = 0;
@@ -2650,6 +3187,11 @@
                 this.powerAnimationFrame = null;
                 this.powerTimeout = null;
                 this.powerLevelBeforeAdjust = 50;
+                
+                // SSB Control variables (SS CAT command)
+                this.ssbMicSource = 0; // 0=PC/USB, 1=Test Tone, 2=External Mic
+                this.ssbTransmitting = false;
+                this.audioOutputGainBeforeMute = undefined; // Store gain before muting
 				// [Inside constructor()]
                 this.activeKnobHandler = null;
                 this.boundHandleActiveKnobKeys = this.handleActiveKnobKeys.bind(this);
@@ -2749,6 +3291,7 @@ this.updatePowerMeter();
 					this.initZoomControls();
                     this.initVolumeControl();
                     this.initRFGainControl();
+                    this.initActualRfGainControl(); // Initialize actual RF Gain control
                     this.initPowerControl();
 					this.initRITControl();
                     this.initMemorySystem();
@@ -2765,8 +3308,11 @@ this.updatePowerMeter();
 					     this.initSoundEffects();
 						 this.initCWKeyer();
 						  this.initAudioRecorder(); // Add this line
+						  this.initCWDecoder(); // Initialize CW Decoder
+						  this.initSSBControl(); // Initialize SSB Control
 						  this.initSsbDspControls();
 						  this.initAutoNotchControls(); // Add this line
+						  this.initSolarConditions();
 						 // this.initNoiseReductionControls();
 						 this.currentZoom = 1.0;
 						
@@ -2850,6 +3396,16 @@ this.ssbHighCutoff = 2700;
 this.ssbDspFilters = [];
 this.ssbFilterChain = null;
 this.attenuatorNode = null;
+
+// --- NEW I/Q Mode Properties ---
+this.spectrumMode = 'audio'; // 'audio' or 'iq'
+this.iqFft = null;
+this.iqAnalyserNode = null;
+this.iqProcessorNode = null;
+this.iqDemodulator = null; // We will build this later
+// --- END I/Q Mode Properties ---
+
+
 // Load saved CW messages
 this.loadCWMessages();
 // ...
@@ -3552,6 +4108,7 @@ parseFrequencyInput(input, format) {
             initEventListeners() {
  this.initPanelLockToggle();
  this.initVoiceKeyer();   
+ this.initQuickControls();
    // document.getElementById('connectBtn').addEventListener('click', async () => {               
 
 			   document.getElementById('connectBtn').addEventListener('click', async () => {
@@ -3967,11 +4524,13 @@ updateSMeter(percentage) {
 updateSWRMeter(actualSWR) {
     const swrText = document.getElementById('swrText');
     let percentage = 0;
+    let swrDisplayText = 'RX';
 
     // A value of 0 indicates we are in RX mode
     if (actualSWR === 0) {
         if (swrText) swrText.textContent = 'RX';
         this.swrReadings = []; // Clear readings when in RX
+        swrDisplayText = 'RX';
     } else {
         // Add new reading to array
         this.swrReadings.push(actualSWR);
@@ -3985,11 +4544,21 @@ updateSWRMeter(actualSWR) {
         const avgSWR = this.swrReadings.reduce((a, b) => a + b, 0) / this.swrReadings.length;
         
         // Update the text with the precise value from the radio
+        swrDisplayText = `${actualSWR.toFixed(1)}`;
         if (swrText) swrText.textContent = `${actualSWR.toFixed(2)}:1`;
         
         // Calculate percentage using the averaged value
         percentage = Math.max(0, Math.min(100, ((avgSWR - 1.0) / 2.0) * 100));
     }
+    
+    // Update Quick Controls SWR display
+    const quickSWR = document.getElementById('quickSWR');
+    if (quickSWR) {
+        quickSWR.textContent = swrDisplayText;
+    }
+    
+    // Store the current SWR value for the interval to access
+    this.currentSWR = actualSWR;
     
     // Position the needle based on the calculated percentage
     const angle = -180 + (percentage / 100 * 180);
@@ -5242,6 +5811,8 @@ disconnectAudioRouting() {
     try {
         if (this.inputSource) this.inputSource.disconnect();
         if (this.gainNode) this.gainNode.disconnect();
+        if (this.attenuatorNode) this.attenuatorNode.disconnect();
+        if (this.compressorNode) this.compressorNode.disconnect();
         if (this.inputAnalyser) this.inputAnalyser.disconnect();
     } catch (error) {
         console.error('Error disconnecting audio routing:', error);
@@ -5252,14 +5823,15 @@ connectAudioRoutingWithDsp() {
         // Disconnect any existing connections first
         this.disconnectAudioRouting();
         
-        // Route: Input -> Attenuator -> Main Gain -> DSP Filters -> Speakers
+        // Route: Input -> Attenuator -> Compressor -> Main Gain -> DSP Filters -> Speakers
         //                                        \-> Analyser (unfiltered for spectrum)
         
         // Connect input to attenuator
         this.inputSource.connect(this.attenuatorNode);
         
-        // Connect attenuator to main gain
-        this.attenuatorNode.connect(this.gainNode);
+        // Connect attenuator to compressor to main gain
+        this.attenuatorNode.connect(this.compressorNode);
+        this.compressorNode.connect(this.gainNode);
         
         // Connect main gain to spectrum analyser (unfiltered view)
         this.gainNode.connect(this.inputAnalyser);
@@ -5277,9 +5849,10 @@ connectAudioRoutingWithDsp() {
 }
 connectDirectAudioRouting() {
     try {
-        // Route: Input -> Attenuator -> Main Gain -> Analyser -> Output (no DSP)
+        // Route: Input -> Attenuator -> Compressor -> Main Gain -> Analyser -> Output (no DSP)
         this.inputSource.connect(this.attenuatorNode);
-        this.attenuatorNode.connect(this.gainNode);
+        this.attenuatorNode.connect(this.compressorNode);
+        this.compressorNode.connect(this.gainNode);
         this.gainNode.connect(this.inputAnalyser);
         this.gainNode.connect(this.audioContext.destination);
         
@@ -5471,6 +6044,14 @@ updateSpectrumBandwidth() {
                     volumeLevelClone.textContent = `${this.volumeLevel}db`;
                     volumeKnobClone.setAttribute('aria-valuenow', this.volumeLevel);
                 }
+                // Update Quick Controls volume knob
+                const quickVolKnob = document.getElementById('quickVolKnob');
+                const quickVolLevel = document.getElementById('quickVolLevel');
+                if (quickVolKnob && quickVolLevel) {
+                    quickVolKnob.style.transform = `rotate(${this.volumeKnobRotation}deg)`;
+                    quickVolLevel.textContent = `${this.volumeLevel}%`;
+                    quickVolKnob.setAttribute('aria-valuenow', this.volumeLevel);
+                }
                 // END MODIFICATION
             }
 
@@ -5485,7 +6066,7 @@ sendVolumeDynamically() {
             this.volumeCommandPending = true; // Prevent multiple simultaneous commands
             const scaledVolume = this.volumeToCAT(this.volumeLevel);
             
-            this.sendCommand(`AG${scaledVolume.toString().padStart(3, '0')}`).then(() => {
+     this.sendCommand(`AG0${scaledVolume.toString()}`).then(() => {
                 // Add delay before allowing next command
                 setTimeout(() => {
                     this.volumeCommandPending = false;
@@ -5504,8 +6085,9 @@ sendVolumeDynamically() {
     try {
         this.volumeCommandPending = true;
         const scaledVolume = this.volumeToCAT(this.volumeLevel);
-        await this.sendCommand(`AG${scaledVolume.toString().padStart(3, '0')}`);
-        this.logCAT(`Volume set to ${this.volumeLevel}%`, 'info');
+    await this.sendCommand(`AG0${scaledVolume.toString()}`);
+console.log('Voloume:',`AG0${scaledVolume.toString()}` );      
+	   this.logCAT(`Volume set to ${this.volumeLevel}%`, 'info');
         
         // Prevent feedback for a short time
         this.volumeFeedbackBlock = true;
@@ -5522,21 +6104,18 @@ sendVolumeDynamically() {
           // Improved volume conversion with better accuracy
 volumeToCAT(volumePercent) {
     if (volumePercent <= 0) return 0;
-    if (volumePercent >= 100) return 255;
+    if (volumePercent >= 100) return 364; // 91 dB (364 * 0.25 = 91 dB)
     
-    // Use a more accurate logarithmic scaling
-    const normalizedInput = volumePercent / 100;
-    const logScaled = Math.pow(normalizedInput, 1.5) * 255;
-    return Math.round(Math.max(0, Math.min(255, logScaled)));
+    // Linear scaling: 0-100% maps to 0-91 dB = 0-364 quarter-dB steps
+    const quarterDBSteps = Math.round((volumePercent / 100) * 364);
+    return Math.max(0, Math.min(364, quarterDBSteps));
 }
-
 // Improved reverse conversion
 catToVolume(catValue) {
     if (catValue <= 0) return 0;
-    if (catValue >= 255) return 100;
+    if (catValue >= 364) return 100;
     
-    const normalized = catValue / 255;
-    const volumePercent = Math.pow(normalized, 1/1.5) * 100;
+    const volumePercent = (catValue / 364) * 100;
     return Math.round(Math.max(0, Math.min(100, volumePercent)));
 }
 
@@ -5581,6 +6160,8 @@ rfGainKnob.addEventListener('mouseleave', () => {
     }
 			   e.preventDefault();
                 this.isRFGainAdjusting = true;
+                // Store which knob is being adjusted (could be rfGainKnob or quickCWKnob)
+                this.adjustingRFGainKnob = e.target;
                 const rect = e.target.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
                 const centerY = rect.top + rect.height / 2;
@@ -5604,7 +6185,8 @@ rfGainKnob.addEventListener('mouseleave', () => {
                     cancelAnimationFrame(this.rfGainAnimationFrame);
                 }
                 this.rfGainAnimationFrame = requestAnimationFrame(() => {
-                    const rfGainKnob = document.getElementById('rfGainKnob');
+                    // Use the stored knob element instead of hardcoded ID lookup
+                    const rfGainKnob = this.adjustingRFGainKnob || document.getElementById('rfGainKnob');
                     const rect = rfGainKnob.getBoundingClientRect();
                     const centerX = rect.left + rect.width / 2;
                     const centerY = rect.top + rect.height / 2;
@@ -5628,7 +6210,13 @@ rfGainKnob.addEventListener('mouseleave', () => {
                         deltaAngle *= sensitivity;
                         const newRotation = this.rfGainKnobRotation + (deltaAngle * 180 / Math.PI);
                         this.rfGainKnobRotation = Math.max(this.minRotation, Math.min(this.maxRotation, newRotation));
-                        rfGainKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+                        
+                        // Update BOTH knobs (main and quick)
+                        const mainKnob = document.getElementById('rfGainKnob');
+                        if (mainKnob) mainKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+                        const quickKnob = document.getElementById('quickCWKnob');
+                        if (quickKnob) quickKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+                        
                         const newRFGainLevel = Math.round(((this.rfGainKnobRotation - this.minRotation) / this.totalRotationRange) * 100);
                         if (newRFGainLevel !== this.rfGainLevel) {
                             this.rfGainLevel = newRFGainLevel;
@@ -5724,6 +6312,21 @@ updateRFGainLevel() {
     }
     document.getElementById('rfGainKnob').setAttribute('aria-valuenow', cwSpeed);
     
+    // Update Quick Controls CW Speed knob and label
+    const quickCWKnob = document.getElementById('quickCWKnob');
+    const quickCWLevel = document.getElementById('quickCWLevel');
+    if (quickCWKnob && quickCWLevel) {
+        quickCWKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+        if (cwSpeed === 0) {
+            quickCWLevel.textContent = 'STRAIGHT';
+            quickCWLevel.style.color = '#ff4757';
+        } else {
+            quickCWLevel.textContent = `${cwSpeed} WPM`;
+            quickCWLevel.style.color = '#00ff88';
+        }
+        quickCWKnob.setAttribute('aria-valuenow', cwSpeed);
+    }
+    
     // Update clone knob
     this.updateCWSpeedCloneUI();
 }
@@ -5757,10 +6360,226 @@ updateRFGainLevel() {
     }
 }
 
+// ===== ACTUAL RF GAIN CONTROL METHODS =====
+initActualRfGainControl() {
+    try {
+        const actualRfGainKnob = document.getElementById('actualRfGainKnob');
+        const actualRfGainLevel = document.getElementById('actualRfGainLevel');
+        
+        if (!actualRfGainKnob || !actualRfGainLevel) {
+            console.error('Actual RF Gain knob elements not found');
+            return;
+        }
+        
+        this.actualRfGainKnobRotation = this.minRotation + (this.actualRfGainLevel / 100) * this.totalRotationRange;
+        actualRfGainKnob.style.transform = `rotate(${this.actualRfGainKnobRotation}deg)`;
+        this.updateActualRfGainLevel();
+        
+       actualRfGainKnob.addEventListener('mousedown', this.startActualRfGainAdjust.bind(this));
+        actualRfGainKnob.addEventListener('touchstart', this.startActualRfGainAdjust.bind(this), { passive: false });
+        actualRfGainKnob.addEventListener('wheel', this.handleActualRfGainWheel.bind(this));
+        actualRfGainKnob.setAttribute('aria-valuenow', this.actualRfGainLevel);
+        
+        // Add hover keyboard control
+        actualRfGainKnob.addEventListener('mouseenter', () => {
+            this.enableActualRfGainHoverKeys();
+        });
+        actualRfGainKnob.addEventListener('mouseleave', () => {
+            this.disableActualRfGainHoverKeys();
+        });
+        
+        console.log('Actual RF Gain control initialized at', this.actualRfGainLevel, 'dB');
+    } catch (error) {
+        console.error('Error initializing Actual RF Gain control:', error);
+    }
+}
+
+startActualRfGainAdjust(e) {
+    e.preventDefault();
+    this.isActualRfGainAdjusting = true;
+    // Store which knob is being adjusted (could be actualRfGainKnob or quickRFKnob)
+    this.adjustingActualRfGainKnob = e.target;
+    const rect = e.target.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    this.boundContinueActualRfGainAdjust = this.continueActualRfGainAdjust.bind(this);
+    this.boundStopActualRfGainAdjust = this.stopActualRfGainAdjust.bind(this);
+    
+    if (e.type === 'mousedown') {
+        this.actualRfGainLastAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+        document.addEventListener('mousemove', this.boundContinueActualRfGainAdjust);
+        document.addEventListener('mouseup', this.boundStopActualRfGainAdjust);
+    } else if (e.type === 'touchstart') {
+        const t = e.touches[0];
+        this.actualRfGainLastAngle = Math.atan2(t.clientY - centerY, t.clientX - centerX);
+        document.addEventListener('touchmove', this.boundContinueActualRfGainAdjust, { passive: false });
+        document.addEventListener('touchend', this.boundStopActualRfGainAdjust);
+    }
+}
+
+continueActualRfGainAdjust(e) {
+    if (!this.isActualRfGainAdjusting) return;
+    if (this.actualRfGainAnimationFrame) {
+        cancelAnimationFrame(this.actualRfGainAnimationFrame);
+    }
+    
+    this.actualRfGainAnimationFrame = requestAnimationFrame(() => {
+        // Use the stored knob element instead of hardcoded ID lookup
+        const actualRfGainKnob = this.adjustingActualRfGainKnob || document.getElementById('actualRfGainKnob');
+        const rect = actualRfGainKnob.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        let currentX, currentY;
+        
+        if (e.type === 'mousemove') {
+            currentX = e.clientX;
+            currentY = e.clientY;
+        } else if (e.type === 'touchmove') {
+            e.preventDefault();
+            const t = e.touches[0];
+            currentX = t.clientX;
+            currentY = t.clientY;
+        }
+        
+        const distance = Math.sqrt(Math.pow(currentX - centerX, 2) + Math.pow(currentY - centerY, 2));
+        if (distance < rect.width * 2) {
+            const currentAngle = Math.atan2(currentY - centerY, currentX - centerX);
+            let deltaAngle = currentAngle - this.actualRfGainLastAngle;
+            
+            if (deltaAngle > Math.PI) deltaAngle -= 2 * Math.PI;
+            if (deltaAngle < -Math.PI) deltaAngle += 2 * Math.PI;
+            
+            const sensitivity = 0.8;
+            deltaAngle *= sensitivity;
+            const newRotation = this.actualRfGainKnobRotation + (deltaAngle * 180 / Math.PI);
+            this.actualRfGainKnobRotation = Math.max(this.minRotation, Math.min(this.maxRotation, newRotation));
+            
+            // Update BOTH knobs
+            const mainKnob = document.getElementById('actualRfGainKnob');
+            if (mainKnob) mainKnob.style.transform = `rotate(${this.actualRfGainKnobRotation}deg)`;
+            const quickKnob = document.getElementById('quickRFKnob');
+            if (quickKnob) quickKnob.style.transform = `rotate(${this.actualRfGainKnobRotation}deg)`;
+            
+        const knobPercent = ((this.actualRfGainKnobRotation - this.minRotation) / this.totalRotationRange);
+        const newActualRfGainLevel = Math.floor(30 + (knobPercent * 50)); // 30dB minimum, 80dB maximum
+            if (newActualRfGainLevel !== this.actualRfGainLevel) {
+                this.actualRfGainLevel = newActualRfGainLevel;
+                this.updateActualRfGainLevel();
+                this.sendActualRfGainDynamically();
+            }
+            
+            this.actualRfGainLastAngle = currentAngle;
+        }
+        this.actualRfGainAnimationFrame = null;
+    });
+}
+
+stopActualRfGainAdjust() {
+    this.isActualRfGainAdjusting = false;
+    if (this.actualRfGainAnimationFrame) {
+        cancelAnimationFrame(this.actualRfGainAnimationFrame);
+        this.actualRfGainAnimationFrame = null;
+    }
+    
+    if (this.boundContinueActualRfGainAdjust && this.boundStopActualRfGainAdjust) {
+        document.removeEventListener('mousemove', this.boundContinueActualRfGainAdjust);
+        document.removeEventListener('mouseup', this.boundStopActualRfGainAdjust);
+        document.removeEventListener('touchmove', this.boundContinueActualRfGainAdjust);
+        document.removeEventListener('touchend', this.boundStopActualRfGainAdjust);
+        this.boundContinueActualRfGainAdjust = null;
+        this.boundStopActualRfGainAdjust = null;
+    }
+    
+    this.sendActualRfGainCommand();
+}
+
+handleActualRfGainKeyboard(e) {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        this.adjustActualRfGain(-5);
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        this.adjustActualRfGain(5);
+    }
+}
+
+handleActualRfGainWheel(e) {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -1 : 1;
+    this.adjustActualRfGain(delta);
+}
+
+adjustActualRfGain(delta) {
+    this.actualRfGainLevel = Math.max(30, Math.min(80, this.actualRfGainLevel + delta));
+    this.actualRfGainKnobRotation = this.minRotation + (this.actualRfGainLevel / 100) * this.totalRotationRange;
+    
+    if (this.actualRfGainAnimationFrame) {
+        cancelAnimationFrame(this.actualRfGainAnimationFrame);
+    }
+    
+    this.actualRfGainAnimationFrame = requestAnimationFrame(() => {
+        document.getElementById('actualRfGainKnob').style.transform = `rotate(${this.actualRfGainKnobRotation}deg)`;
+        this.updateActualRfGainLevel();
+        this.sendActualRfGainCommand();
+        this.actualRfGainAnimationFrame = null;
+    });
+}
+
+updateActualRfGainLevel() {
+    const actualRfGainLevelEl = document.getElementById('actualRfGainLevel');
+    if (actualRfGainLevelEl) {
+        actualRfGainLevelEl.textContent = `${this.actualRfGainLevel} dB`;
+        document.getElementById('actualRfGainKnob')?.setAttribute('aria-valuenow', this.actualRfGainLevel);
+    }
+    
+    // Update Quick Controls RF Gain knob and label
+    const quickRFKnob = document.getElementById('quickRFKnob');
+    const quickRFLevel = document.getElementById('quickRFLevel');
+   // if (quickRFKnob && quickRFLevel) {
+        const actualRfGainRotation = this.actualRfGainKnobRotation || 
+            (this.minRotation + (this.actualRfGainLevel / 100) * this.totalRotationRange);
+        quickRFKnob.style.transform = `rotate(${actualRfGainRotation}deg)`;
+        quickRFLevel.textContent = `${this.actualRfGainLevel} dB`;
+        quickRFKnob.setAttribute('aria-valuenow', this.actualRfGainLevel);
+   // }
+}
+
+sendActualRfGainDynamically() {
+    if (this.actualRfGainTimeout) {
+        clearTimeout(this.actualRfGainTimeout);
+    }
+    this.actualRfGainTimeout = setTimeout(() => {
+        if (this.connected && this.port && this.writer) {
+            this.sendCommand(`RG${this.actualRfGainLevel.toString().padStart(3, '0')}`).catch(e => {
+                console.error("RF Gain update error:", e);
+            });
+        }
+        this.actualRfGainTimeout = null;
+    }, 20);
+}
+
+async sendActualRfGainCommand() {
+    if (!this.connected || !this.port || !this.writer) return;
+    try {
+        await this.sendCommand(`RG${this.actualRfGainLevel.toString().padStart(3, '0')}`);
+        this.logCAT(`RF Gain set to ${this.actualRfGainLevel} dB`, 'info');
+    } catch (e) {
+        this.logCAT(`RF Gain command error: ${e.message}`, 'error');
+    }
+}
+// ===== END ACTUAL RF GAIN CONTROL =====
+
             initPowerControl() {
                 try {
                     const powerKnob = document.getElementById('powerKnob');
                     const powerLevel = document.getElementById('powerLevel');
+                    
+                    // Check if elements exist before using them
+                    if (!powerKnob || !powerLevel) {
+                        console.warn('Power control elements not found in DOM - skipping initialization');
+                        return;
+                    }
+                    
                     this.powerLevel = Math.max(0, Math.min(50, this.powerLevel));
                     this.powerKnobRotation = this.minRotation + (this.powerLevel / 50) * this.totalRotationRange;
                     powerKnob.style.transform = `rotate(${this.powerKnobRotation}deg)`;
@@ -6070,7 +6889,7 @@ continueTuningAdjust(e) {
             }
             this.lastTuningTime = now;
             
-            const sensitivity = 1.5;
+            const sensitivity = 1.0;
             deltaAngle *= sensitivity;
             this.tuningKnobRotation += (deltaAngle * 180 / Math.PI);
             tuningKnob.style.transform = `rotate(${this.tuningKnobRotation}deg)`;
@@ -6197,7 +7016,7 @@ continueTuningAdjust(e) {
 					
 					
 					
-                }, 350);
+                }, 80);
             }
 
             stopPolling() {
@@ -6503,9 +7322,11 @@ setBandFrequency(band) {
             } else if (response.startsWith('LC')) {
                 let lcdData = response.substring(2).padEnd(32, ' ');
                 this.updateLcdDisplay(lcdData.substring(0, 16), lcdData.substring(16, 32));
-          } else if (response.startsWith('AG')) {
+          } else if (response.startsWith('AG0')) {
+		  
     const gain = parseInt(response.substring(2));
-    if (!isNaN(gain) && !this.isVolumeAdjusting && !this.volumeFeedbackBlock) {
+console.log ('Volume received:',parseInt(response.substring(2)));   
+   if (!isNaN(gain) && !this.isVolumeAdjusting && !this.volumeFeedbackBlock) {
         const newVolumeLevel = this.catToVolume(gain);
         // Only update if significantly different (reduces jitter)
         if (Math.abs(newVolumeLevel - this.volumeLevel) > 2) {
@@ -6566,12 +7387,37 @@ setBandFrequency(band) {
                     this.rfGainKnobRotation = this.minRotation + (this.rfGainLevel / 100) * this.totalRotationRange;
                     document.getElementById('rfGainKnob').style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
                 }
+            } else if (response.startsWith('RG')) {
+                // Handle RF Gain response
+                const rfGainDb = parseInt(response.substring(2));
+                if (!isNaN(rfGainDb) && !this.isActualRfGainAdjusting && rfGainDb >= 0 && rfGainDb <= 100) {
+                    this.actualRfGainLevel = rfGainDb;
+                    this.updateActualRfGainLevel();
+                    this.actualRfGainKnobRotation = this.minRotation + (this.actualRfGainLevel / 100) * this.totalRotationRange;
+                    const knob = document.getElementById('actualRfGainKnob');
+                    if (knob) {
+                        knob.style.transform = `rotate(${this.actualRfGainKnobRotation}deg)`;
+                    }
+                }
             } else if (response.startsWith('TX')) {
                 this.transmitting = true;
+                this.ssbTransmitting = true; // Update SSB status
+                this.muteAudioOutput(); // Auto-mute on TX
                 this.updateTXStatus();
+                this.updateSSBStatus(); // Update SSB panel
             } else if (response.startsWith('RX')) {
                 this.transmitting = false;
+                this.ssbTransmitting = false; // Update SSB status
+                this.unmuteAudioOutput(); // Auto-unmute on RX
                 this.updateTXStatus();
+                this.updateSSBStatus(); // Update SSB panel
+            } else if (response.startsWith('SS')) {
+                // Handle SSB source response
+                const source = parseInt(response.substring(2));
+                if (!isNaN(source) && source >= 0 && source <= 2) {
+                    this.ssbMicSource = source;
+                    this.updateSSBSourceDisplay();
+                }
             } else if (response.startsWith('RT')) {
                 const ritStatus = response.substring(2);
                 if (ritStatus === '0' || ritStatus === '1') {
@@ -6617,6 +7463,21 @@ setBandFrequency(band) {
         this.updateCWKeyerUI();
         this.logCAT('CW buffer overflow - message cancelled', 'error');
     }
+	} else if (response.startsWith('TB')) {
+                // Handle CW decoder text buffer response
+                // Format: TBtnns; where:
+                // t = TX buffer status (0 = RX mode, 1-9 = chars remaining to send)
+                // nn = number of decoded characters
+                // s = decoded string
+                if (response.length >= 4) {
+                    const txStatus = response.charAt(2);
+                    const charCount = parseInt(response.substring(3, 5));
+                    
+                    if (!isNaN(charCount) && charCount > 0) {
+                        const decodedText = response.substring(5, 5 + charCount);
+                        this.handleCWDecoderText(decodedText);
+                    }
+                }
 			
 	 }		
 		
@@ -6653,15 +7514,327 @@ updateSMeterLabel(percentage) {
     }
 
     sMeterText.textContent = label;
+    
+    // Update Quick Controls S-Meter
+    const quickSMeter = document.getElementById('quickSMeter');
+    if (quickSMeter) {
+        quickSMeter.textContent = label;
+    }
+    
+    // Store the current S-meter value for the interval to access
+    this.currentSMeterLabel = label;
 }
 
 
 
+//______________________________________________________________________
+// CW Decoder Methods
 
+handleCWDecoderText(text) {
+    if (!text || text.length === 0) return;
+    
+    const displayEl = document.getElementById('cwDecoderDisplay');
+    if (!displayEl) return;
+    
+    // Check if this is the first text (remove the waiting message)
+    const waitingMsg = displayEl.querySelector('div[style*="color: #888"]');
+    if (waitingMsg) {
+        displayEl.innerHTML = '';
+    }
+    
+    // Append the new text
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+    displayEl.appendChild(textSpan);
+    
+    // Auto-scroll to bottom
+    displayEl.scrollTop = displayEl.scrollHeight;
+    
+    // Update timestamp
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString();
+    const timestampEl = document.getElementById('cwDecoderTimestamp');
+    if (timestampEl) {
+        timestampEl.textContent = timeStr;
+    }
+    
+    this.logCAT(`CW Decoded: ${text}`, 'info');
+}
 
+initCWDecoder() {
+    this.cwDecoder = {
+        enabled: false,
+        interval: 200,
+        timer: null,
+        buffer: ''
+    };
+    
+    // Enable/disable checkbox
+    const enableCheckbox = document.getElementById('enableCwDecoder');
+    if (enableCheckbox) {
+        enableCheckbox.addEventListener('change', (e) => {
+            this.cwDecoder.enabled = e.target.checked;
+            if (this.cwDecoder.enabled) {
+                this.startCWDecoderPolling();
+            } else {
+                this.stopCWDecoderPolling();
+            }
+            this.updateCWDecoderStatus();
+        });
+    }
+    
+    // Interval selector
+    const intervalSelect = document.getElementById('cwDecoderInterval');
+    if (intervalSelect) {
+        intervalSelect.addEventListener('change', (e) => {
+            this.cwDecoder.interval = parseInt(e.target.value);
+            if (this.cwDecoder.enabled) {
+                this.stopCWDecoderPolling();
+                this.startCWDecoderPolling();
+            }
+        });
+    }
+    
+    // Clear button
+    const clearBtn = document.getElementById('cwDecoderClear');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            this.clearCWDecoderDisplay();
+        });
+    }
+    
+    this.logCAT('CW Decoder initialized', 'info');
+}
 
+startCWDecoderPolling() {
+    if (this.cwDecoder.timer) {
+        clearInterval(this.cwDecoder.timer);
+    }
+    
+    this.cwDecoder.timer = setInterval(() => {
+        if (this.connected && this.cwDecoder.enabled) {
+            this.sendCommand('TB').catch(e => {
+                console.error('Failed to poll CW decoder:', e);
+            });
+        }
+    }, this.cwDecoder.interval);
+    
+    this.logCAT(`CW Decoder polling started (${this.cwDecoder.interval}ms)`, 'info');
+}
 
+stopCWDecoderPolling() {
+    if (this.cwDecoder.timer) {
+        clearInterval(this.cwDecoder.timer);
+        this.cwDecoder.timer = null;
+    }
+    this.logCAT('CW Decoder polling stopped', 'info');
+}
 
+updateCWDecoderStatus() {
+    const statusEl = document.getElementById('cwDecoderStatus');
+    if (statusEl) {
+        statusEl.textContent = this.cwDecoder.enabled ? 
+            `Decoder: ON (${this.cwDecoder.interval}ms)` : 
+            'Decoder: OFF';
+        statusEl.style.color = this.cwDecoder.enabled ? 'var(--accent-color)' : '#888';
+    }
+}
+
+clearCWDecoderDisplay() {
+    const displayEl = document.getElementById('cwDecoderDisplay');
+    if (displayEl) {
+        displayEl.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Buffer cleared. Waiting for decoded CW text...</div>';
+    }
+    const timestampEl = document.getElementById('cwDecoderTimestamp');
+    if (timestampEl) {
+        timestampEl.textContent = '--:--:--';
+    }
+    this.cwDecoder.buffer = '';
+    this.logCAT('CW Decoder buffer cleared', 'info');
+}
+
+//______________________________________________________________________
+// SSB Control Methods
+
+initSSBControl() {
+    // Initialize SSB control elements
+    const rxBtn = document.getElementById('ssbRxBtn');
+    const txBtn = document.getElementById('ssbTxBtn');
+    const micSourceSelect = document.getElementById('ssbMicSource');
+    
+    if (!rxBtn || !txBtn || !micSourceSelect) {
+        console.error('SSB Control elements not found');
+        return;
+    }
+    
+    // RX Button - Switch to receive mode
+    rxBtn.addEventListener('click', () => {
+        this.setSSBReceiveMode();
+    });
+    
+    // TX Button - Switch to transmit mode
+    txBtn.addEventListener('click', () => {
+        this.setSSBTransmitMode();
+    });
+    
+    // Microphone Source Selector
+    micSourceSelect.addEventListener('change', (e) => {
+        const source = parseInt(e.target.value);
+        this.setSSBMicSource(source);
+    });
+    
+    // Request current SSB source on init
+    if (this.connected) {
+        this.sendCommand('SS').catch(e => {
+            console.error('Failed to query SSB source:', e);
+        });
+    }
+    
+    this.logCAT('SSB Control initialized', 'info');
+}
+
+setSSBReceiveMode() {
+    if (!this.connected) {
+        this.logCAT('Cannot switch to RX: Not connected', 'error');
+        return;
+    }
+    
+    this.sendCommand('RX').then(() => {
+        this.ssbTransmitting = false;
+        this.updateSSBStatus();
+        // Unmute audio output in receive mode
+        this.unmuteAudioOutput();
+        this.logCAT('Switched to RECEIVE mode (audio output enabled)', 'info');
+    }).catch(e => {
+        this.logCAT(`RX command error: ${e.message}`, 'error');
+    });
+}
+
+setSSBTransmitMode() {
+    if (!this.connected) {
+        this.logCAT('Cannot switch to TX: Not connected', 'error');
+        return;
+    }
+    
+    // Warn if using PC mic but audio stream not active
+    if (this.ssbMicSource === 0 && !this.audioStreaming) {
+        this.logCAT('WARNING: PC/USB mic selected but audio streaming not active!', 'error');
+    }
+    
+    // Mute audio output during transmit to prevent feedback
+    this.muteAudioOutput();
+    
+    this.sendCommand('TX').then(() => {
+        this.ssbTransmitting = true;
+        this.updateSSBStatus();
+        this.logCAT('Switched to TRANSMIT mode (audio output muted)', 'info');
+    }).catch(e => {
+        this.logCAT(`TX command error: ${e.message}`, 'error');
+        // Restore audio if TX fails
+        this.unmuteAudioOutput();
+    });
+}
+
+setSSBMicSource(source) {
+    if (!this.connected) {
+        this.logCAT('Cannot set mic source: Not connected', 'error');
+        return;
+    }
+    
+    if (source < 0 || source > 2) {
+        this.logCAT('Invalid mic source value', 'error');
+        return;
+    }
+    
+    this.sendCommand(`SS${source}`).then(() => {
+        this.ssbMicSource = source;
+        this.updateSSBSourceDisplay();
+        
+        const sourceNames = ['PC/USB Audio', 'Test Tone (700+1900 Hz)', 'External Mic'];
+        this.logCAT(`SSB source set to: ${sourceNames[source]}`, 'info');
+    }).catch(e => {
+        this.logCAT(`SS command error: ${e.message}`, 'error');
+    });
+}
+
+updateSSBStatus() {
+    const statusEl = document.getElementById('ssbTxRxStatus');
+    const rxBtn = document.getElementById('ssbRxBtn');
+    const txBtn = document.getElementById('ssbTxBtn');
+    
+    if (statusEl) {
+        if (this.ssbTransmitting) {
+            statusEl.textContent = 'TX MODE';
+            statusEl.style.color = '#ff4757'; // Red for transmit
+        } else {
+            statusEl.textContent = 'RX MODE';
+            statusEl.style.color = 'var(--accent-color)'; // Green for receive
+        }
+    }
+    
+    // Update button states
+    if (rxBtn && txBtn) {
+        if (this.ssbTransmitting) {
+            rxBtn.classList.remove('active');
+            txBtn.classList.add('active');
+        } else {
+            rxBtn.classList.add('active');
+            txBtn.classList.remove('active');
+        }
+    }
+}
+
+updateSSBSourceDisplay() {
+    const sourceStatusEl = document.getElementById('ssbSourceStatus');
+    const micSourceSelect = document.getElementById('ssbMicSource');
+    
+    const sourceNames = ['PC/USB Audio', 'Test Tone (700+1900 Hz)', 'External Mic'];
+    
+    if (sourceStatusEl) {
+        sourceStatusEl.textContent = `Current: ${sourceNames[this.ssbMicSource]}`;
+        
+        // Color code based on source
+        if (this.ssbMicSource === 0) {
+            sourceStatusEl.style.color = 'var(--accent-color)';
+        } else if (this.ssbMicSource === 1) {
+            sourceStatusEl.style.color = '#ffff00';
+        } else {
+            sourceStatusEl.style.color = '#00aaff';
+        }
+    }
+    
+    if (micSourceSelect) {
+        micSourceSelect.value = this.ssbMicSource.toString();
+    }
+}
+
+muteAudioOutput() {
+    // Mute the audio output to prevent feedback during transmit
+    if (this.audioContext && this.gainNode) {
+        // Store current gain if not already stored
+        if (this.audioOutputGainBeforeMute === undefined) {
+            this.audioOutputGainBeforeMute = this.gainNode.gain.value;
+        }
+        // Smoothly ramp down to prevent clicks
+        this.gainNode.gain.setTargetAtTime(0, this.audioContext.currentTime, 0.05);
+        this.logCAT('Audio output muted', 'info');
+    }
+}
+
+unmuteAudioOutput() {
+    // Restore audio output in receive mode
+    if (this.audioContext && this.gainNode) {
+        // Restore previous gain value or default to current slider setting
+        const targetGain = this.audioOutputGainBeforeMute !== undefined 
+            ? this.audioOutputGainBeforeMute 
+            : (this.audioGainMultiplier || 1.0);
+        
+        // Smoothly ramp up to prevent clicks
+        this.gainNode.gain.setTargetAtTime(targetGain, this.audioContext.currentTime, 0.05);
+        this.audioOutputGainBeforeMute = undefined;
+        this.logCAT('Audio output unmuted', 'info');
+    }
+}
 
 //______________________________________________________________________
         
@@ -7206,7 +8379,7 @@ async initAudioStreaming() {
         this.logCAT('Audio streaming ready', 'info');
         
         // Set default gain boost
-        this.audioGain = 2.0;
+       this.audioGain = 1.0;  // Reduced from 3.0 to prevent overload
         const gainSlider = document.getElementById('audioGainSlider');
         if (gainSlider) {
             gainSlider.value = this.audioGain * 100;
@@ -7221,6 +8394,13 @@ async initAudioStreaming() {
         this.setupDeviceEnumerationFallback();
     }
 }
+
+
+
+
+
+
+
 setupDeviceEnumerationFallback() {
     // Show a helpful message in the dropdowns
     const inputSelect = document.getElementById('audioInputDevice');
@@ -7267,10 +8447,16 @@ setupAudioEventListeners() {
         }
     });
     
-    // Button listeners
-    document.getElementById('startStreamBtn').addEventListener('click', () => {
+   document.getElementById('startStreamBtn').addEventListener('click', () => {
         console.log('START BUTTON CLICKED - selectedInputDevice:', this.selectedInputDevice);
-        this.startAudioStream();
+        
+        // --- NEW: Check which mode to start ---
+        this.spectrumMode = document.getElementById('spectrumMode').value;
+        if (this.spectrumMode === 'iq') {
+            this.startIQStream(); // This is our new (currently empty) function
+        } else {
+            this.startAudioStream(); // This is the existing, working function
+        }
     });
     // Add this to your setupAudioEventListeners() method
 document.getElementById('refreshDevicesBtn').addEventListener('click', async () => {
@@ -7282,10 +8468,18 @@ document.getElementById('refreshDevicesBtn').addEventListener('click', async () 
 	const gainSlider = document.getElementById('audioGainSlider');
 if (gainSlider) {
     gainSlider.addEventListener('input', (e) => {
-        const gainValue = parseInt(e.target.value) / 100; // Convert to multiplier
-        this.audioGain = gainValue;
+        const sliderValue = parseInt(e.target.value);
+        this.audioGain = sliderValue / 100; // Convert to multiplier
+        
+        // Update audio context
         this.updateAudioGain();
+        
+        // Update all UI elements
         this.updateGainDisplay();
+        
+        // Sync the *other* slider
+        const loudnessSlider = document.getElementById('quickLoudness');
+        if (loudnessSlider) loudnessSlider.value = sliderValue;
     });
 }
 
@@ -7374,9 +8568,15 @@ async enumerateAudioDevices() {
         this.logCAT(`Device enumeration error: ${error.message}`, 'error');
     }
 }
+
+
 async startAudioStream() {
+    // --- Safety check to ensure radio is in normal audio mode ---
+    if (this.connected) {
+        await this.sendCommand('Q9;0;'); // Force radio to AUDIO mode
+    }
+    // --- END Safety Check ---
     try {
-        // --- FIX: Read the selected device directly from the dropdown ---
         const inputSelect = document.getElementById('audioInputDevice');
         if (inputSelect && inputSelect.value) {
             this.selectedInputDevice = inputSelect.value;
@@ -7405,27 +8605,45 @@ async startAudioStream() {
         
         this.inputStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
         
+        // Clean up any existing connections
+        if (this.inputSource) this.inputSource.disconnect();
+        if (this.attenuatorNode) this.attenuatorNode.disconnect();
+        if (this.compressorNode) this.compressorNode.disconnect();
+        if (this.gainNode) this.gainNode.disconnect();
+        if (this.inputAnalyser) this.inputAnalyser.disconnect();
+        if (this.iqProcessorNode) this.iqProcessorNode.disconnect(); // Also clean up I/Q
+        
         this.inputSource = this.audioContext.createMediaStreamSource(this.inputStream);
         this.attenuatorNode = this.audioContext.createGain();
+        this.compressorNode = this.audioContext.createDynamicsCompressor();
         this.gainNode = this.audioContext.createGain();
-        this.inputAnalyser = this.audioContext.createAnalyser();
-        this.inputAnalyser.fftSize = 2048;
+        this.inputAnalyser = this.audioContext.createAnalyser(); // This is for AUDIO mode
         
         this.attenuatorNode.gain.value = 1.0;
         this.gainNode.gain.value = this.audioGain;
         
+        this.compressorNode.threshold.value = -24;
+        this.compressorNode.knee.value = 10;
+        this.compressorNode.ratio.value = 4;
+        this.compressorNode.attack.value = 0.003;
+        this.compressorNode.release.value = 0.25;
+        
+        // This is the AUDIO path, connected to speakers
         this.inputSource.connect(this.attenuatorNode);
-        this.attenuatorNode.connect(this.gainNode);
+        this.attenuatorNode.connect(this.compressorNode);
+        this.compressorNode.connect(this.gainNode);
         this.gainNode.connect(this.inputAnalyser);
-        this.gainNode.connect(this.audioContext.destination);
+        this.gainNode.connect(this.audioContext.destination); 
         
         this.initAttenuator();
-        this.startSpectrum();
-        
-        const outputSelect = document.getElementById('audioOutputDevice');
-        if (outputSelect && outputSelect.value && outputSelect.value !== 'default' && this.audioContext.setSinkId) {
-            await this.audioContext.setSinkId(outputSelect.value);
-        }
+
+        // --- Setup audio-mode spectrum data ---
+        this.inputAnalyser.fftSize = 2048; 
+        this.frequencyData = new Uint8Array(this.inputAnalyser.frequencyBinCount);
+        this.spectrumData = null; // Ensure I/Q data is null
+        // --- END new setup ---
+
+        this.startSpectrum(); // This just starts the drawing
         
         this.startLevelMonitoring();
         this.isAudioStreaming = true;
@@ -7442,35 +8660,130 @@ async startAudioStream() {
         this.updateStreamingButtons();
     }
 }
+
+
+
+
+
 startLevelMonitoring() {
     if (!this.inputAnalyser) return;
     
     const bufferLength = this.inputAnalyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     
+    // Initialize clipping detection variables
+    this.clipCount = 0;
+    this.peakLevel = 0;
+    this.peakHoldTime = 0;
+    this.lastClipTime = 0;
+    const CLIP_THRESHOLD = 95; // Consider clipping at 95% of max
+    const PEAK_HOLD_DURATION = 1500; // Hold peak for 1.5 seconds
+    const CLIP_FLASH_DURATION = 300; // Flash duration in ms
+    
     const updateLevel = () => {
         if (!this.isAudioStreaming) return;
         
         this.inputAnalyser.getByteFrequencyData(dataArray);
         
+        // Calculate RMS level
         let sum = 0;
+        let peak = 0;
         for (let i = 0; i < bufferLength; i++) {
             sum += dataArray[i] * dataArray[i];
+            peak = Math.max(peak, dataArray[i]);
         }
         const rms = Math.sqrt(sum / bufferLength);
         const level = (rms / 255) * 100;
+        const peakPercent = (peak / 255) * 100;
         
         const meter = document.getElementById('inputLevelMeter');
         const text = document.getElementById('inputLevelText');
+        const peakIndicator = document.getElementById('inputPeakIndicator');
+        const clippingWarning = document.getElementById('clippingWarning');
+        const clipCountDisplay = document.getElementById('clipCount');
         
         if (meter && text) {
+            // Update meter width
             meter.style.width = `${level}%`;
+            
+            // Calculate dB
             const db = level > 0 ? (20 * Math.log10(level / 100)) : -Infinity;
             text.textContent = isFinite(db) ? `${db.toFixed(1)} dB` : '-∞ dB';
+            
+            // Detect clipping
+            const now = Date.now();
+            if (peakPercent >= CLIP_THRESHOLD) {
+                // Clipping detected!
+                meter.classList.add('clipping');
+                
+                // Only increment if not recently clipped (debounce)
+                if (now - this.lastClipTime > 500) {
+                    this.clipCount++;
+                    this.lastClipTime = now;
+                    
+                    // Flash the warning
+                    if (clippingWarning) {
+                        clippingWarning.classList.add('active', 'flash');
+                        setTimeout(() => {
+                            clippingWarning.classList.remove('flash');
+                        }, CLIP_FLASH_DURATION);
+                    }
+                    
+                    // Update clip counter
+                    if (clipCountDisplay) {
+                        clipCountDisplay.textContent = this.clipCount;
+                    }
+                    
+                    // Log to CAT if enabled
+                    if (this.clipCount === 1 || this.clipCount % 10 === 0) {
+                        this.logCAT(`⚠️ Audio clipping detected! Count: ${this.clipCount}. Reduce gain.`, 'warning');
+                    }
+                }
+            } else {
+                meter.classList.remove('clipping');
+                
+                // Hide warning if no recent clips
+                if (clippingWarning && now - this.lastClipTime > 3000) {
+                    clippingWarning.classList.remove('active');
+                }
+            }
+            
+            // Update peak hold indicator
+            const currentTime = Date.now();
+            if (peakPercent > this.peakLevel) {
+                this.peakLevel = peakPercent;
+                this.peakHoldTime = currentTime;
+            } else if (currentTime - this.peakHoldTime > PEAK_HOLD_DURATION) {
+                // Decay peak slowly
+                this.peakLevel = Math.max(0, this.peakLevel - 0.5);
+            }
+            
+            if (peakIndicator) {
+                const peakPosition = 100 - this.peakLevel;
+                peakIndicator.style.right = `${peakPosition}%`;
+                peakIndicator.style.opacity = this.peakLevel > 0 ? '0.8' : '0';
+            }
         }
         
         requestAnimationFrame(updateLevel);
     };
+    
+    // Reset clip count button handler
+    const resetBtn = document.getElementById('resetClipCount');
+    if (resetBtn) {
+        resetBtn.onclick = () => {
+            this.clipCount = 0;
+            const clipCountDisplay = document.getElementById('clipCount');
+            if (clipCountDisplay) {
+                clipCountDisplay.textContent = '0';
+            }
+            const clippingWarning = document.getElementById('clippingWarning');
+            if (clippingWarning) {
+                clippingWarning.classList.remove('active');
+            }
+            this.logCAT('Clip counter reset', 'info');
+        };
+    }
     
     updateLevel();
 }
@@ -7479,7 +8792,7 @@ startLevelMonitoring() {
 
 async stopAudioStream() {
     try {
-        // --- MODIFICATION: Stop the spectrum display first ---
+        // Stop the spectrum display first
         this.stopSpectrum();
 
         if (this.inputStream) {
@@ -7487,7 +8800,30 @@ async stopAudioStream() {
             this.inputStream = null;
         }
 
-        // --- MODIFICATION: Properly close the audio context to free all resources ---
+        // --- NEW: Disconnect ALL nodes ---
+        try {
+            if (this.inputSource) this.inputSource.disconnect();
+            if (this.attenuatorNode) this.attenuatorNode.disconnect();
+            if (this.compressorNode) this.compressorNode.disconnect();
+            if (this.gainNode) this.gainNode.disconnect();
+            if (this.inputAnalyser) this.inputAnalyser.disconnect();
+            if (this.iqProcessorNode) {
+                this.iqProcessorNode.disconnect();
+                this.iqProcessorNode.onaudioprocess = null;
+            }
+        } catch (e) {
+            console.warn("Error during node disconnection:", e.message);
+        }
+        
+        // Null out all nodes to prevent stale references
+        this.inputSource = null;
+        this.attenuatorNode = null;
+        this.compressorNode = null;
+        this.gainNode = null;
+        this.inputAnalyser = null;
+        this.iqProcessorNode = null;
+        // --- END cleanup ---
+
         if (this.audioContext && this.audioContext.state !== 'closed') {
             await this.audioContext.close();
             this.audioContext = null;
@@ -7497,14 +8833,13 @@ async stopAudioStream() {
         this.updateStreamingButtons();
         
         document.getElementById('audioStatusText').textContent = 'Ready to stream';
-        document.getElementById('audioStatusDot').classList.remove('active'); // Ensure dot is deactivated
+        document.getElementById('audioStatusDot').classList.remove('active');
         
         this.logCAT('Audio streaming stopped', 'info');
     } catch (error) {
         this.logCAT(`Stop error: ${error.message}`, 'error');
     }
 }
-
 updateStreamingButtons() {
     const startBtn = document.getElementById('startStreamBtn');
     const stopBtn = document.getElementById('stopStreamBtn');
@@ -7547,25 +8882,43 @@ updateAudioGain() {
     }
 }
 
-// Update gain display
+// --- NEW FUNCTION ---
 updateGainDisplay() {
+    const gainMultiplier = this.audioGain.toFixed(1);
+    const gainDB = this.audioGain > 0 ? (20 * Math.log10(this.audioGain)).toFixed(1) : '-∞';
+    const textContent = `${gainMultiplier}x (${gainDB} dB)`;
+    
+    // Determine color
+    let color = '#00ff88'; // Normal gain
+    if (this.audioGain >= 3.0) {
+        color = '#ff4757'; // High gain
+    } else if (this.audioGain >= 2.0) {
+        color = '#ff9500'; // Medium-high gain
+    } else if (this.audioGain >= 1.5) {
+        color = '#ffff00'; // Medium gain
+    }
+
+    // Update main "Audio Gain" display
     const gainLevelElement = document.getElementById('audioGainLevel');
     if (gainLevelElement) {
-        const gainMultiplier = this.audioGain.toFixed(1);
-        const gainDB = this.audioGain > 0 ? (20 * Math.log10(this.audioGain)).toFixed(1) : '-∞';
-        gainLevelElement.textContent = `${gainMultiplier}x (${gainDB} dB)`;
-        
-        // Color coding based on gain level
-        if (this.audioGain >= 3.0) {
-            gainLevelElement.style.color = '#ff4757'; // High gain - red
-        } else if (this.audioGain >= 2.0) {
-            gainLevelElement.style.color = '#ff9500'; // Medium-high gain - orange  
-        } else if (this.audioGain >= 1.5) {
-            gainLevelElement.style.color = '#ffff00'; // Medium gain - yellow
-        } else {
-            gainLevelElement.style.color = '#00ff88'; // Normal gain - green
-        }
+        gainLevelElement.textContent = textContent;
+        gainLevelElement.style.color = color;
     }
+    
+    // Update "Loudness" text display
+    const loudnessValueElement = document.getElementById('quickLoudnessValue');
+    if (loudnessValueElement) {
+        // Show simple multiplier for "Loudness"
+        loudnessValueElement.textContent = `${gainMultiplier}x`;
+        loudnessValueElement.style.color = color;
+    }
+
+    // Sync slider positions
+    const sliderValue = this.audioGain * 100;
+    const gainSlider = document.getElementById('audioGainSlider');
+    const loudnessSlider = document.getElementById('quickLoudness');
+    if (gainSlider) gainSlider.value = sliderValue;
+    if (loudnessSlider) loudnessSlider.value = sliderValue;
 }
 	
 
@@ -7636,7 +8989,37 @@ initSpectrumDisplay() {
     targetPitchSelect.addEventListener('change', (e) => {
         this.targetPitch = parseInt(e.target.value, 10);
         this.logCAT(`Target CW pitch set to ${this.targetPitch} Hz`, 'info');
-    });
+		
+		    });
+
+
+// --- ADD THIS NEW LISTENER ---
+    const spectrumModeSelect = document.getElementById('spectrumMode');
+    if (spectrumModeSelect) {
+        spectrumModeSelect.addEventListener('change', (e) => {
+            this.spectrumMode = e.target.value;
+            this.logCAT(`Spectrum Mode changed to: ${this.spectrumMode}`, 'info');
+            
+            // If the stream is already running, we must stop and restart it
+            // to apply the new mode.
+            if (this.isAudioStreaming) {
+                this.logCAT('Restarting audio stream to apply new spectrum mode...', 'info');
+                this.stopAudioStream().then(() => {
+                    // Short delay to let things settle
+                    setTimeout(() => {
+                        if (this.spectrumMode === 'iq') {
+                            this.startIQStream();
+                        } else {
+                            this.startAudioStream();
+                        }
+                    }, 250);
+                });
+            }
+        });
+    }
+    // --- END OF NEW LISTENER ---
+
+
 
     // --- MOVED EVENT LISTENERS START HERE ---
     const thresholdSlider = document.getElementById('signalThreshold');
@@ -7707,17 +9090,13 @@ initSpectrumDisplay() {
         this.setFrequencyAndRestoreGain(this.frequency);
 		
 		// Add this to initSpectrumDisplay():
-const calibrateBtn = document.getElementById('calibrateNoiseBtn');
-if (calibrateBtn) {
-    calibrateBtn.addEventListener('click', () => {
+        const calibrateBtn = document.getElementById('calibrateNoiseBtn');
+         if (calibrateBtn) {
+             calibrateBtn.addEventListener('click', () => {
         this.calibrateNoiseFloor();
-    });
-}
-		
-		
-		
-		
-		
+        });
+          }
+	
 		
 		
 		
@@ -7727,26 +9106,54 @@ if (calibrateBtn) {
 } // <<< ADD THIS MISSING BRACE
   
 
+// ... after initSpectrumDisplay() ...
 
-         startSpectrum() {
-    if (!this.audioContext || !this.inputAnalyser) return;
+getWaterfallColor(value, noiseThreshold) {
+    // value is 0-255
+    if (value < noiseThreshold) {
+        // Dark blue for noise
+        // Map 0 -> noiseThreshold to 0 -> 50 in blue channel
+        const blue = Math.round((value / noiseThreshold) * 50);
+        return `rgb(0, 20, ${blue + 30})`;
+    }
 
-    // This correctly resizes the canvas right before drawing starts.
-    this.resizeSpectrumCanvas(); 
+    // It's a signal
+    const signalStrength = value - noiseThreshold; // 0 to (255 - noiseThreshold)
+    const signalRange = 255 - noiseThreshold;
+    const signalPercent = signalStrength / signalRange;
 
-    this.spectrumEnabled = true;
-
-    // These lines were missing: they set up the analyzer's resolution 
-    // and create the data array needed for drawing.
-    this.inputAnalyser.fftSize = 2048; 
-    this.frequencyData = new Uint8Array(this.inputAnalyser.frequencyBinCount);
-
-    // This crucial call starts the drawing loop.
-    this.drawSpectrum();
-
-    this.logCAT('Spectrum analyzer started', 'info');
+    if (signalPercent < 0.33) {
+        // Weak signal: Green
+        // Map 0% -> 33% to 100 -> 255 in green channel
+        const green = Math.round(signalPercent * 3 * 155) + 100;
+        return `rgb(0, ${green}, 0)`;
+    } else if (signalPercent < 0.66) {
+        // Medium signal: Yellow
+        // Map 33% -> 66% to 0 -> 255 in red channel
+        const red = Math.round((signalPercent - 0.33) * 3 * 255);
+        return `rgb(${red}, 255, 0)`;
+    } else {
+        // Strong signal: Red -> "White Hot"
+        // Map 66% -> 100% to 0 -> 255 in green/blue channels
+        const white = Math.round((signalPercent - 0.66) * 3 * 255);
+        return `rgb(255, ${white}, ${white})`;
+    }
 }
 
+// --- END of new function ---
+
+startSpectrum() {
+    this.resizeSpectrumCanvas(); 
+    this.spectrumEnabled = true;
+
+    // Fill the canvas with the base "noise" color to start
+    this.spectrumCtx.fillStyle = 'rgb(0, 20, 30)'; // This is the darkest color from getWaterfallColor
+    this.spectrumCtx.fillRect(0, 0, this.spectrumCanvas.width, this.spectrumCanvas.height);
+
+    this.drawSpectrum(); // Start the drawing loop
+    
+    this.logCAT('Spectrum analyzer started', 'info');
+}
 
 drawSpectrum() {
     if (!this.spectrumEnabled) {
@@ -7755,70 +9162,69 @@ drawSpectrum() {
     }
 
     this.spectrumAnimationFrame = requestAnimationFrame(() => this.drawSpectrum());
-    this.inputAnalyser.getByteFrequencyData(this.frequencyData);
 
-    this.spectrumCtx.fillStyle = '#10151a';
-    this.spectrumCtx.fillRect(0, 0, this.spectrumCanvas.width, this.spectrumCanvas.height);
+    const canvas = this.spectrumCanvas;
+    const ctx = this.spectrumCtx;
+    const width = canvas.width;
+    const height = canvas.height;
 
-    const audioSampleRate = this.audioContext.sampleRate || 48000;
-    const binWidthHz = audioSampleRate / this.inputAnalyser.fftSize;
-    const relevantBins = Math.floor(this.spectrumBandwidth / binWidthHz);
-    const barWidth = this.spectrumCanvas.width / relevantBins;
-    
-    const noiseThreshold = this.calculateNoiseFloor(this.frequencyData, relevantBins);
-    const isCWMode = (this.mode === 'CW');
-    
-    // In CW mode, require signal to be MUCH stronger above noise (3x the margin)
-    const signalMargin = isCWMode ? 60 : 10;
-    
-    for (let i = 0; i < relevantBins; i++) {
-        const barHeight = this.frequencyData[i] / 2.5;
-        const isSignal = this.frequencyData[i] > (noiseThreshold + signalMargin);
+    // 1. Scroll the existing canvas image down by 1 pixel
+    try {
+        ctx.drawImage(canvas, 0, 0, width, height - 1, 0, 1, width, height - 1);
+    } catch (e) { /* ignore errors */ }
+
+    // --- NEW: Universal Data Drawing ---
+    let dataToDraw;
+    let dataLength;
+
+    if (this.spectrumMode === 'iq') {
+        // --- I/Q MODE ---
+        if (!this.spectrumData) return; // Data not ready yet, wait
         
-        if (isSignal) {
-            if (isCWMode) {
-                // Bright cyan/green for CW signals
-                this.spectrumCtx.fillStyle = 'rgb(0, 255, 200)';
-            } else {
-                // Orange for SSB/voice signals
-                this.spectrumCtx.fillStyle = 'rgb(255, 140, 0)';
-            }
-        } else {
-            // Dark blue for noise (all modes)
-            this.spectrumCtx.fillStyle = 'rgb(0, 30, 100)';
+        dataLength = this.spectrumData.length;
+        dataToDraw = new Float32Array(dataLength);
+        
+       // Convert Linear Magnitude to dB, then to 0-255 scale
+        for (let i = 0; i < dataLength; i++) {
+            // 1. Get magnitude (linear)
+            let mag = this.spectrumData[i];
+           // 2. Convert to dB
+            let db = 20 * Math.log10(mag + 1e-6); 
+            
+            // 3. Dynamic Contrast Mapping
+            // Adjust 'floor' to hide the blue noise. Higher = darker background.
+            const floor = -85; // Anything below -85dB will be black
+            const ceiling = -20; // Anything above -20dB will be max brightness
+            const range = ceiling - floor;
+
+            let normalized = (db - floor) / range;
+            // Clamp between 0 and 1
+            normalized = Math.max(0, Math.min(1, normalized));
+            
+            dataToDraw[i] = normalized * 255;
         }
+
+    } else {
+        // --- AUDIO MODE ---
+        if (!this.frequencyData || !this.inputAnalyser) return; // Not ready
         
-        this.spectrumCtx.fillRect(i * barWidth, this.spectrumCanvas.height - barHeight, barWidth, barHeight);
+        this.inputAnalyser.getByteFrequencyData(this.frequencyData);
+        dataToDraw = this.frequencyData;
+        
+        const audioSampleRate = this.audioContext.sampleRate || 48000;
+        const binWidthHz = audioSampleRate / this.inputAnalyser.fftSize;
+        dataLength = Math.floor(this.spectrumBandwidth / binWidthHz);
     }
     
-    if (this.showNoiseFloor) {
-        const noiseLineY = this.spectrumCanvas.height - (noiseThreshold / 2.5);
-        this.spectrumCtx.strokeStyle = 'rgba(255, 255, 0, 0.7)';
-        this.spectrumCtx.lineWidth = 1;
-        this.spectrumCtx.beginPath();
-        this.spectrumCtx.moveTo(0, noiseLineY);
-        this.spectrumCtx.lineTo(this.spectrumCanvas.width, noiseLineY);
-        this.spectrumCtx.stroke();
-    }
+    // 2. Draw the new 1-pixel-tall line at the top (y=0)
+    const barWidth = width / dataLength;
+    const noiseThreshold = this.calculateNoiseFloor(dataToDraw, dataLength);
 
-    if ((this.autotuneEnabled || this.mode === 'SSB') && this.debug_bestChunk) {
-        const chunk = this.debug_bestChunk;
-        const startX = (chunk.startBin * binWidthHz / this.spectrumBandwidth) * this.spectrumCanvas.width;
-        const endX = (chunk.endBin * binWidthHz / this.spectrumBandwidth) * this.spectrumCanvas.width;
-        this.spectrumCtx.fillStyle = 'rgba(220, 220, 220, 0.25)';
-        this.spectrumCtx.fillRect(startX, 0, endX - startX, this.spectrumCanvas.height);
-        this.spectrumCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        this.spectrumCtx.strokeRect(startX, 0, endX - startX, this.spectrumCanvas.height);
-
-        if (this.debug_centerOfEnergy !== null) {
-            const centerX = (this.debug_centerOfEnergy / this.spectrumBandwidth) * this.spectrumCanvas.width;
-            this.spectrumCtx.strokeStyle = '#00FFFF';
-            this.spectrumCtx.lineWidth = 2;
-            this.spectrumCtx.beginPath();
-            this.spectrumCtx.moveTo(centerX, 0);
-            this.spectrumCtx.lineTo(centerX, this.spectrumCanvas.height);
-            this.spectrumCtx.stroke();
-        }
+    for (let i = 0; i < dataLength; i++) {
+        const val = dataToDraw[i]; // Value is now always 0-255 range
+        
+        ctx.fillStyle = this.getWaterfallColor(val, noiseThreshold);
+        ctx.fillRect(i * barWidth, 0, Math.ceil(barWidth), 1); 
     }
 }
 //...
@@ -7889,12 +9295,16 @@ manualScanBtn.addEventListener('click', async (event) => { // Add 'event' to the
                     this.performAutotuneScan();
                 }, this.autotuneDebounceTime);
             }
-
+// --- NEW FUNCTION ---
 performAutotuneScan() {
     this.debug_bestChunk = null;
     this.debug_centerOfEnergy = null;
 
-    if ((!this.autotuneEnabled && !this.spectrumEnabled) || !this.connected) return;
+    // Check for "AUTOTUNE CW/SSB NOW" button press, which doesn't require the toggle to be on
+    const manualScanActive = document.getElementById('manualScanBtn').classList.contains('btn-flash');
+    if ((!this.autotuneEnabled && !manualScanActive) || !this.spectrumEnabled || !this.connected) {
+        return;
+    }
 
     const isSSB = (this.mode === 'USB' || this.mode === 'LSB');
     const isCW = (this.mode === 'CW');
@@ -7906,43 +9316,49 @@ performAutotuneScan() {
 
     this.logCAT(`Autotune: Scanning for ${this.mode} signal...`, 'info');
 
-    if (isSSB) {
-        const peakFreq = this.findSSBSignalCenter();
+    // --- NEW: Averaging logic for BOTH CW and SSB ---
+    const scanDuration = isSSB ? 500 : 1000; // 0.5s for SSB, 1s for CW
+    const sampleInterval = 50;
+    const samplesToTake = scanDuration / sampleInterval;
+    let samplesTaken = 0;
+    const averageSpectrum = new Float32Array(this.inputAnalyser.frequencyBinCount).fill(0);
 
-        if (peakFreq !== null) {
-            const targetCenterFreq = 1500;
-            const offset = Math.round(peakFreq - targetCenterFreq);
+    const scanner = setInterval(() => {
+        if (!this.isAudioStreaming || samplesTaken >= samplesToTake) {
+            clearInterval(scanner);
+            if (samplesTaken < samplesToTake) return; // Scan aborted
 
-            if (Math.abs(offset) > 50) {
-                this.logCAT(`Autotune (SSB): Found signal centered at ${peakFreq.toFixed(0)} Hz. Tuning by ${offset} Hz.`, 'info');
-                
-                // --- FIX: The tuning logic for LSB has been corrected ---
-                const tuneOffset = (this.mode === 'LSB') ? offset : -offset;
-                
-                this.frequency += tuneOffset;
-
-                this.updateDisplay();
-                this.setFrequencyAndRestoreGain(this.frequency);
-            } else {
-                this.logCAT(`Autotune (SSB): Signal already well-tuned.`, 'info');
+            // --- Scan is complete, now analyze the averaged data ---
+            for (let i = 0; i < averageSpectrum.length; i++) {
+                averageSpectrum[i] /= samplesTaken; // Use actual samples taken
             }
-        } else {
-            this.logCAT(`Autotune (SSB): No stable signal found.`, 'info');
-        }
+            
+            const audioSampleRate = this.audioContext.sampleRate || 48000;
+            const binWidthHz = audioSampleRate / this.inputAnalyser.fftSize;
 
-    } else if (isCW) {
-        // (The existing, working CW logic remains unchanged)
-        const scanDuration = 1000;
-        const sampleInterval = 50;
-        const samplesToTake = scanDuration / sampleInterval;
-        let samplesTaken = 0;
-        const averageSpectrum = new Float32Array(this.inputAnalyser.frequencyBinCount).fill(0);
-        const scanner = setInterval(() => {
-            if (!this.isAudioStreaming || samplesTaken >= samplesToTake) {
-                clearInterval(scanner);
-                if (samplesTaken < samplesToTake) return;
-                for (let i = 0; i < averageSpectrum.length; i++) { averageSpectrum[i] /= samplesToTake; }
-                const audioSampleRate = this.audioContext.sampleRate || 48000;
+            if (isSSB) {
+                // Pass the averaged data to the SSB logic
+                const peakFreq = this.findSSBSignalCenter(averageSpectrum);
+
+                if (peakFreq !== null) {
+                    const targetCenterFreq = 1500;
+                    const offset = Math.round(peakFreq - targetCenterFreq);
+
+                    if (Math.abs(offset) > 50) { // 50 Hz tolerance
+                        this.logCAT(`Autotune (SSB): Found signal centered at ${peakFreq.toFixed(0)} Hz. Tuning by ${offset} Hz.`, 'info');
+                        const tuneOffset = (this.mode === 'LSB') ? offset : -offset;
+                        this.frequency += tuneOffset;
+                        this.updateDisplay();
+                        this.setFrequencyAndRestoreGain(this.frequency);
+                    } else {
+                        this.logCAT(`Autotune (SSB): Signal already well-tuned.`, 'info');
+                    }
+                } else {
+                    this.logCAT(`Autotune (SSB): No stable signal found.`, 'info');
+                }
+
+            } else if (isCW) {
+                // (This is the original, working CW logic)
                 const analysisBandwidth = 3500;
                 const relevantBins = Math.floor(this.inputAnalyser.frequencyBinCount * (analysisBandwidth / (audioSampleRate / 2)));
                 const noiseThreshold = this.calculateNoiseFloor(averageSpectrum, relevantBins);
@@ -7954,10 +9370,9 @@ performAutotuneScan() {
                     }
                 }
                 if (peakBin !== -1 && peakSignal > noiseThreshold) {
-                    const binWidthHz = audioSampleRate / this.inputAnalyser.fftSize;
                     const peakFreq = peakBin * binWidthHz;
                     const offset = Math.round(peakFreq - this.targetPitch);
-                    if (Math.abs(offset) > 25) {
+                    if (Math.abs(offset) > 25) { // 25 Hz tolerance
                         this.logCAT(`Autotune (CW): Found signal at ${peakFreq.toFixed(0)} Hz. Tuning by ${offset} Hz.`, 'info');
                         this.frequency += offset;
                         this.updateDisplay();
@@ -7968,13 +9383,16 @@ performAutotuneScan() {
                 } else {
                     this.logCAT(`Autotune (CW): No stable signal found.`, 'info');
                 }
-            } else {
-                this.inputAnalyser.getByteFrequencyData(this.frequencyData);
-                for (let i = 0; i < this.frequencyData.length; i++) { averageSpectrum[i] += this.frequencyData[i]; }
-                samplesTaken++;
             }
-        }, sampleInterval);
-    }
+        } else {
+            // --- Still sampling ---
+            this.inputAnalyser.getByteFrequencyData(this.frequencyData);
+            for (let i = 0; i < this.frequencyData.length; i++) {
+                averageSpectrum[i] += this.frequencyData[i];
+            }
+            samplesTaken++;
+        }
+    }, sampleInterval);
 }
 		// 1. PARTICLE EFFECTS FOR FREQUENCY CHANGES
 createFrequencyParticles() {
@@ -8661,9 +10079,9 @@ fixVolumeKnobPointers() {
 updatePowerMeter(powerTenths) {
     const meter = document.getElementById('powerMeter');
     const powerText = document.getElementById('powerText');
+    const meterVertical = document.getElementById('powerMeterVertical');
+    const powerTextVertical = document.getElementById('powerTextVertical');
      
-    if (!meter || !powerText) return;
-    
     // Convert tenths to actual watts (PC45 = 4.5W)
     const watts = powerTenths / 10.0;
     
@@ -8671,19 +10089,42 @@ updatePowerMeter(powerTenths) {
     const maxWatts = 5.0;
     const percentage = Math.max(0, Math.min(100, (watts / maxWatts) * 100));
     
-    // Update meter bar
-    meter.style.width = percentage + '%';
+    // Update horizontal meter bar (if exists)
+    if (meter) {
+        meter.style.width = percentage + '%';
+    }
     
-    // Update text display
-    powerText.textContent = `${watts.toFixed(1)}W`;
+    // Update horizontal text display (if exists)
+    if (powerText) {
+        powerText.textContent = `${watts.toFixed(1)}W`;
+        
+        // Color coding based on power level
+        if (watts >= 4.0) {
+            powerText.style.color = '#ff4757'; // Red for high power
+        } else if (watts >= 2.0) {
+            powerText.style.color = '#ffff00'; // Yellow for medium power
+        } else {
+            powerText.style.color = '#00ff88'; // Green for low power
+        }
+    }
     
-    // Color coding based on power level
-    if (watts >= 4.0) {
-        powerText.style.color = '#ff4757'; // Red for high power
-    } else if (watts >= 2.0) {
-        powerText.style.color = '#ffff00'; // Yellow for medium power
-    } else {
-        powerText.style.color = '#00ff88'; // Green for low power
+    // Update vertical meter (if exists)
+    if (meterVertical) {
+        meterVertical.style.height = percentage + '%';
+    }
+    
+    // Update vertical text display (if exists)
+    if (powerTextVertical) {
+        powerTextVertical.textContent = `${watts.toFixed(1)}W`;
+        
+        // Color coding based on power level
+        if (watts >= 4.0) {
+            powerTextVertical.style.color = '#ff4757'; // Red for high power
+        } else if (watts >= 2.0) {
+            powerTextVertical.style.color = '#ffff00'; // Yellow for medium power
+        } else {
+            powerTextVertical.style.color = '#00ff88'; // Green for low power
+        }
     }
 }
 
@@ -8700,6 +10141,7 @@ initVoiceKeyer() {
     this.voiceKeyer.isPlaying = this.voiceKeyer.isPlaying || false;
     this.voiceKeyer.mediaRecorder = null;
     this.voiceKeyer.audioChunks = [];
+    this.voiceKeyer.currentSlot = this.voiceKeyer.currentSlot || 1;
     
     // Load saved messages
     this.loadVoiceMessages();
@@ -9088,7 +10530,8 @@ updateVoiceKeyerUI() {
     // Update message slot buttons
     document.querySelectorAll('.voice-msg-btn').forEach((btn, index) => {
         const slot = index + 1;
-        const hasMessage = this.voiceKeyer.messages[index] !== null;
+        const message = this.voiceKeyer.messages[index];
+        const hasMessage = message !== null;
         
         btn.classList.remove('voice-msg-active', 'voice-msg-occupied');
         
@@ -9099,9 +10542,18 @@ updateVoiceKeyerUI() {
             btn.classList.add('voice-msg-occupied');
         }
         
-        btn.title = hasMessage ? 
-            `MSG ${slot}: Recorded ${new Date(this.voiceKeyer.messages[index].recorded).toLocaleString()}` :
-            `MSG ${slot}: Empty`;
+        // Safe access to message properties with multiple checks
+        if (hasMessage && message && message.recorded) {
+            try {
+                btn.title = `MSG ${slot}: Recorded ${new Date(message.recorded).toLocaleString()}`;
+            } catch (e) {
+                btn.title = `MSG ${slot}: Ready`;
+            }
+        } else if (hasMessage) {
+            btn.title = `MSG ${slot}: Ready`;
+        } else {
+            btn.title = `MSG ${slot}: Empty`;
+        }
     });
     
     // Update current slot indicator
@@ -9363,10 +10815,11 @@ async saveVoiceMessages() {
                     }
                     const blobData = btoa(binaryString);
                     
+                    const msg = this.voiceKeyer.messages[i];
                     messageData[i] = {
                         blobData: blobData,
-                        duration: this.voiceKeyer.messages[i].duration,
-                        recorded: this.voiceKeyer.messages[i].recorded
+                        duration: msg.duration || 0,
+                        recorded: msg.recorded || Date.now()
                     };
                     
                 } catch (conversionError) {
@@ -10671,37 +12124,38 @@ initAttenuator() {
     });
 }
 
-
-
-findSSBSignalCenter() {
-    if (!this.frequencyData) return null;
+// --- NEW FUNCTION ---
+findSSBSignalCenter(frequencyData) {
+    if (!frequencyData) return null;
 
     const audioSampleRate = this.audioContext.sampleRate || 48000;
-    const analysisBandwidth = 3500;
+    // FIX 1: Use the correct spectrum bandwidth setting
+    const analysisBandwidth = this.spectrumBandwidth; 
     const relevantBins = Math.floor(this.inputAnalyser.frequencyBinCount * (analysisBandwidth / (audioSampleRate / 2)));
     const binWidthHz = audioSampleRate / this.inputAnalyser.fftSize;
-    const noiseThreshold = this.calculateNoiseFloor(this.frequencyData, relevantBins);
+    const noiseThreshold = this.calculateNoiseFloor(frequencyData, relevantBins);
     
     const signalChunks = [];
     let currentChunk = null;
 
     for (let i = 0; i < relevantBins; i++) {
-        if (this.frequencyData[i] > noiseThreshold) {
+        if (frequencyData[i] > noiseThreshold) {
             if (currentChunk === null) {
                 currentChunk = { startBin: i, endBin: i, totalEnergy: 0 };
             }
             currentChunk.endBin = i;
-            currentChunk.totalEnergy += (this.frequencyData[i] - noiseThreshold);
+            currentChunk.totalEnergy += (frequencyData[i] - noiseThreshold);
         } else {
             if (currentChunk !== null) {
-                if (currentChunk.endBin - currentChunk.startBin > 5) {
+                // FIX 2: Be more tolerant of small gaps
+                if (currentChunk.endBin - currentChunk.startBin > 3) {
                     signalChunks.push(currentChunk);
                 }
                 currentChunk = null;
             }
         }
     }
-    if (currentChunk !== null && currentChunk.endBin - currentChunk.startBin > 5) {
+    if (currentChunk !== null && currentChunk.endBin - currentChunk.startBin > 3) {
         signalChunks.push(currentChunk);
     }
 
@@ -10711,7 +12165,8 @@ findSSBSignalCenter() {
     this.debug_bestChunk = bestChunk; // Save for drawing
 
     const signalWidthHz = (bestChunk.endBin - bestChunk.startBin) * binWidthHz;
-    if (signalWidthHz < 1000 || signalWidthHz > 4000) {
+    // FIX 3: Lower the minimum signal width to catch more signals
+    if (signalWidthHz < 500 || signalWidthHz > 4000) {
         this.logCAT(`Autotune: Ignoring signal of width ${signalWidthHz.toFixed(0)} Hz`, 'info');
         return null;
     }
@@ -10721,7 +12176,7 @@ findSSBSignalCenter() {
 
     for (let i = bestChunk.startBin; i <= bestChunk.endBin; i++) {
         const freq = i * binWidthHz;
-        const power = this.frequencyData[i] - noiseThreshold;
+        const power = frequencyData[i] - noiseThreshold;
         weightedFreqSum += freq * power;
         totalPowerInChunk += power;
     }
@@ -10734,7 +12189,6 @@ findSSBSignalCenter() {
     return centerOfEnergy;
 }
 
-
 stopSpectrum() {
     if (!this.spectrumEnabled) return;
 
@@ -10746,7 +12200,7 @@ stopSpectrum() {
 
     // Clear the canvas to a blank state
     if (this.spectrumCtx && this.spectrumCanvas) {
-        this.spectrumCtx.fillStyle = '#10151a'; // Background color
+     this.spectrumCtx.fillStyle = 'rgb(0, 20, 30)'; // Base noise color
         this.spectrumCtx.fillRect(0, 0, this.spectrumCanvas.width, this.spectrumCanvas.height);
     }
 
@@ -11286,7 +12740,8 @@ connectAudioRoutingWithSsbDsp() {
         this.inputSource.connect(this.attenuatorNode);
         
         // Connect attenuator to main gain
-        this.attenuatorNode.connect(this.gainNode);
+        this.attenuatorNode.connect(this.compressorNode);
+        this.compressorNode.connect(this.gainNode);
         
         // Connect main gain to spectrum analyser (unfiltered view)
         this.gainNode.connect(this.inputAnalyser);
@@ -11631,6 +13086,9 @@ disableAutoNotch() {
         // Remove all notch filters
         this.removeAllNotchFilters();
         
+        // --- ADD THIS LINE TO RESTORE AUDIO ---
+        this.connectDirectAudioRouting();
+        
         console.log('Auto Notch Filter disabled');
         this.logCAT('Auto Notch Filter disabled', 'info');
         
@@ -11638,6 +13096,8 @@ disableAutoNotch() {
         console.error('Error disabling Auto Notch:', error);
     }
 }
+
+
 
 startAutoNotchDetection() {
     const bufferLength = this.autoNotchAnalyser.frequencyBinCount;
@@ -11748,9 +13208,10 @@ connectNotchFilterChain() {
         // Disconnect existing routing
         this.disconnectAudioRouting();
         
-        // Reconnect with notch filters in chain
+      // Reconnect with notch filters in chain
         this.inputSource.connect(this.attenuatorNode);
-        this.attenuatorNode.connect(this.gainNode);
+        this.attenuatorNode.connect(this.compressorNode);
+        this.compressorNode.connect(this.gainNode);
         this.gainNode.connect(this.inputAnalyser);
         
         // Insert notch filter chain
@@ -11805,12 +13266,623 @@ updateNotchFrequencyDisplay() {
     }
 }
 
+//------------------------------------------------------------
+
+initSolarConditions() {
+    this.imageSize = 150; // Default 150%
+    this.dragScrollEnabled = true;
+    
+    const container = document.getElementById('solarScrollContainer');
+    const img = document.getElementById('solarImg');
+    
+    if (!container || !img) {
+        console.error('Solar conditions elements not found');
+        return;
+    }
+    
+    // Set up drag-to-scroll
+    this.setupDragScroll(container);
+    
+    // Set up scroll position indicator
+    container.addEventListener('scroll', () => {
+        this.updateScrollIndicator();
+    });
+    
+    // Mouse wheel scroll (horizontal with shift key)
+    container.addEventListener('wheel', (e) => {
+        if (e.shiftKey) {
+            e.preventDefault();
+            container.scrollLeft += e.deltaY;
+        }
+    });
+    
+    // Update timestamp
+    this.updateSolarTimestamp();
+    
+    // Center the view initially
+    setTimeout(() => {
+        this.resetScrollPosition();
+    }, 100);
+    
+    console.log('Solar Conditions initialized with scrolling');
+}
+
+setupDragScroll(container) {
+    let isDown = false;
+    let startX, startY;
+    let scrollLeft, scrollTop;
+    
+    container.addEventListener('mousedown', (e) => {
+        if (!this.dragScrollEnabled) return;
+        
+        isDown = true;
+        container.classList.add('dragging');
+        startX = e.pageX - container.offsetLeft;
+        startY = e.pageY - container.offsetTop;
+        scrollLeft = container.scrollLeft;
+        scrollTop = container.scrollTop;
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        isDown = false;
+        container.classList.remove('dragging');
+    });
+    
+    container.addEventListener('mouseup', () => {
+        isDown = false;
+        container.classList.remove('dragging');
+    });
+    
+    container.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        
+        const x = e.pageX - container.offsetLeft;
+        const y = e.pageY - container.offsetTop;
+        const walkX = (x - startX) * 1.5; // Scroll speed multiplier
+        const walkY = (y - startY) * 1.5;
+        
+        container.scrollLeft = scrollLeft - walkX;
+        container.scrollTop = scrollTop - walkY;
+    });
+}
+
+updateImageSize(value) {
+    this.imageSize = parseInt(value);
+    const img = document.getElementById('solarImg');
+    const sizeDisplay = document.getElementById('imageSizeValue');
+    
+    if (img) {
+        img.style.width = `${this.imageSize}%`;
+    }
+    
+    if (sizeDisplay) {
+        sizeDisplay.textContent = `${this.imageSize}%`;
+    }
+}
+
+updateScrollIndicator() {
+    const container = document.getElementById('solarScrollContainer');
+    const indicator = document.getElementById('scrollIndicator');
+    
+    if (!container || !indicator) return;
+    
+    const scrollPercentX = Math.round((container.scrollLeft / (container.scrollWidth - container.clientWidth)) * 100);
+    const scrollPercentY = Math.round((container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100);
+    
+    if (isNaN(scrollPercentX) || isNaN(scrollPercentY)) {
+        indicator.textContent = '';
+        return;
+    }
+    
+    indicator.textContent = `Position: ${scrollPercentX}% H, ${scrollPercentY}% V`;
+}
+
+resetScrollPosition() {
+    const container = document.getElementById('solarScrollContainer');
+    if (container) {
+        // Center the view
+        container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+        container.scrollTop = 0; // Top of image
+        
+        this.updateScrollIndicator();
+    }
+}
+
+toggleDragScroll() {
+    this.dragScrollEnabled = !this.dragScrollEnabled;
+    const btn = document.getElementById('dragScrollBtn');
+    const container = document.getElementById('solarScrollContainer');
+    
+    if (this.dragScrollEnabled) {
+        btn.textContent = '✋ Drag: ON';
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+        container.classList.remove('no-drag');
+        container.style.cursor = 'grab';
+    } else {
+        btn.textContent = '✋ Drag: OFF';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+        container.classList.add('no-drag');
+        container.style.cursor = 'default';
+    }
+}
+
+refreshSolarImage() {
+    const img = document.getElementById('solarImg');
+    if (img) {
+        // Add timestamp to force reload
+        img.src = 'https://www.hamqsl.com/solar101vhf.php?' + Date.now();
+        this.updateSolarTimestamp();
+    }
+}
+
+updateSolarTimestamp() {
+    const timestampEl = document.getElementById('solarLastUpdate');
+    if (timestampEl) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        timestampEl.textContent = `Last updated: ${timeStr}`;
+    }
+}
 
 
 
 
 	//------------------------------------------------		
 			
+
+initQuickControls() {
+    try {
+        console.log('Initializing Quick Controls...');
+        
+      // BUTTONS - Connect to existing functions
+        const quickToggleConnect = document.getElementById('quickToggleConnect');
+        const quickToggleAudio = document.getElementById('quickToggleAudio');
+        const quickTX = document.getElementById('quickTX');
+        const quickRX = document.getElementById('quickRX');
+        
+        if (quickToggleConnect) {
+            quickToggleConnect.addEventListener('click', async () => {
+                if (this.connected) {
+                    await this.disconnectSerial();
+                } else {
+                    await this.connectSerial();
+                }
+            });
+        }
+        
+        if (quickToggleAudio) {
+            quickToggleAudio.addEventListener('click', async () => {
+                if (this.isAudioStreaming) {
+                    this.stopAudioStream();
+                } else {
+                    this.startAudioStream();
+                }
+            });
+        }
+        
+        if (quickTX) {
+            quickTX.addEventListener('click', () => {
+                document.getElementById('txBtn')?.click();
+            });
+        }
+        
+        if (quickRX) {
+            quickRX.addEventListener('click', () => {
+                document.getElementById('rxBtn')?.click();
+            });
+        }
+        
+        // KNOBS - Link to existing control functions (exact mirror of main knobs)
+        this.initQuickVolumeKnob();
+        this.initQuickRFKnob();
+        this.initQuickCWKnob();
+        
+        // LOUDNESS SLIDER
+        const loudnessSlider = document.getElementById('quickLoudness');
+        const loudnessValue = document.getElementById('quickLoudnessValue');
+        
+      if (loudnessSlider && loudnessValue) {
+            loudnessSlider.addEventListener('input', (e) => {
+                const sliderValue = parseInt(e.target.value);
+                this.audioGain = sliderValue / 100;
+                
+                // Update audio context
+                this.updateAudioGain();
+                
+                // Update all UI elements
+                this.updateGainDisplay();
+                
+                // Sync the *other* slider
+                const gainSlider = document.getElementById('audioGainSlider');
+                if (gainSlider) gainSlider.value = sliderValue;
+            });
+        }
+        
+        // Start updating meters
+        this.startQuickControlsUpdates();
+        
+        console.log('Quick Controls initialized');
+        
+    } catch (error) {
+        console.error('Error initializing Quick Controls:', error);
+    }
+}
+
+// Quick VOL Knob (mirrors AF Gain)
+initQuickVolumeKnob() {
+    const quickVolKnob = document.getElementById('quickVolKnob');
+    if (!quickVolKnob) return;
+    
+    quickVolKnob.setAttribute('tabindex', '0');
+    
+    // Mouse/Touch drag events - use same handlers as main knob
+    quickVolKnob.addEventListener('mousedown', this.startVolumeAdjust.bind(this));
+    quickVolKnob.addEventListener('touchstart', this.startVolumeAdjust.bind(this), { passive: false });
+    quickVolKnob.addEventListener('wheel', this.handleVolumeWheel.bind(this));
+    
+    // Keyboard/hover support
+    this.addKnobHoverAndFocus(quickVolKnob, this.adjustVolume);
+    
+    // Initial position
+    quickVolKnob.style.transform = `rotate(${this.volumeKnobRotation}deg)`;
+}
+
+// Quick RF Gain Knob
+initQuickRFKnob() {
+    const quickRFKnob = document.getElementById('quickRFKnob');
+    if (!quickRFKnob) return;
+    
+    quickRFKnob.setAttribute('tabindex', '0');
+    
+    // Link to the ACTUAL RF Gain handlers
+    quickRFKnob.addEventListener('mousedown', this.startActualRfGainAdjust.bind(this));
+    quickRFKnob.addEventListener('touchstart', this.startActualRfGainAdjust.bind(this), { passive: false });
+    quickRFKnob.addEventListener('wheel', this.handleActualRfGainWheel.bind(this));
+
+    // Add hover keyboard control
+    quickRFKnob.addEventListener('mouseenter', () => {
+        this.enableActualRfGainHoverKeys();
+    });
+    quickRFKnob.addEventListener('mouseleave', () => {
+        this.disableActualRfGainHoverKeys();
+    });
+    
+    // Set initial rotation to match
+    const actualRfGainRotation = this.actualRfGainKnobRotation || 0;
+    quickRFKnob.style.transform = `rotate(${actualRfGainRotation}deg)`;
+}
+
+// Quick CW Speed Knob
+initQuickCWKnob() {
+    const quickCWKnob = document.getElementById('quickCWKnob');
+    if (!quickCWKnob) return;
+    
+    quickCWKnob.setAttribute('tabindex', '0');
+    
+    // Link to rfGainKnob which controls CW Speed
+    quickCWKnob.addEventListener('mousedown', this.startRFGainAdjust.bind(this));
+    quickCWKnob.addEventListener('touchstart', this.startRFGainAdjust.bind(this), { passive: false });
+    quickCWKnob.addEventListener('wheel', this.handleRFGainWheel.bind(this));
+    quickCWKnob.addEventListener('keydown', this.handleRFGainKeyboard.bind(this));
+    
+    // Add hover keyboard control
+    quickCWKnob.addEventListener('mouseenter', () => {
+        this.enableCWSpeedHoverKeys();
+    });
+    quickCWKnob.addEventListener('mouseleave', () => {
+        this.disableCWSpeedHoverKeys();
+    });
+    
+    // Set initial rotation
+    quickCWKnob.style.transform = `rotate(${this.rfGainKnobRotation}deg)`;
+}
+
+
+startQuickControlsUpdates() {
+    // Backup synchronization every 100ms
+    // Note: Primary updates happen directly in update functions (updateVolumeUI, updateRFGainLevel, etc.)
+    // This interval serves as a fallback to ensure Quick Controls stay synchronized
+    setInterval(() => {
+        // S-Meter and SWR are already updated directly in updateSMeterLabel and updateSWRMeter
+        // But we keep these as backup in case the update functions are bypassed
+        const sMeterDisplay = document.getElementById('quickSMeter');
+        if (sMeterDisplay && this.currentSMeterLabel) {
+            sMeterDisplay.textContent = this.currentSMeterLabel;
+        }
+        
+        const swrDisplay = document.getElementById('quickSWR');
+        if (swrDisplay && this.currentSWR !== undefined) {
+            swrDisplay.textContent = this.currentSWR === 0 ? 'RX' : this.currentSWR.toFixed(1);
+        }
+        
+        // Knobs are already updated directly in their respective update functions
+        // This polling is kept as a safety net for edge cases
+        
+        // Update button states with proper colors
+      // Update button states with proper colors
+        const quickToggleConnect = document.getElementById('quickToggleConnect');
+        const quickToggleAudio = document.getElementById('quickToggleAudio');
+        
+        if (quickToggleConnect) {
+            if (this.connected) {
+                // Connected: Button becomes a RED "DISCONNECT" button
+                quickToggleConnect.textContent = 'DISCONNECT';
+                quickToggleConnect.classList.remove('btn-secondary', 'btn-primary');
+                quickToggleConnect.classList.add('btn-danger');
+            } else {
+                // Not connected: Button becomes a GREEN "CONNECT" button
+                quickToggleConnect.textContent = 'CONNECT';
+                quickToggleConnect.classList.remove('btn-secondary', 'btn-danger');
+                quickToggleConnect.classList.add('btn-primary');
+            }
+        }
+        
+        if (quickToggleAudio) {
+            if (this.isAudioStreaming) {
+                // Streaming: Button becomes a RED "STOP AUDIO" button
+                quickToggleAudio.textContent = 'STOP AUDIO';
+                quickToggleAudio.classList.remove('btn-secondary', 'btn-primary');
+                quickToggleAudio.classList.add('btn-danger');
+            } else {
+                // Not streaming: Button becomes a GREY "START AUDIO" button
+                quickToggleAudio.textContent = 'START AUDIO';
+                quickToggleAudio.classList.remove('btn-primary', 'btn-danger');
+                quickToggleAudio.classList.add('btn-secondary');
+            }
+        }
+        
+        // Update TX/RX button states
+        const quickTX = document.getElementById('quickTX');
+        const quickRX = document.getElementById('quickRX');
+        
+        if (quickTX && quickRX) {
+            if (this.transmitting) {
+                quickTX.classList.add('btn-danger');
+                quickTX.classList.remove('btn-secondary');
+                quickRX.classList.remove('btn-primary');
+                quickRX.classList.add('btn-secondary');
+            } else {
+                quickTX.classList.remove('btn-danger');
+                quickTX.classList.add('btn-secondary');
+                quickRX.classList.add('btn-primary');
+                quickRX.classList.remove('btn-secondary');
+            }
+        }
+        
+    }, 100);
+}
+
+
+
+
+//quick controls stuff
+
+
+
+
+
+
+
+
+// --- START: New Helper Functions for Actual RF Gain Knob ---
+
+enableActualRfGainHoverKeys() {
+    this.isActualRfGainHoverActive = true;
+    
+    if (!this.boundHandleActualRfGainHoverKeys) {
+        this.boundHandleActualRfGainHoverKeys = this.handleActualRfGainHoverKeys.bind(this);
+    }
+    
+    document.addEventListener('keydown', this.boundHandleActualRfGainHoverKeys);
+    
+    // Visual feedback
+    const actualRfGainKnob = document.getElementById('actualRfGainKnob');
+    const quickRFKnob = document.getElementById('quickRFKnob');
+    
+    const hoverGlow = '0 6px 12px rgba(0, 0, 0, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.8), inset 0 -2px 3px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 136, 0.6)';
+    
+    if (actualRfGainKnob) actualRfGainKnob.style.boxShadow = hoverGlow;
+    if (quickRFKnob) quickRFKnob.style.boxShadow = hoverGlow;
+}
+
+disableActualRfGainHoverKeys() {
+    this.isActualRfGainHoverActive = false;
+    
+    if (this.boundHandleActualRfGainHoverKeys) {
+        document.removeEventListener('keydown', this.boundHandleActualRfGainHoverKeys);
+    }
+    
+    // Remove visual feedback
+    const actualRfGainKnob = document.getElementById('actualRfGainKnob');
+    const quickRFKnob = document.getElementById('quickRFKnob');
+    
+    const defaultShadow = '0 6px 12px rgba(0, 0, 0, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.8), inset 0 -2px 3px rgba(0, 0, 0, 0.3)';
+    
+    if (actualRfGainKnob) actualRfGainKnob.style.boxShadow = defaultShadow;
+    if (quickRFKnob) quickRFKnob.style.boxShadow = defaultShadow;
+}
+
+handleActualRfGainHoverKeys(e) {
+    if (!this.isActualRfGainHoverActive) return;
+    
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    
+    e.preventDefault();
+    
+    let delta = 0;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+        delta = -1; // -1 dB
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+        delta = 1; // +1 dB
+    }
+    
+    if (delta !== 0) {
+        // Use the existing adjust function
+        this.adjustActualRfGain(delta);
+        
+        // Brief visual feedback
+        this.provideActualRfGainKeyFeedback();
+    }
+}
+
+provideActualRfGainKeyFeedback() {
+    const actualRfGainKnob = document.getElementById('actualRfGainKnob');
+    const quickRFKnob = document.getElementById('quickRFKnob');
+    
+    const brightGlow = '0 6px 12px rgba(0, 0, 0, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.8), inset 0 -2px 3px rgba(0, 0, 0, 0.3), 0 0 25px rgba(0, 255, 136, 1)';
+    const hoverGlow = '0 6px 12px rgba(0, 0, 0, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.8), inset 0 -2px 3px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 136, 0.6)';
+    
+    if (actualRfGainKnob) actualRfGainKnob.style.boxShadow = brightGlow;
+    if (quickRFKnob) quickRFKnob.style.boxShadow = brightGlow;
+    
+    setTimeout(() => {
+        if (this.isActualRfGainHoverActive) {
+            if (actualRfGainKnob) actualRfGainKnob.style.boxShadow = hoverGlow;
+            if (quickRFKnob) quickRFKnob.style.boxShadow = hoverGlow;
+        }
+    }, 150);
+}
+
+// --- END: New Helper Functions for Actual RF Gain Knob ---
+
+
+
+
+
+// --- START: I/Q Spectrum Mode Functions ---
+
+async startIQStream() {
+    this.logCAT('Starting I/Q Stream (Native FFT + Audio)...', 'info');
+
+    if (!this.connected) {
+        this.logCAT('Cannot start I/Q stream: Radio not connected.', 'error');
+        this.updateStreamingButtons();
+        return;
+    }
+    
+    await this.sendCommand('Q9;1;');
+    this.logCAT('Radio set to I/Q Mode.', 'info');
+
+    try {
+        // --- CLEANUP OLD NODES ---
+        if (this.inputSource) this.inputSource.disconnect();
+        if (this.attenuatorNode) this.attenuatorNode.disconnect();
+        if (this.compressorNode) this.compressorNode.disconnect();
+        if (this.gainNode) this.gainNode.disconnect();
+        if (this.inputAnalyser) this.inputAnalyser.disconnect();
+        if (this.iqProcessorNode) this.iqProcessorNode.disconnect();
+
+        // --- SETUP AUDIO CONTEXT ---
+        const inputSelect = document.getElementById('audioInputDevice');
+        if (inputSelect && inputSelect.value) this.selectedInputDevice = inputSelect.value;
+        else if (!this.selectedInputDevice) this.selectedInputDevice = 'default';
+
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
+        if (this.audioContext.state === 'suspended') {
+            await this.audioContext.resume();
+        }
+
+        let audioConstraints = {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            channelCount: 2
+        };
+        if (this.selectedInputDevice !== 'default') {
+            audioConstraints.deviceId = { exact: this.selectedInputDevice };
+        }
+
+        this.inputStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+        this.inputSource = this.audioContext.createMediaStreamSource(this.inputStream);
+
+        // --- SETUP NATIVE FFT ---
+        const bufferSize = 2048; 
+        // Ensure we use the new class:
+        this.iqFft = new ComplexFFT(bufferSize); 
+        
+        this.spectrumData = new Float32Array(bufferSize);
+        const real = new Float32Array(bufferSize);
+        const imag = new Float32Array(bufferSize);
+        
+        // Create Processor (2 inputs, 2 outputs for audio)
+        this.iqProcessorNode = this.audioContext.createScriptProcessor(bufferSize, 2, 2);
+
+        this.iqProcessorNode.onaudioprocess = (e) => {
+            if (!this.isAudioStreaming) return;
+            
+            // 1. Get Raw I/Q Data
+            const iData = e.inputBuffer.getChannelData(0);
+            const qData = e.inputBuffer.getChannelData(1);
+            const outL = e.outputBuffer.getChannelData(0);
+            const outR = e.outputBuffer.getChannelData(1);
+            
+            // 2. Calculate DC Offset (The Stripe Remover)
+            let iSum = 0, qSum = 0;
+            for (let n = 0; n < bufferSize; n++) {
+                iSum += iData[n];
+                qSum += qData[n];
+            }
+            const iAvg = iSum / bufferSize;
+            const qAvg = qSum / bufferSize;
+
+            // 3. Prepare Arrays & Passthrough Audio
+            for (let n = 0; n < bufferSize; n++) {
+                const iSample = iData[n] - iAvg; // DC Removed
+                const qSample = qData[n] - qAvg; // DC Removed
+                
+                // Fill FFT Arrays
+                real[n] = iSample;
+                imag[n] = qSample;
+                
+                // AUDIO OUTPUT (Hear the CW!)
+                // Simple direct pass of 'I' channel = Direct Conversion Audio
+                const audioSample = iSample * 2.0; // 2x Gain
+                outL[n] = audioSample;
+                outR[n] = audioSample;
+            }
+
+            // 4. Run Native FFT
+            // Note: We use .transform(), NOT .forward()
+            this.iqFft.transform(real, imag);
+            
+            // 5. Calculate Magnitude & Center 0Hz
+            const half = bufferSize / 2;
+            for (let i = 0; i < bufferSize; i++) {
+                // Magnitude = sqrt(re^2 + im^2)
+                const mag = Math.sqrt(real[i]*real[i] + imag[i]*imag[i]);
+                
+                // Swap halves so 0Hz is in the center of the screen
+                const destIdx = (i < half) ? (i + half) : (i - half);
+                this.spectrumData[destIdx] = mag;
+            }
+        };
+        
+        // Connect Graph
+        this.inputSource.connect(this.iqProcessorNode);
+        this.iqProcessorNode.connect(this.audioContext.destination); // Required for audio & chrome processing
+        
+        this.startSpectrum(); 
+
+        this.isAudioStreaming = true;
+        this.updateStreamingButtons();
+        document.getElementById('audioStatusText').textContent = 'Streaming I/Q (Native)';
+        document.getElementById('audioStatusDot').classList.add('active');
+
+    } catch (error) {
+        this.logCAT(`Failed to start I/Q stream: ${error.message}`, 'error');
+        await this.sendCommand('Q9;0;');
+        this.isAudioStreaming = false;
+        this.updateStreamingButtons();
+    }
+}
+// --- END: I/Q Spectrum Mode Functions ---
+
            cleanup() {
 		     this.saveStepSize();
     if (this.timeSyncInterval) clearInterval(this.timeSyncInterval);
@@ -11862,6 +13934,4 @@ document.addEventListener('DOMContentLoaded', () => {
    </script>
 
 
-
 </html>
-
